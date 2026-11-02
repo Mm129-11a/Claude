@@ -1,5 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>Netvy Studios</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +25,12 @@
     --text-subheading: 20px;  --leading-subheading: 1.1;
     --text-heading: 58px;     --leading-heading: 1;
     --text-heading-lg: clamp(40px, 5vw, 72px);  --leading-heading-lg: 0.9;
-    --text-display: clamp(96px, 15vw, 216px);   --leading-display: 0.8;
+    --leading-display: 0.8;
+    /* Hero words: "STUDIOS" (4.11em) always fits the width; never taller than ~20% of the screen */
+    --display-hero: clamp(44px, min(calc((100vw - 40px) / 4.35), 19vh), 216px);
+    --display-contact: clamp(44px, calc((100vw - 40px) / 3.6), 216px);
+    /* The block: square, between the words, shrinks on short or narrow screens */
+    --stage: clamp(180px, min(88vw, 50vh), 620px);
 
     --font-weight-regular: 400;
     --font-weight-bold: 700;
@@ -40,6 +46,12 @@
     --radius-buttons: 0px;
 
     --ease-out: cubic-bezier(.16, 1, .3, 1);
+  }
+  @supports (height: 1svh) {
+    :root {
+      --display-hero: clamp(44px, min(calc((100vw - 40px) / 4.35), 19svh), 216px);
+      --stage: clamp(180px, min(88vw, 50svh), 620px);
+    }
   }
 
   /* ───────────────────────── Base ───────────────────────── */
@@ -65,6 +77,14 @@
     overflow-x: clip;
     min-height: 100vh;
   }
+  #app {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
   a { color: inherit; text-decoration: none; }
   button {
     font: inherit; color: inherit; background: none; border: 0;
@@ -74,14 +94,12 @@
   :focus-visible { outline: 1px solid var(--color-paper-white); outline-offset: 4px; }
 
   /* 3D stage — lives only in the hero; drag it with a finger or the mouse */
-  :root { --stage: min(64vh, 92vw); }
   .stage {
-    position: absolute;
-    left: 50%;
-    top: 50%;
+    position: relative;
     width: var(--stage);
     height: var(--stage);
-    transform: translate(-50%, -50%);
+    max-width: 100%;
+    margin-block: calc(var(--stage) * -0.15) calc(var(--stage) * -0.1);   /* the block just touches both words */
     z-index: 3;
     display: block;
     touch-action: none;
@@ -147,7 +165,7 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: var(--gutter);
+    padding-block: var(--spacing-16);
     font-size: var(--text-caption);
     line-height: var(--leading-caption);
   }
@@ -157,8 +175,8 @@
   /* Locale switcher — no active state, availability only */
   .locale {
     position: absolute;
-    top: calc(var(--gutter) + 18px + var(--spacing-8));
-    right: var(--gutter);
+    top: calc(var(--spacing-16) + 18px + var(--spacing-8));
+    right: 0;
     z-index: 5;
     display: flex;
     gap: .35em;
@@ -170,13 +188,11 @@
     display: block;
     font-family: var(--font-ak);
     font-weight: var(--font-weight-regular);
-    font-size: var(--text-display);
     line-height: var(--leading-display);
     letter-spacing: -0.045em;
     text-transform: uppercase;
     white-space: nowrap;
   }
-  .display .line { display: block; will-change: transform; }
   .line-inner { display: inline-block; }
 
   /* ───────────────────────── Hero ───────────────────────── */
@@ -185,25 +201,31 @@
     z-index: 1;
     min-height: 100vh;
     min-height: 100svh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: var(--spacing-32);
+    padding-top: 72px;                 /* clears the nav and the language switch */
+  }
+  .hero__stack {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    justify-content: flex-end;
-    overflow-x: hidden;
-    overflow-x: clip;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
   }
-  /* The two words frame the block: NETVY above (bleeding right), STUDIOS below (bleeding left). */
-  .hero .display { position: absolute; inset: 0; pointer-events: none; }
-  .hero .line { position: absolute; left: 0; }
-  .hero .l1 { bottom: calc(50% + var(--stage) * 0.3); padding-left: 56vw; }
-  .hero .l2 { top: calc(50% + var(--stage) * 0.3); left: -0.3em; }
+  .hero__word {
+    position: relative;
+    z-index: 1;
+    font-size: var(--display-hero);
+    text-align: center;
+  }
 
   .hero__foot {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: var(--gutter);
     align-items: end;
-    padding: 0 var(--gutter) var(--gutter);
+    padding-bottom: var(--spacing-16);
   }
   .label { font-size: var(--text-caption); line-height: var(--leading-caption); font-weight: var(--font-weight-regular); }
   .hero__region { grid-column: 1 / 4; }
@@ -227,7 +249,7 @@
   .archive {
     position: relative;
     z-index: 1;
-    padding: var(--section-gap) var(--gutter) 0;
+    padding-top: var(--section-gap);
   }
   .archive__head {
     display: flex;
@@ -277,18 +299,21 @@
     position: relative;
     z-index: 1;
     padding-top: var(--section-gap);
-    overflow-x: hidden;
-    overflow-x: clip;
   }
-  .contact__display { width: 100%; text-align: left; }
+  .contact__display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    font-size: var(--display-contact);
+    text-align: center;
+  }
   .contact__display:hover { opacity: .85; }
-  .contact .c1 { margin-left: -0.12em; }
-  .contact .c2 { padding-left: 62vw; }
   .contact__foot {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: var(--gutter);
-    padding: var(--spacing-32) var(--gutter) var(--gutter);
+    padding-block: var(--spacing-32) var(--spacing-16);
   }
   .contact__foot > :nth-child(1) { grid-column: 1 / 5; }
   .contact__foot > :nth-child(2) { grid-column: 5 / 9; }
@@ -339,7 +364,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-32);
-    padding: var(--section-gap) var(--gutter) var(--spacing-32);
+    padding-block: var(--section-gap) var(--spacing-32);
   }
   .admin__login { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gutter); max-width: 520px; }
   .admin__msg { flex-basis: 100%; font-size: var(--text-caption); line-height: var(--leading-caption); min-height: 18px; }
@@ -364,22 +389,18 @@
 
   /* ───────────────────────── Motion ───────────────────────── */
   @media (prefers-reduced-motion: no-preference) {
-    .hero .line-inner { animation: enter 1.6s var(--ease-out) both; }
-    .hero .l1 .line-inner { --from: 24%;  animation-delay: .05s; }
-    .hero .l2 .line-inner { --from: -24%; animation-delay: .15s; }
+    .hero__word .line-inner { animation: enter 1.4s var(--ease-out) both; }
+    .hero__word + .stage + .hero__word .line-inner { animation-delay: .12s; }
     .fade { animation: fade 1.2s .7s var(--ease-out) both; }
   }
   @keyframes enter {
-    from { transform: translate3d(var(--from, 0), 0, 0); opacity: 0; }
+    from { transform: translate3d(0, 25%, 0); opacity: 0; }
     to   { transform: none; opacity: 1; }
   }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
   /* ───────────────────────── Small screens ───────────────────────── */
   @media (max-width: 760px) {
-    :root { --stage: min(60vh, 88vw); }
-    .hero .l1 { padding-left: 26vw; }
-    .contact .c2 { padding-left: 34vw; }
     .hero__foot { grid-template-columns: 1fr 1fr; row-gap: var(--spacing-16); }
     .hero__hint { grid-column: 1 / -1; order: -1; }
     .hero__region { grid-column: 1; }
@@ -399,22 +420,37 @@
 
     .admin__cols { grid-template-columns: 1fr; }
   }
+  /* Phones on their side and other short screens */
+  @media (max-height: 520px) and (orientation: landscape) {
+    :root {
+      --display-hero: clamp(36px, 15vh, 120px);
+      --stage: clamp(150px, 46vh, 400px);
+    }
+    @supports (height: 1svh) {
+      :root {
+        --display-hero: clamp(36px, 15svh, 120px);
+        --stage: clamp(150px, 46svh, 400px);
+      }
+    }
+    .hero { padding-top: 68px; gap: var(--spacing-16); }
+    .hero__hint { display: none; }
+  }
 </style>
 <template id="page-markup">
-<header class="nav fade">
-  <a class="nav__brand" href="#top">netvy studios</a>
-  <button type="button" class="nav__cta" data-contact data-i18n="cta">CONTÁCTANOS</button>
-</header>
-<nav class="locale fade" aria-label="Idioma"></nav>
-
 <main id="top">
 
   <section class="hero">
-    <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Bloque de pasto. Arrástralo para girarlo." data-i18n-aria="block"></canvas>
-    <h1 class="display" aria-label="Netvy Studios">
-      <span class="line l1" data-drift="0.3" aria-hidden="true"><span class="line-inner">Netvy</span></span>
-      <span class="line l2" data-drift="-0.25" aria-hidden="true"><span class="line-inner">Studios</span></span>
-    </h1>
+    <header class="nav fade">
+      <a class="nav__brand" href="#top">netvy studios</a>
+      <button type="button" class="nav__cta" data-contact data-i18n="cta">CONTÁCTANOS</button>
+    </header>
+    <nav class="locale fade" aria-label="Idioma"></nav>
+    <h1 class="sr-only">Netvy Studios</h1>
+    <div class="hero__stack">
+      <p class="display hero__word" aria-hidden="true"><span class="line-inner">Netvy</span></p>
+      <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Bloque de pasto. Arrástralo para girarlo." data-i18n-aria="block"></canvas>
+      <p class="display hero__word" aria-hidden="true"><span class="line-inner">Studios</span></p>
+    </div>
     <div class="hero__foot fade">
       <p class="label hero__region">US / WW</p>
       <p class="label hero__hint" data-i18n="drag">(Arrastra para girar)</p>
@@ -436,8 +472,8 @@
 
   <section class="contact" id="contacto" aria-label="Contacto">
     <button type="button" class="display contact__display" data-contact>
-      <span class="line c1" data-drift="0.22" data-anchor="center" data-i18n="c1">Di</span>
-      <span class="line c2" data-drift="-0.22" data-anchor="center" data-i18n="c2">hola</span>
+      <span data-i18n="c1">Di</span>
+      <span data-i18n="c2">hola</span>
     </button>
     <div class="contact__foot">
       <p>© 2026 netvy studios</p>
@@ -561,7 +597,7 @@
   /* ── Canonical source, captured before anything renders. The admin panel
         rebuilds the whole page from these pieces + the data when it saves. ── */
   const THREE_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-  const HEAD_LINKS = `<title>Netvy Studios</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">`;
+  const HEAD_LINKS = `<title>Netvy Studios</title><meta name="claude:viewport-fit-sides" content="cover"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">`;
   const PASS_HASH = '4b4b91297411e06564ee1bf9eb2e1bc803a15310218b7ae6ce94f84a1524f0f4';
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -1297,38 +1333,9 @@
     start();
   }
 
-  /* ════════════════════════════════════════════════════════════════════
-     Drifting type walls
-     ════════════════════════════════════════════════════════════════════ */
-  function initDrift() {
-    if (reduce) return;
-    const drifters = $$('[data-drift]');
-    let queued = false;
-    function update() {
-      queued = false;
-      const vh = window.innerHeight, y = window.scrollY;
-      drifters.forEach(n => {
-        const f = parseFloat(n.dataset.drift);
-        let x;
-        if (n.dataset.anchor === 'center') {
-          const r = n.getBoundingClientRect();
-          x = (r.top + r.height / 2 - vh / 2) * f;
-        } else {
-          x = -y * f;
-        }
-        n.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
-      });
-    }
-    const request = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
-    window.addEventListener('scroll', request, { passive: true });
-    window.addEventListener('resize', request);
-    update();
-  }
-
   /* ── Boot ── */
   applyLang(lang, false);
   initStage();
-  initDrift();
   syncProgress();
   if (store.get('sessionStorage', 'netvy-admin') === '1') unlock();
 })();
