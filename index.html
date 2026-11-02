@@ -316,13 +316,31 @@
   .contact {
     position: relative;
     z-index: 1;
-    padding-top: var(--section-gap);
+    display: flex;
+    flex-direction: column;
+    min-height: 85vh;
+    min-height: 85svh;
+    padding-top: var(--spacing-32);
   }
+  /* The word and its button sit in the middle of the screen, the footer at the bottom. */
+  .contact__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-32);
+    padding-block: var(--spacing-32) calc(var(--spacing-32) * 4);
+  }
+  @media (max-width: 760px) {
+    .contact__main { padding-block-end: calc(var(--spacing-32) * 3); }
+  }
+  .btn--big { padding: 16px 28px; font-size: var(--text-body-sm); }
   .contact__display {
     display: flex;
     justify-content: center;
     width: 100%;
-    padding-top: 1.2em;               /* room for the splash above the word */
+    padding-top: max(.9em, 64px);     /* room for the splash above the word */
     font-size: var(--display-contact);
     text-align: center;
   }
@@ -512,12 +530,15 @@
   </section>
 
   <section class="contact" id="contacto" aria-label="Contacto">
-    <button type="button" class="display contact__display" data-contact>
-      <span class="contact__wordwrap">
-        <span class="contact__word" id="contact-word" data-i18n="c1">Construyamos</span>
-        <span class="splash" id="splash" aria-hidden="true">¡Juntos!</span>
-      </span>
-    </button>
+    <div class="contact__main">
+      <button type="button" class="display contact__display" data-contact>
+        <span class="contact__wordwrap">
+          <span class="contact__word" id="contact-word" data-i18n="c1">Construyamos</span>
+          <span class="splash" id="splash" aria-hidden="true">¡Juntos!</span>
+        </span>
+      </button>
+      <button type="button" class="btn btn--big" data-contact data-i18n="contactBtn">Contáctanos</button>
+    </div>
     <div class="contact__foot">
       <button type="button" class="foot__secret" id="admin-open">© 2026 netvy studios</button>
       <a href="#top" data-i18n="top">Volver arriba</a>
