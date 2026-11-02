@@ -774,12 +774,8 @@
       'st.soon': 'Coming soon', 'st.progress': 'In progress', 'st.done': 'Finished', 'st.paused': 'Paused',
     },
   };
-  // Game-style splash phrases: a different one greets each visit.
-  const SPLASHES = {
-    es: ['¡Juntos!', '¡Bloque a bloque!', '¡Réplicas épicas!', '¡100% cúbico!', '¡Hecho a mano!', '¡Sin creepers!', '¡Ahora en 3D!', '¡Pico en mano!'],
-    en: ['Together!', 'Block by block!', 'Epic replicas!', '100% cubic!', 'Handcrafted!', 'No creepers!', 'Now in 3D!', 'Pickaxe ready!'],
-  };
-  const splashIndex = Math.floor(Math.random() * SPLASHES.es.length);
+  // Game-style yellow splash next to the closing word.
+  const SPLASH = { es: '¡Juntos!', en: 'Together!' };
   let lang = 'es';
   const saved = store.get('localStorage', 'netvy-lang');
   if (saved && STR[saved]) lang = saved;
@@ -807,7 +803,7 @@
     });
     localeNav.replaceChildren(...nodes);
     if (keepFocus) localeNav.querySelector('button').focus({ preventScroll: true });
-    $('#splash').textContent = SPLASHES[lang][splashIndex];
+    $('#splash').textContent = SPLASH[lang];
     renderProjects();
     renderContactDialog();
     fitContactWord();
