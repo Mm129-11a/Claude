@@ -428,20 +428,23 @@ function initStage(reduce) {
   renderer.outputEncoding = T.sRGBEncoding;
 
   const scene = new T.Scene();
-  const camera = new T.PerspectiveCamera(22, 1, 0.1, 100);
-  camera.position.set(0, 0, 10);
+  const camera = new T.PerspectiveCamera(12, 1, 0.1, 100);   // long lens ≈ isometric look
+  camera.position.set(0, 0, 18.5);
 
-  // Blocky lighting: bright top, darker sides, a faint rim to separate it from the void.
-  scene.add(new T.AmbientLight(0xffffff, 0.32));
-  const key = new T.DirectionalLight(0xffffff, 0.9);   key.position.set(-2, 6, 4);  scene.add(key);
-  const fill = new T.DirectionalLight(0xffffff, 0.32); fill.position.set(5, 0, 3);  scene.add(fill);
-  const rim = new T.DirectionalLight(0xffffff, 0.45);  rim.position.set(0, 2, -6);  scene.add(rim);
+  // Game-style face shading at rest: top and left face at full brightness, right face ≈ 75%.
+  scene.add(new T.AmbientLight(0xffffff, 0.3));
+  const key = new T.DirectionalLight(0xffffff, 1.015);
+  key.position.set(-3.35, 2.52, 9.07);
+  scene.add(key);
 
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
   /* ── 16×16 pixel-art grass block, seeded so every visit looks the same ── */
-  const DIRT = [[0.12, '#4b3121'], [0.40, '#694830'], [0.72, '#7b5536'], [0.92, '#8e6445'], [1, '#a07451']];
-  const GRASS = [[0.10, '#3a6420'], [0.35, '#497c27'], [0.70, '#58912e'], [0.90, '#66a235'], [1, '#76b13e']];
+  // Palettes sampled from a reference grass block (texel colours as seen on the lit face).
+  const DIRT = [[0.13, '#452c1a'], [0.21, '#4f3822'], [0.33, '#5f432e'], [0.55, '#67462f'], [0.64, '#6e5038'], [0.87, '#7c5b41'], [1, '#937052']];
+  const GRASS_TOP = [[0.17, '#385830'], [0.34, '#3f6437'], [0.53, '#44673c'], [0.73, '#496e3f'], [0.88, '#527a47'], [1, '#5c874f']];
+  const GRASS_SIDE = [[0.15, '#4c742b'], [0.47, '#568634'], [0.71, '#5c913b'], [0.88, '#6b9447'], [1, '#79a153']];
+  const PEBBLES = ['#4c4d52', '#5d5f65', '#74777d'];
   function pixelTexture(seed, paint) {
     let st = seed >>> 0;
     const rand = () => (st = (Math.imul(st, 1664525) + 1013904223) >>> 0) / 4294967296;
@@ -450,7 +453,8 @@ function initStage(reduce) {
     const g = c.getContext('2d');
     const px = (x, y, w, h, color) => { g.fillStyle = color; g.fillRect(x, y, w, h); };
     const pick = shades => { const v = rand(); return shades.find(([p]) => v <= p)[1]; };
-    paint(px, pick, rand);
+    const at = n => Math.floor(rand() * n);
+    paint(px, pick, rand, at);
     const tex = new T.CanvasTexture(c);
     tex.magFilter = T.NearestFilter;          // crisp pixels, no smoothing
     tex.minFilter = T.NearestFilter;
@@ -458,28 +462,29 @@ function initStage(reduce) {
     tex.encoding = T.sRGBEncoding;
     return tex;
   }
-  function paintDirt(px, pick, rand) {
+  function paintDirt(px, pick, rand, at) {
     for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(DIRT));
-    for (let i = 0; i < 10; i++) {           // darker clumps
-      const horiz = rand() < 0.5;
-      px(Math.floor(rand() * 15), Math.floor(rand() * 15), horiz ? 2 : 1, horiz ? 1 : 2, '#553825');
-    }
-    for (let i = 0; i < 6; i++) {            // little pebbles
-      px(Math.floor(rand() * 16), Math.floor(rand() * 16), 1, 1, rand() < 0.5 ? '#6f6359' : '#978a81');
+    for (let i = 0; i < 12; i++) px(at(16), at(14), 1, 2 + (rand() < 0.4), rand() < 0.5 ? '#452c1a' : '#4f3822');   // dark vertical streaks
+    for (let i = 0; i < 7; i++) px(at(15), at(16), 2, 1, '#8a6849');                                                  // light tan patches
+    for (let i = 0; i < 5; i++) px(at(16), at(16), 1, 1, PEBBLES[at(3)]);                                             // blue-grey pebbles
+  }
+  function paintGrassTop(px, pick, rand, at) {
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(GRASS_TOP));
+    for (let i = 0; i < 8; i++) px(at(15), at(16), 2, 1, '#5c874f');
+    for (let i = 0; i < 8; i++) px(at(16), at(16), 1, 1, '#34522c');
+  }
+  function paintGrassSide(px, pick, rand, at) {
+    paintDirt(px, pick, rand, at);
+    let depth = 3 + at(2);
+    for (let x = 0; x < 16; x++) {           // grass hanging over the edge: 2–5 rows, the odd longer drip
+      depth = Math.min(5, Math.max(2, depth + at(3) - 1));
+      const d = depth + (rand() < 0.12 ? 1 + at(2) : 0);
+      for (let y = 0; y < d; y++) px(x, y, 1, 1, pick(GRASS_SIDE));
+      if (rand() < 0.85) px(x, d, 1, 1, '#3d2817');               // dark soil just under the grass
+      if (rand() < 0.25) px(x, d + 1, 1, 1, '#452c1a');
     }
   }
-  function paintGrassTop(px, pick, rand) {
-    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(GRASS));
-    for (let i = 0; i < 14; i++) px(Math.floor(rand() * 16), Math.floor(rand() * 16), 1, 1, rand() < 0.6 ? '#335a1c' : '#86c04b');
-  }
-  function paintGrassSide(px, pick, rand) {
-    paintDirt(px, pick, rand);
-    for (let x = 0; x < 16; x++) {           // grass hanging over the edge, uneven like drips
-      const depth = 2 + (rand() < 0.6) + (rand() < 0.35) + (rand() < 0.12);
-      for (let y = 0; y < depth; y++) px(x, y, 1, 1, pick(GRASS));
-    }
-  }
-  const mat = tex => new T.MeshStandardMaterial({ map: tex, roughness: 1, metalness: 0 });
+  const mat = tex => new T.MeshLambertMaterial({ map: tex });   // flat, matte shading like the game
   // BoxGeometry face order: +x, -x, +y (top), -y (bottom), +z, -z
   const faces = [
     mat(pixelTexture(11, paintGrassSide)),
@@ -498,7 +503,7 @@ function initStage(reduce) {
   /* ── Rotation state ── */
   const X = new T.Vector3(1, 0, 0), Y = new T.Vector3(0, 1, 0);
   const qa = new T.Quaternion(), qb = new T.Quaternion(), tmp = new T.Vector3();
-  const BASE_TILT = 0.55, AUTO_SPIN = 0.45;
+  const BASE_TILT = 0.52, AUTO_SPIN = 0.45;
   let vx = reduce ? 0 : 5, vy = 0;          // angular velocity (rad/s) — starts with a playful spin-in
   let autoW = reduce ? 0 : 1, s = reduce ? 1 : 0;
   let dragging = false, lastX = 0, lastY = 0, lastT = 0;
