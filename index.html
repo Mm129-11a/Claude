@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>offfice studio</title>
+<meta name="description" content="Future living design research studio. Installations, commercial and private spaces.">
+<meta name="theme-color" content="#0e0e0e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0e'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%23fefefe' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">
+<style>
+  /* ───────────────────────── Tokens ───────────────────────── */
+  :root {
+    /* Colors — 100% achromatic */
+    --color-onyx: #0e0e0e;
+    --color-paper-white: #fefefe;
+    --color-faint-white: #2a2a2a;
+
+    /* Families: ak (sans workhorse) / gs (editorial serif, archive titles only) */
+    --font-ak: 'ak', 'Neue Haas Grotesk Display Pro', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-gs: 'gs', 'GT Sectra', 'Playfair Display', ui-serif, Georgia, 'Times New Roman', serif;
+
+    /* Type scale — whispers and shouts, no middle ground */
+    --text-caption: 12px;     --leading-caption: 1.5;
+    --text-body-sm: 14px;     --leading-body-sm: 1.4;
+    --text-body: 18px;        --leading-body: 1.33;
+    --text-subheading: 20px;  --leading-subheading: 1.1;
+    --text-heading: 58px;     --leading-heading: 1;
+    --text-heading-lg: clamp(40px, 5vw, 72px);  --leading-heading-lg: 0.9;
+    --text-display: clamp(96px, 15vw, 216px);   --leading-display: 0.8;
+
+    --font-weight-regular: 400;
+    --font-weight-bold: 700;
+
+    /* Spacing — 8px base */
+    --spacing-8: 8px;
+    --spacing-16: 16px;
+    --spacing-32: 32px;
+    --gutter: var(--spacing-16);
+    --section-gap: clamp(96px, 9vw, 128px);
+
+    /* Shape — sharp everywhere */
+    --radius-tags: 0px;
+    --radius-cards: 0px;
+    --radius-buttons: 0px;
+
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+  }
+
+  /* ───────────────────────── Base ───────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html {
+    background: var(--color-onyx);
+    color-scheme: dark;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-onyx);
+    color: var(--color-paper-white);
+    font-family: var(--font-ak);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  button {
+    font: inherit; color: inherit; background: none; border: 0;
+    border-radius: var(--radius-buttons); text-align: inherit; cursor: pointer;
+  }
+  ::selection { background: var(--color-faint-white); color: var(--color-paper-white); }
+  :focus-visible { outline: 1px solid var(--color-paper-white); outline-offset: 4px; }
+
+  /* Fixed 3D stage — floats above the type, never intercepts input */
+  #stage {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+    display: block;
+  }
+
+  /* ───────────────────────── Top navigation ───────────────────────── */
+  .nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--gutter);
+    font-size: var(--text-caption);
+    line-height: var(--leading-caption);
+  }
+  .nav__cta { font-weight: var(--font-weight-bold); }
+  .nav a:hover, .locale button:hover, .contact__foot a:hover { opacity: .6; }
+
+  /* Locale switcher — no active state, availability only */
+  .locale {
+    position: absolute;
+    top: calc(var(--gutter) + 18px + var(--spacing-8));
+    right: var(--gutter);
+    z-index: 5;
+    display: flex;
+    gap: .35em;
+    white-space: pre;
+  }
+
+  /* ───────────────────────── Display headline ───────────────────────── */
+  .display {
+    display: block;
+    font-family: var(--font-ak);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .display .line { display: block; will-change: transform; }
+  .line-inner { display: inline-block; }
+
+  /* ───────────────────────── Hero ───────────────────────── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--spacing-32);
+    padding-top: clamp(96px, 14vh, 160px);
+    overflow-x: clip;
+  }
+  .hero .l1 { padding-left: 22vw; }       /* bleeds off the right edge */
+  .hero .l2 { margin-left: -0.3em; }      /* bleeds off the left edge  */
+  .hero .l3 { padding-left: 56vw; }
+
+  .hero__foot {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: end;
+    padding: 0 var(--gutter) var(--gutter);
+  }
+  .label { font-size: var(--text-caption); line-height: var(--leading-caption); }
+  .hero__region { grid-column: 1 / 4; }
+  .caption {
+    grid-column: 9 / 12;
+    max-width: 300px;
+    font-size: var(--text-caption);
+    line-height: 1.56;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  /* ───────────────────────── Archive ───────────────────────── */
+  .archive {
+    position: relative;
+    z-index: 1;
+    padding: var(--section-gap) var(--gutter) 0;
+  }
+  .archive__head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-32);
+  }
+  .archive__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-32);
+  }
+  .entry__row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 1.5fr);
+    column-gap: var(--gutter);
+    align-items: baseline;
+    text-align: left;
+    transition: opacity .5s var(--ease-out);
+  }
+  .entry__title {
+    font-family: var(--font-gs);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--text-heading-lg);
+    line-height: var(--leading-heading-lg);
+    letter-spacing: -0.01em;
+    font-feature-settings: normal;
+  }
+  .entry__num {
+    font-family: var(--font-gs);
+    font-size: var(--text-caption);
+    line-height: 1.33;
+    letter-spacing: 0;
+    vertical-align: top;
+    margin-left: .5em;
+  }
+  .entry__meta { font-size: var(--text-caption); line-height: 1.33; }
+
+  @media (hover: hover) {
+    .archive__list:hover .entry:not(:hover) .entry__row { opacity: .22; }
+  }
+  .archive__list:has(.entry__row:focus-visible) .entry__row:not(:focus-visible) { opacity: .22; }
+
+  /* ───────────────────────── Contact ───────────────────────── */
+  .contact {
+    position: relative;
+    z-index: 1;
+    padding-top: var(--section-gap);
+    overflow-x: clip;
+  }
+  .contact .c1 { margin-left: -0.28em; }
+  .contact .c2 { padding-left: 52vw; }
+  .contact__display:hover { opacity: .85; }
+  .contact__foot {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+    padding: var(--spacing-32) var(--gutter) var(--gutter);
+  }
+  .contact__foot > :nth-child(1) { grid-column: 1 / 5; }
+  .contact__foot > :nth-child(2) { grid-column: 5 / 9; }
+  .contact__foot > :nth-child(3) { grid-column: 9 / 13; justify-self: end; }
+
+  /* ───────────────────────── Motion ───────────────────────── */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero .line-inner { animation: enter 1.6s var(--ease-out) both; }
+    .hero .l1 .line-inner { --from: 24%;  animation-delay: .05s; }
+    .hero .l2 .line-inner { --from: -24%; animation-delay: .15s; }
+    .hero .l3 .line-inner { --from: 24%;  animation-delay: .25s; }
+    .fade { animation: fade 1.2s .7s var(--ease-out) both; }
+  }
+  @keyframes enter {
+    from { transform: translate3d(var(--from, 0), 0, 0); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ───────────────────────── Small screens ───────────────────────── */
+  @media (max-width: 760px) {
+    .hero { padding-top: 27vh; }            /* let the object overlap the type wall */
+    .hero__foot { grid-template-columns: 1fr 1fr; }
+    .hero__region { grid-column: 1; }
+    .caption { grid-column: 2; }
+
+    .entry__row {
+      grid-template-columns: repeat(4, auto);
+      justify-content: space-between;
+      row-gap: var(--spacing-8);
+    }
+    .entry__title { grid-column: 1 / -1; }
+
+    .contact__foot { grid-template-columns: 1fr 1fr; row-gap: var(--spacing-8); }
+    .contact__foot > :nth-child(1) { grid-column: 1 / -1; }
+    .contact__foot > :nth-child(2) { grid-column: 1; }
+    .contact__foot > :nth-child(3) { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+
+<header class="nav fade">
+  <a class="nav__brand" href="#top">offfice studio</a>
+  <a class="nav__cta" href="#contact" data-i18n="cta">GET IN TOUCH</a>
+</header>
+<nav class="locale fade" aria-label="Language">
+  <span lang="it">IT</span><span aria-hidden="true">/</span><span lang="es">ES</span><span aria-hidden="true">/</span><span lang="zh">CH</span>
+</nav>
+
+<main id="top">
+
+  <!-- Hero: typographic wall + floating object -->
+  <section class="hero">
+    <h1 class="display" aria-label="Offfice for future living">
+      <span class="line l1" data-drift="0.35" aria-hidden="true"><span class="line-inner">Offfice for</span></span>
+      <span class="line l2" data-drift="-0.25" aria-hidden="true"><span class="line-inner">Future</span></span>
+      <span class="line l3" data-drift="0.18" aria-hidden="true"><span class="line-inner">Living</span></span>
+    </h1>
+    <div class="hero__foot fade">
+      <p class="label hero__region">US / WW</p>
+      <p class="caption" data-i18n="caption">Future living design research studio. Installations, commercial and private spaces.</p>
+    </div>
+  </section>
+
+  <!-- Archive -->
+  <section class="archive" id="archive" aria-labelledby="archive-label">
+    <div class="archive__head">
+      <p class="label" id="archive-label" data-i18n="archive">Archive</p>
+      <p class="label">(08)</p>
+    </div>
+
+    <ol class="archive__list">
+      <li class="entry" data-model="0">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Monolith<sup class="entry__num">01</sup></span>
+          <span class="entry__meta">2025</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.armchair">Armchair</span>
+          <span class="entry__meta" data-i18n="f.interior">Interior</span>
+        </button>
+      </li>
+      <li class="entry" data-model="2">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Ombra<sup class="entry__num">02</sup></span>
+          <span class="entry__meta">2025</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.lounge">Lounge chair</span>
+          <span class="entry__meta" data-i18n="f.installation">Installation</span>
+        </button>
+      </li>
+      <li class="entry" data-model="1">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Nido<sup class="entry__num">03</sup></span>
+          <span class="entry__meta">2024</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.chair">Chair</span>
+          <span class="entry__meta" data-i18n="f.private">Private space</span>
+        </button>
+      </li>
+      <li class="entry" data-model="3">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Soffio<sup class="entry__num">04</sup></span>
+          <span class="entry__meta">2024</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.pouf">Pouf</span>
+          <span class="entry__meta" data-i18n="f.installation">Installation</span>
+        </button>
+      </li>
+      <li class="entry" data-model="0">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Casa Vela<sup class="entry__num">05</sup></span>
+          <span class="entry__meta">2023</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.armchair">Armchair</span>
+          <span class="entry__meta" data-i18n="f.private">Private space</span>
+        </button>
+      </li>
+      <li class="entry" data-model="1">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Lumen Bar<sup class="entry__num">06</sup></span>
+          <span class="entry__meta">2023</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.chair">Chair</span>
+          <span class="entry__meta" data-i18n="f.commercial">Commercial</span>
+        </button>
+      </li>
+      <li class="entry" data-model="2">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Pietra<sup class="entry__num">07</sup></span>
+          <span class="entry__meta">2022</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.lounge">Lounge chair</span>
+          <span class="entry__meta" data-i18n="f.interior">Interior</span>
+        </button>
+      </li>
+      <li class="entry" data-model="3">
+        <button type="button" class="entry__row">
+          <span class="entry__title">Atlas<sup class="entry__num">08</sup></span>
+          <span class="entry__meta">2021</span>
+          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
+          <span class="entry__meta" data-i18n="t.pouf">Pouf</span>
+          <span class="entry__meta" data-i18n="f.commercial">Commercial</span>
+        </button>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact" id="contact" aria-label="Contact">
+    <a class="display contact__display" href="mailto:hello@example.com" aria-label="Get in touch — hello@example.com">
+      <span class="line c1" data-drift="0.22" data-anchor="center" aria-hidden="true">Get in</span>
+      <span class="line c2" data-drift="-0.22" data-anchor="center" aria-hidden="true">Touch</span>
+    </a>
+    <div class="contact__foot">
+      <p>© 2026 offfice studio</p>
+      <a href="mailto:hello@example.com">hello@example.com</a>
+      <a href="#top" data-i18n="top">Back to top</a>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   3D stage — procedural furniture rendered as dark sculptural objects.
+   No floor, no platform, no shadows: objects floating in the void.
+   ════════════════════════════════════════════════════════════════════ */
+function initStage(reduce) {
+  const canvas = document.getElementById('stage');
+  const T = window.THREE;
+  if (!T) { canvas.remove(); return null; }
+
+  let renderer;
+  try {
+    renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  } catch (err) {
+    canvas.remove();
+    return null;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputEncoding = T.sRGBEncoding;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(28, 1, 0.1, 100);
+  camera.position.set(0, 1.15, 8);
+  camera.lookAt(0, 0, 0);
+
+  // Light from form: a soft key plus strong rims that trace the silhouette.
+  scene.add(new T.HemisphereLight(0xffffff, 0x050505, 0.35));
+  const key = new T.DirectionalLight(0xffffff, 1.5);  key.position.set(-4, 5, 6);  scene.add(key);
+  const rim = new T.DirectionalLight(0xffffff, 2.6);  rim.position.set(3, 4, -6);  scene.add(rim);
+  const rim2 = new T.DirectionalLight(0xffffff, 1.3); rim2.position.set(-6, 1, -3); scene.add(rim2);
+  const fill = new T.DirectionalLight(0xffffff, 0.35); fill.position.set(5, -1, 4); scene.add(fill);
+
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const aniso = renderer.capabilities.getMaxAnisotropy();
+
+  /* ── Procedural textures ── */
+  function fabricTexture() {
+    const size = 256, c = document.createElement('canvas');
+    c.width = c.height = size;
+    const g = c.getContext('2d'), img = g.createImageData(size, size);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const weave = (Math.sin(x * 0.8) + Math.sin(y * 0.8)) * 4;    // faint basket weave
+        const v = clamp(128 + weave + (Math.random() - 0.5) * 40, 0, 255);
+        const i = (y * size + x) * 4;
+        img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+        img.data[i + 3] = 255;
+      }
+    }
+    g.putImageData(img, 0, 0);
+    const tex = new T.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = T.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    tex.anisotropy = aniso;
+    return tex;
+  }
+  function woodTexture() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const g = c.getContext('2d');
+    g.fillStyle = '#3a2416';
+    g.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 120; i++) {
+      const x = Math.random() * 256, w = 0.4 + Math.random() * 2.4;
+      const dark = Math.random() < 0.6;
+      g.fillStyle = dark ? `rgba(16,8,4,${0.15 + Math.random() * 0.4})` : `rgba(110,72,44,${0.1 + Math.random() * 0.25})`;
+      g.fillRect(x, 0, w, 256);
+    }
+    const tex = new T.CanvasTexture(c);
+    tex.encoding = T.sRGBEncoding;
+    tex.wrapS = tex.wrapT = T.RepeatWrapping;
+    tex.anisotropy = aniso;
+    return tex;
+  }
+
+  /* ── Materials ── */
+  // r128 treats hex colours as linear; convert so the pieces stay near-black on screen.
+  const srgb = hex => new T.Color(hex).convertSRGBToLinear();
+  const fabric = new T.MeshPhysicalMaterial({
+    color: srgb(0x151515), roughness: 0.9, metalness: 0,
+    bumpMap: fabricTexture(), bumpScale: 0.012,
+  });
+  if ('sheen' in fabric) fabric.sheen = srgb(0x5a5a5a);   // velvet-like rim glow traces the form
+  const wood = new T.MeshStandardMaterial({ map: woodTexture(), roughness: 0.42, metalness: 0 });
+  const metal = new T.MeshStandardMaterial({ color: srgb(0x2a2a2a), roughness: 0.28, metalness: 0.9 });
+
+  /* ── Geometry helpers ── */
+  // Average normals across duplicated vertices so seams shade smoothly.
+  function mergeSeamNormals(geo) {
+    const pos = geo.attributes.position, nor = geo.attributes.normal;
+    const acc = new Map(), keys = new Array(pos.count);
+    for (let i = 0; i < pos.count; i++) {
+      const k = keys[i] = Math.round(pos.getX(i) * 1e4) + '|' + Math.round(pos.getY(i) * 1e4) + '|' + Math.round(pos.getZ(i) * 1e4);
+      let a = acc.get(k);
+      if (!a) acc.set(k, a = [0, 0, 0]);
+      a[0] += nor.getX(i); a[1] += nor.getY(i); a[2] += nor.getZ(i);
+    }
+    for (let i = 0; i < pos.count; i++) {
+      const a = acc.get(keys[i]), l = Math.hypot(a[0], a[1], a[2]) || 1;
+      nor.setXYZ(i, a[0] / l, a[1] / l, a[2] / l);
+    }
+    nor.needsUpdate = true;
+    return geo;
+  }
+
+  // Upholstered block: rounded box with optional pillow puff and a front bend.
+  function softBox(w, h, d, r, puff = 0, bend = 0, seg = 28) {
+    const geo = new T.BoxGeometry(w, h, d, seg, seg, seg);
+    const p = geo.attributes.position;
+    const hw = w / 2, hh = h / 2, hd = d / 2;
+    const iw = hw - r, ih = hh - r, id = hd - r;
+    const q = 0.25; // share of segments dedicated to each rounded edge
+    const remap = (val, half, inner) => {
+      const t = (val + half) / (2 * half);
+      if (t < q) return -half + (t / q) * (half - inner);
+      if (t > 1 - q) return half - ((1 - t) / q) * (half - inner);
+      return -inner + ((t - q) / (1 - 2 * q)) * 2 * inner;
+    };
+    const v = new T.Vector3(), c = new T.Vector3(), n = new T.Vector3();
+    for (let i = 0; i < p.count; i++) {
+      v.set(remap(p.getX(i), hw, iw), remap(p.getY(i), hh, ih), remap(p.getZ(i), hd, id));
+      c.set(clamp(v.x, -iw, iw), clamp(v.y, -ih, ih), clamp(v.z, -id, id));
+      n.subVectors(v, c);
+      if (n.lengthSq() > 1e-12) n.normalize();
+      v.copy(c).addScaledVector(n, r);
+      const px = clamp(v.x / hw, -1, 1), py = clamp(v.y / hh, -1, 1), pz = clamp(v.z / hd, -1, 1);
+      if (puff) {
+        v.x += Math.sign(v.x) * puff * Math.abs(n.x) * (1 - py * py) * (1 - pz * pz);
+        v.y += Math.sign(v.y) * puff * Math.abs(n.y) * (1 - px * px) * (1 - pz * pz);
+        v.z += Math.sign(v.z) * puff * Math.abs(n.z) * (1 - px * px) * (1 - py * py);
+      }
+      if (bend) v.z += bend * px * px;
+      p.setXYZ(i, v.x, v.y, v.z);
+    }
+    geo.computeVertexNormals();
+    return mergeSeamNormals(geo);
+  }
+
+  // Rounded cylinder (cushions, poufs) from a lathe profile. `puff` < 0 dimples the top.
+  function softCylinder(r, h, rr, puff = 0, radial = 72) {
+    const pts = [], N = 10, S = 12;
+    for (let i = 0; i <= N; i++) pts.push(new T.Vector2((r - rr) * i / N, -h / 2));
+    for (let i = 1; i <= S; i++) {
+      const a = -Math.PI / 2 + (Math.PI / 2) * i / S;
+      pts.push(new T.Vector2(r - rr + Math.cos(a) * rr, -h / 2 + rr + Math.sin(a) * rr));
+    }
+    for (let i = 0; i <= S; i++) {
+      const a = (Math.PI / 2) * i / S;
+      pts.push(new T.Vector2(r - rr + Math.cos(a) * rr, h / 2 - rr + Math.sin(a) * rr));
+    }
+    for (let i = N - 1; i >= 0; i--) {
+      const x = (r - rr) * i / N, f = x / (r - rr);
+      pts.push(new T.Vector2(Math.max(x, 1e-4), h / 2 + puff * (1 - f * f)));
+    }
+    const geo = new T.LatheGeometry(pts, radial);
+    geo.computeVertexNormals();
+    return mergeSeamNormals(geo);
+  }
+
+  // Upholstered roll wrapping around the back (open toward the front), with rounded ends.
+  function roll(R, tube, arc, mat) {
+    const g = new T.Group();
+    const geo = new T.TorusGeometry(R, tube, 32, 120, arc);
+    geo.rotateX(-Math.PI / 2);
+    const start = Math.PI / 2 - arc / 2;
+    geo.rotateY(start);
+    g.add(new T.Mesh(geo, mat));
+    [start, start + arc].forEach(a => {
+      const cap = new T.Mesh(new T.SphereGeometry(tube, 32, 24), mat);
+      cap.position.set(R * Math.cos(a), 0, -R * Math.sin(a));
+      g.add(cap);
+    });
+    return g;
+  }
+
+  // Tapered leg pivoting from its top, splayed outward along (dx, dz).
+  function leg(x, z, topY, rTop, rBot, splay, mat, dx = Math.sign(x), dz = Math.sign(z)) {
+    const h = topY / Math.cos(splay) + 0.02;
+    const geo = new T.CylinderGeometry(rTop, rBot, h, 24);
+    geo.translate(0, -h / 2, 0);
+    const m = new T.Mesh(geo, mat);
+    const l = Math.hypot(dx, dz) || 1;
+    m.position.set(x, topY, z);
+    m.rotation.set(-(dz / l) * splay, 0, (dx / l) * splay);
+    return m;
+  }
+  const mesh = (geo, mat, x = 0, y = 0, z = 0) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); return m; };
+
+  /* ── Pieces ── */
+  function lounge() {           // 0 · armchair
+    const g = new T.Group(), top = 0.36;
+    [[-0.64, 0.5], [0.64, 0.5], [-0.64, -0.5], [0.64, -0.5]].forEach(([x, z]) => g.add(leg(x, z, top, 0.034, 0.02, 0.14, wood)));
+    g.add(mesh(softBox(1.62, 0.2, 1.36, 0.07), fabric, 0, top + 0.1, 0));
+    g.add(mesh(softBox(1.2, 0.22, 1.1, 0.09, 0.035), fabric, 0, top + 0.31, 0.1));
+    const back = mesh(softBox(1.62, 0.86, 0.32, 0.13, 0.02), fabric, 0, top + 0.6, -0.54);
+    back.rotation.x = -0.16; g.add(back);
+    const pillow = mesh(softBox(1.14, 0.58, 0.2, 0.09, 0.045), fabric, 0, top + 0.64, -0.34);
+    pillow.rotation.x = -0.2; g.add(pillow);
+    [-0.7, 0.7].forEach(x => g.add(mesh(softBox(0.22, 0.48, 1.32, 0.1, 0.015), fabric, x, top + 0.38, 0.02)));
+    return g;
+  }
+  function sideChair() {        // 1 · chair
+    const g = new T.Group(), seatY = 0.74;
+    [[-0.34, 0.32], [0.34, 0.32], [-0.34, -0.32], [0.34, -0.32]].forEach(([x, z]) => g.add(leg(x, z, seatY, 0.026, 0.017, 0.07, wood)));
+    g.add(mesh(softBox(0.86, 0.1, 0.8, 0.045, 0.03), fabric, 0, seatY + 0.05, 0));
+    [-0.3, 0.3].forEach(x => {
+      const post = mesh(new T.CylinderGeometry(0.018, 0.022, 0.44, 16), wood, x, seatY + 0.29, -0.39);
+      post.rotation.x = -0.12; g.add(post);
+    });
+    const back = mesh(softBox(0.84, 0.36, 0.07, 0.034, 0.012, 0.08), fabric, 0, seatY + 0.56, -0.43);
+    back.rotation.x = -0.14; g.add(back);
+    return g;
+  }
+  function tub() {              // 2 · lounge chair on a pedestal
+    const g = new T.Group();
+    g.add(mesh(new T.CylinderGeometry(0.4, 0.44, 0.035, 72), metal, 0, 0.0175, 0));
+    g.add(mesh(new T.CylinderGeometry(0.045, 0.06, 0.32, 32), metal, 0, 0.19, 0));
+    g.add(mesh(softCylinder(0.66, 0.2, 0.08), fabric, 0, 0.42, 0));
+    g.add(mesh(softCylinder(0.5, 0.16, 0.07, 0.03), fabric, 0, 0.58, 0.02));
+    const arms = roll(0.56, 0.15, Math.PI * 1.45, fabric); arms.position.y = 0.66; g.add(arms);
+    const back = roll(0.53, 0.14, Math.PI * 0.8, fabric);  back.position.set(0, 0.92, -0.03); g.add(back);
+    return g;
+  }
+  function pouf() {             // 3 · tufted pouf on three legs
+    const g = new T.Group(), top = 0.2;
+    for (let i = 0; i < 3; i++) {
+      const a = Math.PI / 2 + i * (Math.PI * 2 / 3);
+      const dx = Math.cos(a), dz = Math.sin(a);
+      g.add(leg(dx * 0.32, dz * 0.32, top, 0.03, 0.018, 0.22, wood, dx, dz));
+    }
+    g.add(mesh(softCylinder(0.56, 0.44, 0.15, -0.035), fabric, 0, top + 0.22, 0));
+    g.add(mesh(new T.SphereGeometry(0.028, 20, 14), fabric, 0, top + 0.44 - 0.03, 0));
+    return g;
+  }
+
+  // Center each piece and scale it to a unit bounding sphere.
+  function normalize(obj) {
+    const box = new T.Box3().setFromObject(obj);
+    const center = box.getCenter(new T.Vector3());
+    const radius = box.getBoundingSphere(new T.Sphere()).radius;
+    obj.position.sub(center);
+    const wrap = new T.Group();
+    wrap.add(obj);
+    wrap.scale.setScalar(1 / radius);
+    wrap.visible = false;
+    return wrap;
+  }
+
+  const pivot = new T.Group();
+  scene.add(pivot);
+  const models = [lounge(), sideChair(), tub(), pouf()].map(normalize);
+  models.forEach(m => pivot.add(m));
+
+  /* ── Sizing ── */
+  let fit = 1;
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    fit = 1.32 * clamp(camera.aspect * 1.05, 0.5, 1);   // ~45% of the viewport height; narrower on phones
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ── Pointer parallax ── */
+  const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+  window.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    ptr.tx = e.clientX / window.innerWidth * 2 - 1;
+    ptr.ty = e.clientY / window.innerHeight * 2 - 1;
+  }, { passive: true });
+
+  /* ── Loop ── */
+  let shown = 0, target = 0, s = reduce ? 1 : 0, angle = 0, spin = 0, last = performance.now();
+  models[shown].visible = true;
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    // Swap pieces: shrink out, swap, grow back in with a spin.
+    if (shown !== target && (reduce || s < 0.015)) {
+      models[shown].visible = false;
+      shown = target;
+      models[shown].visible = true;
+      if (!reduce) spin = 2.6;
+    }
+    const goal = shown === target ? 1 : 0;
+    s = reduce ? goal : s + (goal - s) * (1 - Math.exp(-(goal ? 5 : 13) * dt));
+
+    if (!reduce) angle += dt * 0.16;
+    spin *= Math.exp(-3.2 * dt);
+    angle += spin * dt;
+    ptr.x += (ptr.tx - ptr.x) * (1 - Math.exp(-3 * dt));
+    ptr.y += (ptr.ty - ptr.y) * (1 - Math.exp(-3 * dt));
+
+    pivot.rotation.y = -0.6 + angle + (reduce ? 0 : window.scrollY * 0.0009) + ptr.x * 0.25;
+    pivot.rotation.x = ptr.y * 0.08;
+    pivot.position.y = reduce ? 0 : Math.sin(now / 1000 * 0.9) * 0.05;
+    pivot.scale.setScalar(Math.max(0.0001, s) * fit);
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  return {
+    setTarget(i) { target = clamp(i | 0, 0, models.length - 1); },
+  };
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Page behaviour — locale, drifting type walls, archive ↔ object link.
+   ════════════════════════════════════════════════════════════════════ */
+(() => {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stage = initStage(reduce);
+
+  /* ── Locale ── */
+  const LANGS = {
+    en: { label: 'EN', html: 'en', name: 'English' },
+    it: { label: 'IT', html: 'it', name: 'Italiano' },
+    es: { label: 'ES', html: 'es', name: 'Español' },
+    ch: { label: 'CH', html: 'zh', name: '中文' },
+  };
+  const STR = {
+    en: {
+      cta: 'GET IN TOUCH',
+      caption: 'Future living design research studio. Installations, commercial and private spaces.',
+      archive: 'Archive', details: 'PROJECT DETAILS', top: 'Back to top',
+      't.armchair': 'Armchair', 't.chair': 'Chair', 't.lounge': 'Lounge chair', 't.pouf': 'Pouf',
+      'f.interior': 'Interior', 'f.installation': 'Installation', 'f.commercial': 'Commercial', 'f.private': 'Private space',
+    },
+    it: {
+      cta: 'CONTATTACI',
+      caption: 'Studio di ricerca sul design dell’abitare futuro. Installazioni, spazi commerciali e privati.',
+      archive: 'Archivio', details: 'DETTAGLI PROGETTO', top: 'Torna su',
+      't.armchair': 'Poltrona', 't.chair': 'Sedia', 't.lounge': 'Poltrona lounge', 't.pouf': 'Pouf',
+      'f.interior': 'Interni', 'f.installation': 'Installazione', 'f.commercial': 'Commerciale', 'f.private': 'Spazio privato',
+    },
+    es: {
+      cta: 'CONTÁCTANOS',
+      caption: 'Estudio de investigación en diseño para el habitar futuro. Instalaciones, espacios comerciales y privados.',
+      archive: 'Archivo', details: 'DETALLES DEL PROYECTO', top: 'Volver arriba',
+      't.armchair': 'Butaca', 't.chair': 'Silla', 't.lounge': 'Sillón lounge', 't.pouf': 'Puf',
+      'f.interior': 'Interiorismo', 'f.installation': 'Instalación', 'f.commercial': 'Comercial', 'f.private': 'Espacio privado',
+    },
+    ch: {
+      cta: '联系我们',
+      caption: '面向未来生活的设计研究工作室。装置、商业与私人空间。',
+      archive: '档案', details: '项目详情', top: '返回顶部',
+      't.armchair': '扶手椅', 't.chair': '椅子', 't.lounge': '休闲椅', 't.pouf': '坐墩',
+      'f.interior': '室内', 'f.installation': '装置', 'f.commercial': '商业', 'f.private': '私人空间',
+    },
+  };
+  const localeNav = document.querySelector('.locale');
+  let lang = 'en';
+  try {
+    const saved = localStorage.getItem('offfice-lang');
+    if (saved && STR[saved]) lang = saved;
+  } catch (err) { /* storage unavailable — default to English */ }
+
+  function applyLang(next, keepFocus) {
+    lang = next;
+    document.documentElement.lang = LANGS[lang].html;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const s = STR[lang][el.dataset.i18n];
+      if (s) el.textContent = s;
+    });
+    const nodes = [];
+    Object.keys(LANGS).filter(k => k !== lang).forEach((k, i) => {
+      if (i) {
+        const sep = document.createElement('span');
+        sep.textContent = '/';
+        sep.setAttribute('aria-hidden', 'true');
+        nodes.push(sep);
+      }
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = LANGS[k].label;
+      b.lang = LANGS[k].html;
+      b.setAttribute('aria-label', LANGS[k].name);
+      b.addEventListener('click', () => {
+        applyLang(k, true);
+        try { localStorage.setItem('offfice-lang', k); } catch (err) { /* ignore */ }
+      });
+      nodes.push(b);
+    });
+    localeNav.replaceChildren(...nodes);
+    if (keepFocus) localeNav.querySelector('button').focus({ preventScroll: true });
+  }
+  applyLang(lang, false);
+
+  /* ── Drifting type + active object ── */
+  const drifters = [...document.querySelectorAll('[data-drift]')];
+  const entries = [...document.querySelectorAll('.entry')];
+  let hover = null, queued = false;
+
+  function update() {
+    queued = false;
+    const vh = window.innerHeight, y = window.scrollY;
+
+    if (!reduce) {
+      drifters.forEach(el => {
+        const f = parseFloat(el.dataset.drift);
+        let x;
+        if (el.dataset.anchor === 'center') {
+          const r = el.getBoundingClientRect();
+          x = (r.top + r.height / 2 - vh / 2) * f;
+        } else {
+          x = -y * f;
+        }
+        el.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
+      });
+    }
+
+    if (stage) {
+      let m = 0;
+      if (hover !== null) {
+        m = hover;
+      } else {
+        let best = Infinity;
+        for (const li of entries) {
+          const r = li.getBoundingClientRect();
+          const d = Math.abs(r.top + r.height / 2 - vh / 2);
+          if (d < best) {
+            best = d;
+            if (d < vh * 0.3) m = +li.dataset.model;
+          }
+        }
+      }
+      stage.setTarget(m);
+    }
+  }
+  const request = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+
+  entries.forEach(li => {
+    const row = li.querySelector('.entry__row');
+    const idx = +li.dataset.model;
+    const on = () => { hover = idx; request(); };
+    const off = () => { hover = null; request(); };
+    row.addEventListener('pointerenter', on);
+    row.addEventListener('pointerleave', off);
+    row.addEventListener('focus', on);
+    row.addEventListener('blur', off);
+    row.addEventListener('click', () => li.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' }));
+  });
+
+  window.addEventListener('scroll', request, { passive: true });
+  window.addEventListener('resize', request);
+  update();
+})();
+</script>
+</body>
+</html>
