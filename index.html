@@ -1,24 +1,19 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>offfice studio</title>
-<meta name="description" content="Future living design research studio. Installations, commercial and private spaces.">
-<meta name="theme-color" content="#0e0e0e">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0e'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%23fefefe' stroke-width='3'/%3E%3C/svg%3E">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Netvy Studios</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">
-<style>
-  /* ───────────────────────── Tokens ───────────────────────── */
+<style id="page-css">
+  /* Layout: a black gallery wall — monumental type, one floating block, quiet 12px labels. */
   :root {
-    /* Colors — 100% achromatic */
+    /* Colors — achromatic on purpose; this page has a single dark look */
     --color-onyx: #0e0e0e;
     --color-paper-white: #fefefe;
     --color-faint-white: #2a2a2a;
+    --color-scrim: rgba(14, 14, 14, .86);
 
-    /* Families: ak (sans workhorse) / gs (editorial serif, archive titles only) */
+    /* Families: ak (sans workhorse) / gs (editorial serif, project titles only) */
     --font-ak: 'ak', 'Neue Haas Grotesk Display Pro', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-gs: 'gs', 'GT Sectra', 'Playfair Display', ui-serif, Georgia, 'Times New Roman', serif;
 
@@ -42,8 +37,6 @@
     --section-gap: clamp(96px, 9vw, 128px);
 
     /* Shape — sharp everywhere */
-    --radius-tags: 0px;
-    --radius-cards: 0px;
     --radius-buttons: 0px;
 
     --ease-out: cubic-bezier(.16, 1, .3, 1);
@@ -54,6 +47,7 @@
   html {
     background: var(--color-onyx);
     color-scheme: dark;
+    overflow-x: hidden;   /* older iOS */
     overflow-x: clip;
     -webkit-text-size-adjust: 100%;
   }
@@ -67,6 +61,7 @@
     font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
     overflow-x: clip;
     min-height: 100vh;
   }
@@ -79,8 +74,8 @@
   :focus-visible { outline: 1px solid var(--color-paper-white); outline-offset: 4px; }
 
   /* 3D stage — lives only in the hero; drag it with a finger or the mouse */
+  :root { --stage: min(64vh, 92vw); }
   .stage {
-    --stage: min(64vh, 92vw);
     position: absolute;
     left: 50%;
     top: 50%;
@@ -93,10 +88,56 @@
     cursor: grab;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
   }
   .stage.is-grabbing { cursor: grabbing; }
   .stage:focus-visible { outline: 1px solid var(--color-paper-white); outline-offset: -1px; }
+
+  /* ───────────────────────── Buttons & fields ───────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-8);
+    padding: 12px 18px;
+    background: var(--color-paper-white);
+    color: var(--color-onyx);
+    font-size: var(--text-caption);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .btn:hover { opacity: .85; }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn--ghost {
+    background: none;
+    color: var(--color-paper-white);
+    padding: 12px 0;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .btn--small { padding: 6px 0; font-weight: var(--font-weight-regular); }
+
+  .field { display: flex; flex-direction: column; gap: var(--spacing-8); min-width: 0; }
+  .field-row > .field { flex: 1 1 160px; }
+  .admin__login > .field { flex: 1 1 220px; }
+  .field__label { font-size: var(--text-caption); line-height: var(--leading-caption); }
+  .field input, .field select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 0;
+    background: var(--color-faint-white);
+    color: var(--color-paper-white);
+    font: inherit;
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+  }
+  .field input::placeholder { color: var(--color-paper-white); opacity: .4; }
+  .field-row { display: flex; flex-wrap: wrap; gap: var(--gutter); }
 
   /* ───────────────────────── Top navigation ───────────────────────── */
   .nav {
@@ -111,7 +152,7 @@
     line-height: var(--leading-caption);
   }
   .nav__cta { font-weight: var(--font-weight-bold); }
-  .nav a:hover, .locale button:hover, .contact__foot a:hover { opacity: .6; }
+  .nav a:hover, .nav button:hover, .locale button:hover, .contact__foot a:hover { opacity: .6; }
 
   /* Locale switcher — no active state, availability only */
   .locale {
@@ -147,13 +188,15 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: var(--spacing-32);
-    padding-top: clamp(96px, 14vh, 160px);
+    justify-content: flex-end;
+    overflow-x: hidden;
     overflow-x: clip;
   }
-  .hero .l1 { padding-left: 22vw; }       /* bleeds off the right edge */
-  .hero .l2 { margin-left: -0.3em; }      /* bleeds off the left edge  */
-  .hero .l3 { padding-left: 56vw; }
+  /* The two words frame the block: NETVY above (bleeding right), STUDIOS below (bleeding left). */
+  .hero .display { position: absolute; inset: 0; pointer-events: none; }
+  .hero .line { position: absolute; left: 0; }
+  .hero .l1 { bottom: calc(50% + var(--stage) * 0.3); padding-left: 56vw; }
+  .hero .l2 { top: calc(50% + var(--stage) * 0.3); left: -0.3em; }
 
   .hero__foot {
     display: grid;
@@ -162,19 +205,25 @@
     align-items: end;
     padding: 0 var(--gutter) var(--gutter);
   }
-  .label { font-size: var(--text-caption); line-height: var(--leading-caption); }
+  .label { font-size: var(--text-caption); line-height: var(--leading-caption); font-weight: var(--font-weight-regular); }
   .hero__region { grid-column: 1 / 4; }
   .hero__hint { grid-column: 5 / 8; }
+  .hero__about {
+    grid-column: 9 / 13;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-16);
+  }
   .caption {
-    grid-column: 9 / 12;
-    max-width: 300px;
+    max-width: 320px;
     font-size: var(--text-caption);
     line-height: 1.56;
     letter-spacing: .04em;
     text-transform: uppercase;
   }
 
-  /* ───────────────────────── Archive ───────────────────────── */
+  /* ───────────────────────── Projects ───────────────────────── */
   .archive {
     position: relative;
     z-index: 1;
@@ -191,13 +240,13 @@
     flex-direction: column;
     gap: var(--spacing-32);
   }
+  .archive__empty { font-size: var(--text-body); line-height: var(--leading-body); }
   .entry__row {
     width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 6fr) minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 1.5fr);
     column-gap: var(--gutter);
     align-items: baseline;
-    text-align: left;
     transition: opacity .5s var(--ease-out);
   }
   .entry__title {
@@ -207,6 +256,7 @@
     line-height: var(--leading-heading-lg);
     letter-spacing: -0.01em;
     font-feature-settings: normal;
+    overflow-wrap: anywhere;
   }
   .entry__num {
     font-family: var(--font-gs);
@@ -216,8 +266,8 @@
     vertical-align: top;
     margin-left: .5em;
   }
-  .entry__meta { font-size: var(--text-caption); line-height: 1.33; }
-
+  .entry__meta { font-size: var(--text-caption); line-height: 1.33; overflow-wrap: anywhere; }
+  .entry__meta a { text-decoration: underline; text-underline-offset: 3px; }
   @media (hover: hover) {
     .archive__list:has(.entry:hover) .entry:not(:hover) .entry__row { opacity: .22; }
   }
@@ -227,11 +277,13 @@
     position: relative;
     z-index: 1;
     padding-top: var(--section-gap);
+    overflow-x: hidden;
     overflow-x: clip;
   }
-  .contact .c1 { margin-left: -0.28em; }
-  .contact .c2 { padding-left: 52vw; }
+  .contact__display { width: 100%; text-align: left; }
   .contact__display:hover { opacity: .85; }
+  .contact .c1 { margin-left: -0.12em; }
+  .contact .c2 { padding-left: 62vw; }
   .contact__foot {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -242,12 +294,79 @@
   .contact__foot > :nth-child(2) { grid-column: 5 / 9; }
   .contact__foot > :nth-child(3) { grid-column: 9 / 13; justify-self: end; }
 
+  /* ───────────────────────── Contact dialog ───────────────────────── */
+  .dialog {
+    margin: auto;
+    width: min(520px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    padding: var(--spacing-32);
+    border: 0;
+    border-radius: 0;
+    outline: 1px solid var(--color-faint-white);
+    background: var(--color-onyx);
+    color: var(--color-paper-white);
+  }
+  .dialog::backdrop { background: var(--color-scrim); }
+  .dialog__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--gutter);
+    margin-bottom: var(--spacing-32);
+  }
+  .dialog__title {
+    font-size: var(--text-heading);
+    line-height: var(--leading-heading);
+    font-weight: var(--font-weight-regular);
+    letter-spacing: -0.03em;
+  }
+  .dialog__list { list-style: none; display: flex; flex-direction: column; gap: var(--spacing-16); }
+  .dialog__empty { font-size: var(--text-body-sm); line-height: var(--leading-body-sm); }
+  .contact-item { display: flex; flex-direction: column; gap: 4px; }
+  .contact-item__value {
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    user-select: all;
+    -webkit-user-select: all;
+    overflow-wrap: anywhere;
+  }
+  .contact-item__actions { display: flex; gap: var(--gutter); }
+
+  /* ───────────────────────── Admin ───────────────────────── */
+  .admin {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-32);
+    padding: var(--section-gap) var(--gutter) var(--spacing-32);
+  }
+  .admin__login { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gutter); max-width: 520px; }
+  .admin__msg { flex-basis: 100%; font-size: var(--text-caption); line-height: var(--leading-caption); min-height: 18px; }
+  .admin__panel { display: flex; flex-direction: column; gap: var(--spacing-32); }
+  .admin__bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--gutter); }
+  .admin__mode { max-width: 640px; font-size: var(--text-body-sm); line-height: var(--leading-body-sm); }
+  .admin__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-32); }
+  .admin__block { display: flex; flex-direction: column; gap: var(--spacing-16); min-width: 0; }
+  .admin__h { font-size: var(--text-subheading); line-height: var(--leading-subheading); font-weight: var(--font-weight-regular); }
+  .admin__sub { font-size: var(--text-caption); line-height: var(--leading-caption); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: .04em; }
+  .admin__note { font-size: var(--text-caption); line-height: var(--leading-caption); opacity: .7; }
+  .admin__items { list-style: none; display: flex; flex-direction: column; gap: var(--spacing-8); }
+  .admin__item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--spacing-8) var(--gutter); }
+  .admin__info { display: flex; flex-direction: column; min-width: 0; }
+  .admin__name { font-size: var(--text-body-sm); line-height: var(--leading-body-sm); overflow-wrap: anywhere; }
+  .admin__meta { font-size: var(--text-caption); line-height: var(--leading-caption); opacity: .7; overflow-wrap: anywhere; }
+  .admin__btns { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gutter); }
+  .admin__form { display: flex; flex-direction: column; gap: var(--spacing-16); padding-top: var(--spacing-16); }
+  .admin__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gutter); }
+  .admin__publish { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gutter); }
+  .admin__publish .admin__msg { flex-basis: auto; flex: 1 1 240px; font-size: var(--text-body-sm); line-height: var(--leading-body-sm); }
+
   /* ───────────────────────── Motion ───────────────────────── */
   @media (prefers-reduced-motion: no-preference) {
     .hero .line-inner { animation: enter 1.6s var(--ease-out) both; }
     .hero .l1 .line-inner { --from: 24%;  animation-delay: .05s; }
     .hero .l2 .line-inner { --from: -24%; animation-delay: .15s; }
-    .hero .l3 .line-inner { --from: 24%;  animation-delay: .25s; }
     .fade { animation: fade 1.2s .7s var(--ease-out) both; }
   }
   @keyframes enter {
@@ -258,12 +377,13 @@
 
   /* ───────────────────────── Small screens ───────────────────────── */
   @media (max-width: 760px) {
-    .hero { padding-top: 27vh; }            /* let the object overlap the type wall */
-    .stage { --stage: min(60vh, 88vw); }
+    :root { --stage: min(60vh, 88vw); }
+    .hero .l1 { padding-left: 26vw; }
+    .contact .c2 { padding-left: 34vw; }
     .hero__foot { grid-template-columns: 1fr 1fr; row-gap: var(--spacing-16); }
     .hero__hint { grid-column: 1 / -1; order: -1; }
     .hero__region { grid-column: 1; }
-    .caption { grid-column: 2; }
+    .hero__about { grid-column: 2; }
 
     .entry__row {
       grid-template-columns: repeat(4, auto);
@@ -276,460 +396,941 @@
     .contact__foot > :nth-child(1) { grid-column: 1 / -1; }
     .contact__foot > :nth-child(2) { grid-column: 1; }
     .contact__foot > :nth-child(3) { grid-column: 2; }
+
+    .admin__cols { grid-template-columns: 1fr; }
   }
 </style>
-</head>
-<body>
-
+<template id="page-markup">
 <header class="nav fade">
-  <a class="nav__brand" href="#top">offfice studio</a>
-  <a class="nav__cta" href="#contact" data-i18n="cta">GET IN TOUCH</a>
+  <a class="nav__brand" href="#top">netvy studios</a>
+  <button type="button" class="nav__cta" data-contact data-i18n="cta">CONTÁCTANOS</button>
 </header>
-<nav class="locale fade" aria-label="Language">
-  <span lang="it">IT</span><span aria-hidden="true">/</span><span lang="es">ES</span><span aria-hidden="true">/</span><span lang="zh">CH</span>
-</nav>
+<nav class="locale fade" aria-label="Idioma"></nav>
 
 <main id="top">
 
-  <!-- Hero: typographic wall + floating object -->
   <section class="hero">
-    <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Grass block. Drag to rotate." data-i18n-aria="block"></canvas>
-    <h1 class="display" aria-label="Offfice for future living">
-      <span class="line l1" data-drift="0.35" aria-hidden="true"><span class="line-inner">Offfice for</span></span>
-      <span class="line l2" data-drift="-0.25" aria-hidden="true"><span class="line-inner">Future</span></span>
-      <span class="line l3" data-drift="0.18" aria-hidden="true"><span class="line-inner">Living</span></span>
+    <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Bloque de pasto. Arrástralo para girarlo." data-i18n-aria="block"></canvas>
+    <h1 class="display" aria-label="Netvy Studios">
+      <span class="line l1" data-drift="0.3" aria-hidden="true"><span class="line-inner">Netvy</span></span>
+      <span class="line l2" data-drift="-0.25" aria-hidden="true"><span class="line-inner">Studios</span></span>
     </h1>
     <div class="hero__foot fade">
       <p class="label hero__region">US / WW</p>
-      <p class="label hero__hint" data-i18n="drag">(Drag to rotate)</p>
-      <p class="caption" data-i18n="caption">Future living design research studio. Installations, commercial and private spaces.</p>
+      <p class="label hero__hint" data-i18n="drag">(Arrastra para girar)</p>
+      <div class="hero__about">
+        <p class="caption" data-i18n="caption">Somos un estudio que hace réplicas de proyectos muy famosos, como DEDsafio y Extremo.</p>
+        <button type="button" class="btn" data-contact data-i18n="contactBtn">Contáctanos</button>
+      </div>
     </div>
   </section>
 
-  <!-- Archive -->
-  <section class="archive" id="archive" aria-labelledby="archive-label">
+  <section class="archive" id="proyectos" aria-labelledby="projects-label">
     <div class="archive__head">
-      <p class="label" id="archive-label" data-i18n="archive">Archive</p>
-      <p class="label">(08)</p>
+      <h2 class="label" id="projects-label" data-i18n="projects">Proyectos</h2>
+      <p class="label" id="projects-count">(00)</p>
     </div>
-
-    <ol class="archive__list">
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Monolith<sup class="entry__num">01</sup></span>
-          <span class="entry__meta">2025</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.armchair">Armchair</span>
-          <span class="entry__meta" data-i18n="f.interior">Interior</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Ombra<sup class="entry__num">02</sup></span>
-          <span class="entry__meta">2025</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.lounge">Lounge chair</span>
-          <span class="entry__meta" data-i18n="f.installation">Installation</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Nido<sup class="entry__num">03</sup></span>
-          <span class="entry__meta">2024</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.chair">Chair</span>
-          <span class="entry__meta" data-i18n="f.private">Private space</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Soffio<sup class="entry__num">04</sup></span>
-          <span class="entry__meta">2024</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.pouf">Pouf</span>
-          <span class="entry__meta" data-i18n="f.installation">Installation</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Casa Vela<sup class="entry__num">05</sup></span>
-          <span class="entry__meta">2023</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.armchair">Armchair</span>
-          <span class="entry__meta" data-i18n="f.private">Private space</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Lumen Bar<sup class="entry__num">06</sup></span>
-          <span class="entry__meta">2023</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.chair">Chair</span>
-          <span class="entry__meta" data-i18n="f.commercial">Commercial</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Pietra<sup class="entry__num">07</sup></span>
-          <span class="entry__meta">2022</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.lounge">Lounge chair</span>
-          <span class="entry__meta" data-i18n="f.interior">Interior</span>
-        </div>
-      </li>
-      <li class="entry">
-        <div class="entry__row">
-          <span class="entry__title">Atlas<sup class="entry__num">08</sup></span>
-          <span class="entry__meta">2021</span>
-          <span class="entry__meta" data-i18n="details">PROJECT DETAILS</span>
-          <span class="entry__meta" data-i18n="t.pouf">Pouf</span>
-          <span class="entry__meta" data-i18n="f.commercial">Commercial</span>
-        </div>
-      </li>
-    </ol>
+    <ol class="archive__list" id="projects-list"></ol>
+    <p class="archive__empty" id="projects-empty" data-i18n="noProjects" hidden>Todavía no hay proyectos.</p>
   </section>
 
-  <!-- Contact -->
-  <section class="contact" id="contact" aria-label="Contact">
-    <a class="display contact__display" href="mailto:hello@example.com" aria-label="Get in touch — hello@example.com">
-      <span class="line c1" data-drift="0.22" data-anchor="center" aria-hidden="true">Get in</span>
-      <span class="line c2" data-drift="-0.22" data-anchor="center" aria-hidden="true">Touch</span>
-    </a>
+  <section class="contact" id="contacto" aria-label="Contacto">
+    <button type="button" class="display contact__display" data-contact>
+      <span class="line c1" data-drift="0.22" data-anchor="center" data-i18n="c1">Di</span>
+      <span class="line c2" data-drift="-0.22" data-anchor="center" data-i18n="c2">hola</span>
+    </button>
     <div class="contact__foot">
-      <p>© 2026 offfice studio</p>
-      <a href="mailto:hello@example.com">hello@example.com</a>
-      <a href="#top" data-i18n="top">Back to top</a>
+      <p>© 2026 netvy studios</p>
+      <a href="#top" data-i18n="top">Volver arriba</a>
+      <a href="#admin">Admin</a>
+    </div>
+  </section>
+
+  <section class="admin" id="admin" aria-labelledby="admin-title">
+    <h2 class="label" id="admin-title">Admin</h2>
+
+    <form class="admin__login" id="admin-login" autocomplete="off">
+      <label class="field" for="admin-pass">
+        <span class="field__label">Contraseña</span>
+        <input type="password" id="admin-pass" name="admin-pass" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="btn">Entrar</button>
+      <p class="admin__msg" id="admin-login-msg" role="status"></p>
+    </form>
+
+    <div class="admin__panel" id="admin-panel" hidden>
+      <div class="admin__bar">
+        <p class="admin__mode" id="admin-mode"></p>
+        <button type="button" class="btn btn--ghost" id="admin-logout">Salir</button>
+      </div>
+
+      <div class="admin__cols">
+        <div class="admin__block">
+          <h3 class="admin__h">Proyectos</h3>
+          <ol class="admin__items" id="admin-projects"></ol>
+          <form class="admin__form" id="project-form">
+            <h4 class="admin__sub" id="pf-title">Añadir proyecto</h4>
+            <label class="field" for="pf-name">
+              <span class="field__label">Nombre</span>
+              <input id="pf-name" name="pf-name" maxlength="60" required placeholder="DEDsafio">
+            </label>
+            <div class="field-row">
+              <label class="field" for="pf-year">
+                <span class="field__label">Año</span>
+                <input id="pf-year" name="pf-year" inputmode="numeric" maxlength="4" placeholder="2026">
+              </label>
+              <label class="field" for="pf-type">
+                <span class="field__label">Tipo</span>
+                <input id="pf-type" name="pf-type" maxlength="40" placeholder="Réplica">
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field" for="pf-status">
+                <span class="field__label">Estado</span>
+                <select id="pf-status" name="pf-status">
+                  <option value="soon">Próximamente</option>
+                  <option value="progress">En proceso</option>
+                  <option value="done">Terminado</option>
+                  <option value="paused">Pausado</option>
+                </select>
+              </label>
+              <label class="field" for="pf-progress" id="pf-progress-wrap" hidden>
+                <span class="field__label">Progreso (%)</span>
+                <input id="pf-progress" name="pf-progress" type="number" min="0" max="100" step="5" placeholder="50">
+              </label>
+            </div>
+            <label class="field" for="pf-url">
+              <span class="field__label">Enlace (opcional)</span>
+              <input id="pf-url" name="pf-url" type="url" maxlength="300" placeholder="https://youtube.com/...">
+            </label>
+            <div class="admin__actions">
+              <button type="submit" class="btn" id="pf-submit">Añadir proyecto</button>
+              <button type="button" class="btn btn--ghost" id="pf-cancel" hidden>Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin__block">
+          <h3 class="admin__h">Contacto</h3>
+          <p class="admin__note">Esto es lo que ve la gente al pulsar «Contáctanos».</p>
+          <ol class="admin__items" id="admin-contacts"></ol>
+          <form class="admin__form" id="contact-form">
+            <div class="field-row">
+              <label class="field" for="cf-label">
+                <span class="field__label">Nombre</span>
+                <input id="cf-label" name="cf-label" maxlength="30" required placeholder="Discord">
+              </label>
+              <label class="field" for="cf-value">
+                <span class="field__label">Dato o enlace</span>
+                <input id="cf-value" name="cf-value" maxlength="160" required placeholder="netvy o https://...">
+              </label>
+            </div>
+            <div class="admin__actions">
+              <button type="submit" class="btn">Añadir contacto</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="admin__publish">
+        <p class="admin__msg" id="admin-status" role="status"></p>
+        <button type="button" class="btn btn--ghost" id="admin-download" hidden>Descargar index.html</button>
+        <button type="button" class="btn" id="admin-save" disabled>Publicar cambios</button>
+      </div>
     </div>
   </section>
 
 </main>
 
+<dialog class="dialog" id="contact-dialog" aria-labelledby="contact-title">
+  <div class="dialog__head">
+    <h2 class="dialog__title" id="contact-title" data-i18n="contactTitle">Contacto</h2>
+    <button type="button" class="btn btn--ghost" data-close data-i18n="close">Cerrar</button>
+  </div>
+  <ul class="dialog__list" id="contact-list"></ul>
+  <p class="dialog__empty" id="contact-empty" data-i18n="noContacts">Todavía no hay datos de contacto.</p>
+</dialog>
+</template>
+<div id="app"></div>
+<script type="application/json" id="site-data">{"projects":[{"id":"dedsafio","name":"DEDsafio","year":"2026","type":"Réplica","status":"soon","progress":0,"url":""},{"id":"extremo","name":"Extremo","year":"2026","type":"Réplica","status":"soon","progress":0,"url":""}],"contacts":[]}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-/* ════════════════════════════════════════════════════════════════════
-   3D stage — a pixel-art grass block floating in the hero.
-   Drag it (finger or mouse) to spin it; it keeps its momentum, then
-   turns grass-side up again and idles on a slow turntable spin.
-   ════════════════════════════════════════════════════════════════════ */
-function initStage(reduce) {
-  const canvas = document.getElementById('stage');
-  const T = window.THREE;
-  if (!T) { canvas.remove(); return; }
-
-  let renderer;
-  try {
-    renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  } catch (err) {
-    canvas.remove();
-    return;
-  }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputEncoding = T.sRGBEncoding;
-
-  const scene = new T.Scene();
-  const camera = new T.PerspectiveCamera(12, 1, 0.1, 100);   // long lens ≈ isometric look
-  camera.position.set(0, 0, 18.5);
-
-  // Game-style face shading at rest: top and left face at full brightness, right face ≈ 75%.
-  scene.add(new T.AmbientLight(0xffffff, 0.3));
-  const key = new T.DirectionalLight(0xffffff, 1.015);
-  key.position.set(-3.35, 2.52, 9.07);
-  scene.add(key);
-
-  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-
-  /* ── 16×16 pixel-art grass block, seeded so every visit looks the same ── */
-  // Palettes sampled from a reference grass block (texel colours as seen on the lit face).
-  const DIRT = [[0.13, '#452c1a'], [0.21, '#4f3822'], [0.33, '#5f432e'], [0.55, '#67462f'], [0.64, '#6e5038'], [0.87, '#7c5b41'], [1, '#937052']];
-  const GRASS_TOP = [[0.17, '#385830'], [0.34, '#3f6437'], [0.53, '#44673c'], [0.73, '#496e3f'], [0.88, '#527a47'], [1, '#5c874f']];
-  const GRASS_SIDE = [[0.15, '#4c742b'], [0.47, '#568634'], [0.71, '#5c913b'], [0.88, '#6b9447'], [1, '#79a153']];
-  const PEBBLES = ['#4c4d52', '#5d5f65', '#74777d'];
-  function pixelTexture(seed, paint) {
-    let st = seed >>> 0;
-    const rand = () => (st = (Math.imul(st, 1664525) + 1013904223) >>> 0) / 4294967296;
-    const c = document.createElement('canvas');
-    c.width = c.height = 16;
-    const g = c.getContext('2d');
-    const px = (x, y, w, h, color) => { g.fillStyle = color; g.fillRect(x, y, w, h); };
-    const pick = shades => { const v = rand(); return shades.find(([p]) => v <= p)[1]; };
-    const at = n => Math.floor(rand() * n);
-    paint(px, pick, rand, at);
-    const tex = new T.CanvasTexture(c);
-    tex.magFilter = T.NearestFilter;          // crisp pixels, no smoothing
-    tex.minFilter = T.NearestFilter;
-    tex.generateMipmaps = false;
-    tex.encoding = T.sRGBEncoding;
-    return tex;
-  }
-  function paintDirt(px, pick, rand, at) {
-    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(DIRT));
-    for (let i = 0; i < 12; i++) px(at(16), at(14), 1, 2 + (rand() < 0.4), rand() < 0.5 ? '#452c1a' : '#4f3822');   // dark vertical streaks
-    for (let i = 0; i < 7; i++) px(at(15), at(16), 2, 1, '#8a6849');                                                  // light tan patches
-    for (let i = 0; i < 5; i++) px(at(16), at(16), 1, 1, PEBBLES[at(3)]);                                             // blue-grey pebbles
-  }
-  function paintGrassTop(px, pick, rand, at) {
-    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(GRASS_TOP));
-    for (let i = 0; i < 8; i++) px(at(15), at(16), 2, 1, '#5c874f');
-    for (let i = 0; i < 8; i++) px(at(16), at(16), 1, 1, '#34522c');
-  }
-  function paintGrassSide(px, pick, rand, at) {
-    paintDirt(px, pick, rand, at);
-    let depth = 3 + at(2);
-    for (let x = 0; x < 16; x++) {           // grass hanging over the edge: 2–5 rows, the odd longer drip
-      depth = Math.min(5, Math.max(2, depth + at(3) - 1));
-      const d = depth + (rand() < 0.12 ? 1 + at(2) : 0);
-      for (let y = 0; y < d; y++) px(x, y, 1, 1, pick(GRASS_SIDE));
-      if (rand() < 0.85) px(x, d, 1, 1, '#3d2817');               // dark soil just under the grass
-      if (rand() < 0.25) px(x, d + 1, 1, 1, '#452c1a');
-    }
-  }
-  const mat = tex => new T.MeshLambertMaterial({ map: tex });   // flat, matte shading like the game
-  // BoxGeometry face order: +x, -x, +y (top), -y (bottom), +z, -z
-  const faces = [
-    mat(pixelTexture(11, paintGrassSide)),
-    mat(pixelTexture(23, paintGrassSide)),
-    mat(pixelTexture(37, paintGrassTop)),
-    mat(pixelTexture(41, paintDirt)),
-    mat(pixelTexture(59, paintGrassSide)),
-    mat(pixelTexture(73, paintGrassSide)),
-  ];
-  const cube = new T.Mesh(new T.BoxGeometry(2, 2, 2), faces);
-  cube.quaternion.setFromEuler(new T.Euler(0, Math.PI / 4, 0));   // a corner toward the viewer
-  const tilt = new T.Group();                                      // shows the top face
-  tilt.add(cube);
-  scene.add(tilt);
-
-  /* ── Rotation state ── */
-  const X = new T.Vector3(1, 0, 0), Y = new T.Vector3(0, 1, 0);
-  const qa = new T.Quaternion(), qb = new T.Quaternion(), tmp = new T.Vector3();
-  const BASE_TILT = 0.52, AUTO_SPIN = 0.45;
-  let vx = reduce ? 0 : 5, vy = 0;          // angular velocity (rad/s) — starts with a playful spin-in
-  let autoW = reduce ? 0 : 1, s = reduce ? 1 : 0;
-  let dragging = false, lastX = 0, lastY = 0, lastT = 0;
-  const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
-
-  function turn(ay, ax) {
-    qa.setFromAxisAngle(Y, ay); cube.quaternion.premultiply(qa);
-    qa.setFromAxisAngle(X, ax); cube.quaternion.premultiply(qa);
-  }
-  // Ease the grass back to the top after a flip (keeps the spin around Y).
-  function settle(k) {
-    tmp.copy(Y).applyQuaternion(cube.quaternion);
-    qa.setFromUnitVectors(tmp.normalize(), Y);
-    qb.copy(qa).multiply(cube.quaternion);
-    cube.quaternion.slerp(qb, k);
-  }
-
-  /* ── Drag with finger or mouse ── */
-  canvas.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    dragging = true;
-    autoW = 0; vx = vy = 0;
-    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
-    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-    canvas.classList.add('is-grabbing');
-    e.preventDefault();
-  });
-  canvas.addEventListener('pointermove', e => {
-    if (!dragging) return;
-    const now = performance.now(), dt = Math.max(0.008, (now - lastT) / 1000);
-    const k = (Math.PI * 1.6) / canvas.clientWidth;          // a full drag across ≈ 290°
-    const ay = (e.clientX - lastX) * k, ax = (e.clientY - lastY) * k;
-    turn(ay, ax);
-    vx = clamp(vx * 0.5 + (ay / dt) * 0.5, -14, 14);
-    vy = clamp(vy * 0.5 + (ax / dt) * 0.5, -14, 14);
-    lastX = e.clientX; lastY = e.clientY; lastT = now;
-  });
-  const release = e => {
-    if (!dragging) return;
-    dragging = false;
-    if (performance.now() - lastT > 90) vx = vy = 0;          // held still before letting go
-    canvas.classList.remove('is-grabbing');
-    try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-  };
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
-  canvas.addEventListener('lostpointercapture', release);
-
-  // Keyboard: arrow keys give it a push.
-  canvas.addEventListener('keydown', e => {
-    const push = { ArrowLeft: [-4, 0], ArrowRight: [4, 0], ArrowUp: [0, -4], ArrowDown: [0, 4] }[e.key];
-    if (!push) return;
-    e.preventDefault();
-    vx += push[0]; vy += push[1]; autoW = 0;
-  });
-
-  // Mouse hover: a gentle lean toward the cursor.
-  window.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse' || dragging) return;
-    ptr.tx = clamp(e.clientX / window.innerWidth * 2 - 1, -1, 1);
-    ptr.ty = clamp(e.clientY / window.innerHeight * 2 - 1, -1, 1);
-  }, { passive: true });
-
-  /* ── Sizing ── */
-  function resize() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (!w || !h) return;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas);
-  else window.addEventListener('resize', resize);
-  resize();
-
-  /* ── Loop (paused while the hero is off screen) ── */
-  let visible = true, running = false, prev = 0;
-  function frame(now) {
-    if (!visible) { running = false; return; }
-    const dt = Math.min(0.05, Math.max(0, (now - prev) / 1000));
-    prev = now;
-
-    if (!dragging) {
-      const damp = Math.exp(-2.4 * dt);
-      vx *= damp; vy *= damp;
-      if (!reduce) autoW = Math.min(1, autoW + dt * 0.5);
-      turn((vx + AUTO_SPIN * autoW) * dt, vy * dt);
-      if (Math.abs(vy) < 0.6) settle(1 - Math.exp(-3 * dt));
-    }
-
-    s += (1 - s) * (1 - Math.exp(-4 * dt));
-    ptr.x += (ptr.tx - ptr.x) * (1 - Math.exp(-4 * dt));
-    ptr.y += (ptr.ty - ptr.y) * (1 - Math.exp(-4 * dt));
-    tilt.rotation.set(BASE_TILT + ptr.y * 0.12, ptr.x * 0.25, 0);
-    tilt.position.y = reduce ? 0 : Math.sin(now / 1000 * 1.1) * 0.08;
-    tilt.scale.setScalar(Math.max(0.0001, s));
-
-    renderer.render(scene, camera);
-    requestAnimationFrame(frame);
-  }
-  function start() {
-    if (running || !visible) return;
-    running = true;
-    prev = performance.now();
-    requestAnimationFrame(frame);
-  }
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; start(); }).observe(canvas);
-  }
-  start();
-}
-
-/* ════════════════════════════════════════════════════════════════════
-   Page behaviour — locale switcher and drifting type walls.
-   ════════════════════════════════════════════════════════════════════ */
+<script id="page-js">
 (() => {
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  initStage(reduce);
+  'use strict';
 
-  /* ── Locale ── */
+  /* ── Canonical source, captured before anything renders. The admin panel
+        rebuilds the whole page from these pieces + the data when it saves. ── */
+  const THREE_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+  const HEAD_LINKS = `<title>Netvy Studios</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">`;
+  const PASS_HASH = '4b4b91297411e06564ee1bf9eb2e1bc803a15310218b7ae6ce94f84a1524f0f4';
+
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const template = $('#page-markup');
+  const headStyle = document.head ? document.head.querySelector('style') : null;
+  const SOURCE = {
+    reset: headStyle ? headStyle.textContent : '',
+    css: $('#page-css').textContent,
+    markup: template.innerHTML,
+    js: $('#page-js').textContent,
+  };
+  $('#app').replaceChildren(template.content.cloneNode(true));
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const clampInt = (v, a, b) => { const n = parseInt(v, 10); return Number.isFinite(n) ? clamp(n, a, b) : 0; };
+  const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const store = {
+    get(area, key) { try { return window[area].getItem(key); } catch (err) { return null; } },
+    set(area, key, val) { try { window[area].setItem(key, val); return true; } catch (err) { return false; } },
+    remove(area, key) { try { window[area].removeItem(key); } catch (err) { /* ignore */ } },
+  };
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function safeUrl(u) {
+    try {
+      const url = new URL(String(u).trim());
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+    } catch (err) { return ''; }
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Data — projects and contact details live inside the page itself.
+     ════════════════════════════════════════════════════════════════════ */
+  const STATUSES = ['soon', 'progress', 'done', 'paused'];
+  function normalize(d) {
+    const out = { projects: [], contacts: [] };
+    if (d && Array.isArray(d.projects)) {
+      out.projects = d.projects.filter(p => p && String(p.name || '').trim()).slice(0, 200).map(p => ({
+        id: String(p.id || uid()).slice(0, 40),
+        name: String(p.name).trim().slice(0, 60),
+        year: String(p.year || '').trim().slice(0, 4),
+        type: String(p.type || '').trim().slice(0, 40),
+        status: STATUSES.includes(p.status) ? p.status : 'soon',
+        progress: clampInt(p.progress, 0, 100),
+        url: safeUrl(p.url || ''),
+      }));
+    }
+    if (d && Array.isArray(d.contacts)) {
+      out.contacts = d.contacts.filter(c => c && String(c.label || '').trim() && String(c.value || '').trim()).slice(0, 20).map(c => ({
+        id: String(c.id || uid()).slice(0, 40),
+        label: String(c.label).trim().slice(0, 30),
+        value: String(c.value).trim().slice(0, 160),
+      }));
+    }
+    return out;
+  }
+  function readEmbedded() {
+    try { return normalize(JSON.parse($('#site-data').textContent)); }
+    catch (err) { return normalize({}); }
+  }
+
+  const IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
+  const LOCAL_KEY = 'netvy-site-data';
+  let published = readEmbedded();
+  if (!IN_VIEWER) {                        // GitHub / file copy: this browser's saved edits win
+    const local = store.get('localStorage', LOCAL_KEY);
+    if (local) { try { published = normalize(JSON.parse(local)); } catch (err) { /* ignore */ } }
+  }
+  let draft = clone(published);
+  let dirty = false;
+
+  /* ════════════════════════════════════════════════════════════════════
+     Language
+     ════════════════════════════════════════════════════════════════════ */
   const LANGS = {
+    es: { label: 'ES', html: 'es', name: 'Español' },
     en: { label: 'EN', html: 'en', name: 'English' },
     it: { label: 'IT', html: 'it', name: 'Italiano' },
-    es: { label: 'ES', html: 'es', name: 'Español' },
     ch: { label: 'CH', html: 'zh', name: '中文' },
   };
   const STR = {
+    es: {
+      cta: 'CONTÁCTANOS', contactBtn: 'Contáctanos',
+      caption: 'Somos un estudio que hace réplicas de proyectos muy famosos, como DEDsafio y Extremo.',
+      drag: '(Arrastra para girar)', block: 'Bloque de pasto. Arrástralo para girarlo.',
+      projects: 'Proyectos', noProjects: 'Todavía no hay proyectos.', view: 'Ver ↗',
+      c1: 'Di', c2: 'hola', top: 'Volver arriba',
+      contactTitle: 'Contacto', close: 'Cerrar', copy: 'Copiar', copied: 'Copiado', selected: 'Seleccionado',
+      open: 'Abrir ↗', noContacts: 'Todavía no hay datos de contacto.',
+      'st.soon': 'Próximamente', 'st.progress': 'En proceso', 'st.done': 'Terminado', 'st.paused': 'Pausado',
+    },
     en: {
-      cta: 'GET IN TOUCH',
-      caption: 'Future living design research studio. Installations, commercial and private spaces.',
+      cta: 'GET IN TOUCH', contactBtn: 'Contact us',
+      caption: 'We are a studio that makes replicas of very famous projects, like DEDsafio and Extremo.',
       drag: '(Drag to rotate)', block: 'Grass block. Drag to rotate.',
-      archive: 'Archive', details: 'PROJECT DETAILS', top: 'Back to top',
-      't.armchair': 'Armchair', 't.chair': 'Chair', 't.lounge': 'Lounge chair', 't.pouf': 'Pouf',
-      'f.interior': 'Interior', 'f.installation': 'Installation', 'f.commercial': 'Commercial', 'f.private': 'Private space',
+      projects: 'Projects', noProjects: 'No projects yet.', view: 'View ↗',
+      c1: 'Get in', c2: 'touch', top: 'Back to top',
+      contactTitle: 'Contact', close: 'Close', copy: 'Copy', copied: 'Copied', selected: 'Selected',
+      open: 'Open ↗', noContacts: 'No contact details yet.',
+      'st.soon': 'Coming soon', 'st.progress': 'In progress', 'st.done': 'Finished', 'st.paused': 'Paused',
     },
     it: {
-      cta: 'CONTATTACI',
-      caption: 'Studio di ricerca sul design dell’abitare futuro. Installazioni, spazi commerciali e privati.',
+      cta: 'CONTATTACI', contactBtn: 'Contattaci',
+      caption: 'Siamo uno studio che realizza repliche di progetti molto famosi, come DEDsafio ed Extremo.',
       drag: '(Trascina per ruotare)', block: 'Blocco d’erba. Trascina per ruotarlo.',
-      archive: 'Archivio', details: 'DETTAGLI PROGETTO', top: 'Torna su',
-      't.armchair': 'Poltrona', 't.chair': 'Sedia', 't.lounge': 'Poltrona lounge', 't.pouf': 'Pouf',
-      'f.interior': 'Interni', 'f.installation': 'Installazione', 'f.commercial': 'Commerciale', 'f.private': 'Spazio privato',
-    },
-    es: {
-      cta: 'CONTÁCTANOS',
-      caption: 'Estudio de investigación en diseño para el habitar futuro. Instalaciones, espacios comerciales y privados.',
-      drag: '(Arrastra para girar)', block: 'Bloque de pasto. Arrástralo para girarlo.',
-      archive: 'Archivo', details: 'DETALLES DEL PROYECTO', top: 'Volver arriba',
-      't.armchair': 'Butaca', 't.chair': 'Silla', 't.lounge': 'Sillón lounge', 't.pouf': 'Puf',
-      'f.interior': 'Interiorismo', 'f.installation': 'Instalación', 'f.commercial': 'Comercial', 'f.private': 'Espacio privado',
+      projects: 'Progetti', noProjects: 'Ancora nessun progetto.', view: 'Vedi ↗',
+      c1: 'Dicci', c2: 'ciao', top: 'Torna su',
+      contactTitle: 'Contatti', close: 'Chiudi', copy: 'Copia', copied: 'Copiato', selected: 'Selezionato',
+      open: 'Apri ↗', noContacts: 'Ancora nessun contatto.',
+      'st.soon': 'Prossimamente', 'st.progress': 'In corso', 'st.done': 'Completato', 'st.paused': 'In pausa',
     },
     ch: {
-      cta: '联系我们',
-      caption: '面向未来生活的设计研究工作室。装置、商业与私人空间。',
+      cta: '联系我们', contactBtn: '联系我们',
+      caption: '我们是一家工作室，可以复刻非常知名的项目，例如 DEDsafio 和 Extremo。',
       drag: '（拖动旋转）', block: '草方块。拖动即可旋转。',
-      archive: '档案', details: '项目详情', top: '返回顶部',
-      't.armchair': '扶手椅', 't.chair': '椅子', 't.lounge': '休闲椅', 't.pouf': '坐墩',
-      'f.interior': '室内', 'f.installation': '装置', 'f.commercial': '商业', 'f.private': '私人空间',
+      projects: '项目', noProjects: '暂无项目。', view: '查看 ↗',
+      c1: '联系', c2: '我们', top: '返回顶部',
+      contactTitle: '联系方式', close: '关闭', copy: '复制', copied: '已复制', selected: '已选中',
+      open: '打开 ↗', noContacts: '暂无联系方式。',
+      'st.soon': '即将推出', 'st.progress': '进行中', 'st.done': '已完成', 'st.paused': '已暂停',
     },
   };
-  const localeNav = document.querySelector('.locale');
-  let lang = 'en';
-  try {
-    const saved = localStorage.getItem('offfice-lang');
-    if (saved && STR[saved]) lang = saved;
-  } catch (err) { /* storage unavailable — default to English */ }
+  let lang = 'es';
+  const saved = store.get('localStorage', 'netvy-lang');
+  if (saved && STR[saved]) lang = saved;
+  const t = key => STR[lang][key] || STR.es[key] || key;
+  const statusText = (p, l = lang) => {
+    const label = STR[l]['st.' + p.status] || STR.es['st.' + p.status];
+    return p.status === 'progress' && p.progress ? `${label} · ${p.progress}%` : label;
+  };
 
+  const localeNav = $('.locale');
   function applyLang(next, keepFocus) {
     lang = next;
     document.documentElement.lang = LANGS[lang].html;
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const s = STR[lang][el.dataset.i18n];
-      if (s) el.textContent = s;
-    });
-    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
-      const s = STR[lang][el.dataset.i18nAria];
-      if (s) el.setAttribute('aria-label', s);
-    });
+    $$('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+    $$('[data-i18n-aria]').forEach(n => n.setAttribute('aria-label', t(n.dataset.i18nAria)));
     const nodes = [];
     Object.keys(LANGS).filter(k => k !== lang).forEach((k, i) => {
-      if (i) {
-        const sep = document.createElement('span');
-        sep.textContent = '/';
-        sep.setAttribute('aria-hidden', 'true');
-        nodes.push(sep);
-      }
-      const b = document.createElement('button');
+      if (i) { const sep = el('span', null, '/'); sep.setAttribute('aria-hidden', 'true'); nodes.push(sep); }
+      const b = el('button', null, LANGS[k].label);
       b.type = 'button';
-      b.textContent = LANGS[k].label;
       b.lang = LANGS[k].html;
       b.setAttribute('aria-label', LANGS[k].name);
-      b.addEventListener('click', () => {
-        applyLang(k, true);
-        try { localStorage.setItem('offfice-lang', k); } catch (err) { /* ignore */ }
-      });
+      b.addEventListener('click', () => { applyLang(k, true); store.set('localStorage', 'netvy-lang', k); });
       nodes.push(b);
     });
     localeNav.replaceChildren(...nodes);
     if (keepFocus) localeNav.querySelector('button').focus({ preventScroll: true });
+    renderProjects();
+    renderContactDialog();
   }
-  applyLang(lang, false);
 
-  /* ── Drifting type walls ── */
-  if (reduce) return;
-  const drifters = [...document.querySelectorAll('[data-drift]')];
-  let queued = false;
-  function update() {
-    queued = false;
-    const vh = window.innerHeight, y = window.scrollY;
-    drifters.forEach(el => {
-      const f = parseFloat(el.dataset.drift);
-      let x;
-      if (el.dataset.anchor === 'center') {
-        const r = el.getBoundingClientRect();
-        x = (r.top + r.height / 2 - vh / 2) * f;
+  /* ════════════════════════════════════════════════════════════════════
+     Projects list (public)
+     ════════════════════════════════════════════════════════════════════ */
+  function renderProjects() {
+    const list = $('#projects-list');
+    list.replaceChildren(...draft.projects.map((p, i) => {
+      const li = el('li', 'entry');
+      const row = el('div', 'entry__row');
+      const title = el('span', 'entry__title', p.name);
+      title.append(el('sup', 'entry__num', String(i + 1).padStart(2, '0')));
+      const link = el('span', 'entry__meta');
+      if (p.url) {
+        const a = el('a', null, t('view'));
+        a.href = p.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        link.append(a);
       } else {
-        x = -y * f;
+        link.textContent = '—';
       }
-      el.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
-    });
+      row.append(title, el('span', 'entry__meta', p.year || '—'), el('span', 'entry__meta', statusText(p)), el('span', 'entry__meta', p.type || '—'), link);
+      li.append(row);
+      return li;
+    }));
+    $('#projects-count').textContent = `(${String(draft.projects.length).padStart(2, '0')})`;
+    $('#projects-empty').hidden = draft.projects.length > 0;
   }
-  const request = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
-  window.addEventListener('scroll', request, { passive: true });
-  window.addEventListener('resize', request);
-  update();
+
+  /* ════════════════════════════════════════════════════════════════════
+     Contact dialog
+     ════════════════════════════════════════════════════════════════════ */
+  const dialog = $('#contact-dialog');
+  function renderContactDialog() {
+    const list = $('#contact-list');
+    list.replaceChildren(...draft.contacts.map(c => {
+      const li = el('li', 'contact-item');
+      const value = el('span', 'contact-item__value', c.value);
+      const actions = el('div', 'contact-item__actions');
+      const url = safeUrl(c.value);
+      if (url) {
+        const a = el('a', 'btn btn--ghost btn--small', t('open'));
+        a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        actions.append(a);
+      }
+      const copy = el('button', 'btn btn--ghost btn--small', t('copy'));
+      copy.type = 'button';
+      copy.addEventListener('click', () => copyText(c.value, copy, value));
+      actions.append(copy);
+      li.append(el('span', 'label', c.label), value, actions);
+      return li;
+    }));
+    $('#contact-empty').hidden = draft.contacts.length > 0;
+  }
+  async function copyText(text, button, valueEl) {
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = t('copied');
+    } catch (err) {
+      const range = document.createRange();
+      range.selectNodeContents(valueEl);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      button.textContent = t('selected');
+    }
+    setTimeout(() => { button.textContent = t('copy'); }, 1600);
+  }
+  $$('[data-contact]').forEach(b => b.addEventListener('click', () => {
+    renderContactDialog();
+    if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
+  }));
+  const closeDialog = () => { if (typeof dialog.close === 'function') dialog.close(); else dialog.removeAttribute('open'); };
+  $$('[data-close]', dialog).forEach(b => b.addEventListener('click', closeDialog));
+  dialog.addEventListener('click', e => { if (e.target === dialog) closeDialog(); });
+
+  /* ════════════════════════════════════════════════════════════════════
+     Admin — password-gated editor. Saving rebuilds the page with the new
+     data and republishes it (claude.ai), or keeps it in this browser.
+     ════════════════════════════════════════════════════════════════════ */
+  let artifactApi = null, readOnly = false, editingId = null, confirmId = null;
+  if (IN_VIEWER) {
+    window.claude.use('artifact').then(api => { artifactApi = api; updateMode(); }).catch(() => updateMode());
+  }
+
+  async function sha256Hex(text) {
+    const bytes = new TextEncoder().encode(text);
+    if (window.crypto && window.crypto.subtle) {
+      try {
+        const buf = await window.crypto.subtle.digest('SHA-256', bytes);
+        return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch (err) { /* fall back below */ }
+    }
+    return sha256Fallback(bytes);
+  }
+  function sha256Fallback(bytes) {   // for pages served without a secure context
+    const primes = [];
+    for (let n = 2; primes.length < 64; n++) if (primes.every(p => n % p)) primes.push(n);
+    const frac = x => ((x - Math.floor(x)) * 4294967296) >>> 0;
+    const H = primes.slice(0, 8).map(p => frac(Math.sqrt(p)));
+    const K = primes.map(p => frac(Math.cbrt(p)));
+    const len = bytes.length, total = ((len + 9 + 63) >> 6) << 6;
+    const m = new Uint8Array(total);
+    m.set(bytes); m[len] = 0x80;
+    const view = new DataView(m.buffer);
+    view.setUint32(total - 4, (len * 8) >>> 0);
+    view.setUint32(total - 8, Math.floor(len / 0x20000000));
+    const w = new Uint32Array(64);
+    for (let off = 0; off < total; off += 64) {
+      for (let i = 0; i < 16; i++) w[i] = view.getUint32(off + i * 4);
+      for (let i = 16; i < 64; i++) {
+        const x = w[i - 15], y = w[i - 2];
+        const s0 = (x >>> 7 | x << 25) ^ (x >>> 18 | x << 14) ^ (x >>> 3);
+        const s1 = (y >>> 17 | y << 15) ^ (y >>> 19 | y << 13) ^ (y >>> 10);
+        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+      }
+      let [a, b, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const S1 = (e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7);
+        const t1 = (h + S1 + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+        const S0 = (a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10);
+        const t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      [a, b, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) | 0; });
+    }
+    return H.map(v => (v >>> 0).toString(16).padStart(8, '0')).join('');
+  }
+
+  function buildDocument(data) {
+    const close = '<' + '/script>';
+    const json = JSON.stringify(data).replace(/</g, '\\u003c');
+    return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>'
+      + SOURCE.reset + '</style></head><body>'
+      + HEAD_LINKS
+      + '<style id="page-css">' + SOURCE.css + '</style>'
+      + '<template id="page-markup">' + SOURCE.markup + '</template>'
+      + '<div id="app"></div>'
+      + '<script type="application/json" id="site-data">' + json + close
+      + '<script src="' + THREE_SRC + '">' + close
+      + '<script id="page-js">' + SOURCE.js + close
+      + '</body></html>';
+  }
+
+  const loginForm = $('#admin-login'), loginMsg = $('#admin-login-msg'), panel = $('#admin-panel');
+  const saveBtn = $('#admin-save'), downloadBtn = $('#admin-download'), statusEl = $('#admin-status');
+  const setStatus = msg => { statusEl.textContent = msg; };
+
+  function unlock() {
+    loginForm.hidden = true;
+    panel.hidden = false;
+    store.set('sessionStorage', 'netvy-admin', '1');
+    const stash = store.get('sessionStorage', 'netvy-draft');   // edits kept across a failed publish
+    store.remove('sessionStorage', 'netvy-draft');
+    if (stash) {
+      try {
+        const s = normalize(JSON.parse(stash));
+        if (JSON.stringify(s) !== JSON.stringify(published)) { draft = s; dirty = true; renderProjects(); }
+      } catch (err) { /* ignore */ }
+    }
+    updateMode();
+    renderAdmin();
+  }
+  function lock() {
+    store.remove('sessionStorage', 'netvy-admin');
+    panel.hidden = true;
+    loginForm.hidden = false;
+    $('#admin-pass').value = '';
+    loginMsg.textContent = dirty ? 'Saliste con cambios sin publicar: siguen en esta pestaña hasta que la recargues.' : '';
+  }
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const pass = $('#admin-pass').value;
+    if ((await sha256Hex(pass)) === PASS_HASH) {
+      loginMsg.textContent = '';
+      unlock();
+    } else {
+      loginMsg.textContent = 'Contraseña incorrecta.';
+      $('#admin-pass').select();
+    }
+  });
+  $('#admin-logout').addEventListener('click', lock);
+
+  function updateMode() {
+    const mode = $('#admin-mode');
+    if (!IN_VIEWER) {
+      mode.textContent = 'Estás en la copia de GitHub: «Guardar» deja los cambios solo en este navegador. Para que los vea todo el mundo, descarga el index.html y súbelo al repositorio, o edita desde la página de claude.ai.';
+      saveBtn.textContent = 'Guardar en este navegador';
+      downloadBtn.hidden = false;
+    } else if (artifactApi && !readOnly) {
+      mode.textContent = 'Los cambios se publican para todos al pulsar «Publicar cambios». Solo la cuenta dueña de la página puede publicar.';
+      saveBtn.textContent = 'Publicar cambios';
+    } else {
+      mode.textContent = 'Esta vista es solo de lectura: aquí puedes probar cambios, pero solo la cuenta dueña de la página puede publicarlos.';
+      saveBtn.textContent = 'Publicar cambios';
+      saveBtn.disabled = true;
+      return;
+    }
+    saveBtn.disabled = !dirty;
+    if (!statusEl.textContent || /cambios sin|Todo está/.test(statusEl.textContent)) {
+      setStatus(dirty ? (IN_VIEWER ? 'Tienes cambios sin publicar.' : 'Tienes cambios sin guardar.') : 'Todo está al día.');
+    }
+  }
+  function changed() {
+    dirty = true;
+    confirmId = null;
+    renderProjects();
+    renderContactDialog();
+    renderAdmin();
+    setStatus(IN_VIEWER ? 'Tienes cambios sin publicar.' : 'Tienes cambios sin guardar.');
+    updateMode();
+  }
+
+  function smallBtn(text, onClick, opts = {}) {
+    const b = el('button', 'btn btn--ghost btn--small', text);
+    b.type = 'button';
+    if (opts.label) b.setAttribute('aria-label', opts.label);
+    if (opts.disabled) b.disabled = true;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function renderAdmin() {
+    if (panel.hidden) return;
+    const ol = $('#admin-projects');
+    if (!draft.projects.length) {
+      ol.replaceChildren(el('li', 'admin__meta', 'Aún no hay proyectos. Añade el primero con el formulario de abajo.'));
+    } else {
+      ol.replaceChildren(...draft.projects.map((p, i) => {
+        const li = el('li', 'admin__item');
+        const info = el('div', 'admin__info');
+        info.append(el('span', 'admin__name', p.name), el('span', 'admin__meta', [p.year, statusText(p, 'es'), p.type].filter(Boolean).join(' · ')));
+        const btns = el('div', 'admin__btns');
+        if (confirmId === p.id) {
+          btns.append(el('span', 'admin__meta', '¿Borrar «' + p.name + '»?'),
+            smallBtn('Sí, borrar', () => { draft.projects = draft.projects.filter(x => x.id !== p.id); if (editingId === p.id) resetProjectForm(); changed(); }),
+            smallBtn('No', () => { confirmId = null; renderAdmin(); }));
+        } else {
+          btns.append(
+            smallBtn('Editar', () => startEdit(p)),
+            smallBtn('↑', () => moveProject(i, -1), { label: 'Subir ' + p.name, disabled: i === 0 }),
+            smallBtn('↓', () => moveProject(i, 1), { label: 'Bajar ' + p.name, disabled: i === draft.projects.length - 1 }),
+            smallBtn('Borrar', () => { confirmId = p.id; renderAdmin(); }));
+        }
+        li.append(info, btns);
+        return li;
+      }));
+    }
+    const cl = $('#admin-contacts');
+    if (!draft.contacts.length) {
+      cl.replaceChildren(el('li', 'admin__meta', 'Aún no hay datos de contacto. Añade tu Discord, Instagram, correo…'));
+    } else {
+      cl.replaceChildren(...draft.contacts.map(c => {
+        const li = el('li', 'admin__item');
+        const info = el('div', 'admin__info');
+        info.append(el('span', 'admin__name', c.label), el('span', 'admin__meta', c.value));
+        li.append(info, smallBtn('Quitar', () => { draft.contacts = draft.contacts.filter(x => x.id !== c.id); changed(); }, { label: 'Quitar ' + c.label }));
+        return li;
+      }));
+    }
+  }
+  function moveProject(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= draft.projects.length) return;
+    const list = draft.projects.slice();
+    [list[i], list[j]] = [list[j], list[i]];
+    draft.projects = list;
+    changed();
+  }
+
+  const pf = {
+    form: $('#project-form'), title: $('#pf-title'), name: $('#pf-name'), year: $('#pf-year'), type: $('#pf-type'),
+    status: $('#pf-status'), progress: $('#pf-progress'), progressWrap: $('#pf-progress-wrap'), url: $('#pf-url'),
+    submit: $('#pf-submit'), cancel: $('#pf-cancel'),
+  };
+  const syncProgress = () => { pf.progressWrap.hidden = pf.status.value !== 'progress'; };
+  pf.status.addEventListener('change', syncProgress);
+  function startEdit(p) {
+    editingId = p.id;
+    pf.name.value = p.name; pf.year.value = p.year; pf.type.value = p.type;
+    pf.status.value = p.status; pf.progress.value = p.progress || ''; pf.url.value = p.url;
+    pf.title.textContent = 'Editar «' + p.name + '»';
+    pf.submit.textContent = 'Guardar proyecto';
+    pf.cancel.hidden = false;
+    syncProgress();
+    pf.name.focus();
+  }
+  function resetProjectForm() {
+    editingId = null;
+    pf.form.reset();
+    pf.title.textContent = 'Añadir proyecto';
+    pf.submit.textContent = 'Añadir proyecto';
+    pf.cancel.hidden = true;
+    syncProgress();
+  }
+  pf.cancel.addEventListener('click', resetProjectForm);
+  pf.form.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = pf.name.value.trim();
+    if (!name) { pf.name.focus(); return; }
+    const rawUrl = pf.url.value.trim();
+    if (rawUrl && !safeUrl(rawUrl)) { setStatus('El enlace tiene que empezar por https://'); pf.url.focus(); return; }
+    const item = {
+      id: editingId || uid(),
+      name: name.slice(0, 60),
+      year: pf.year.value.trim().slice(0, 4),
+      type: pf.type.value.trim().slice(0, 40),
+      status: STATUSES.includes(pf.status.value) ? pf.status.value : 'soon',
+      progress: pf.status.value === 'progress' ? clampInt(pf.progress.value, 0, 100) : 0,
+      url: rawUrl ? safeUrl(rawUrl) : '',
+    };
+    if (editingId) draft.projects = draft.projects.map(p => (p.id === editingId ? item : p));
+    else draft.projects = draft.projects.concat(item);
+    resetProjectForm();
+    changed();
+  });
+
+  $('#contact-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const label = $('#cf-label').value.trim(), value = $('#cf-value').value.trim();
+    if (!label || !value) return;
+    draft.contacts = draft.contacts.concat({ id: uid(), label: label.slice(0, 30), value: value.slice(0, 160) });
+    e.target.reset();
+    changed();
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    if (!dirty) return;
+    const data = normalize(draft);
+    if (!IN_VIEWER) {
+      if (store.set('localStorage', LOCAL_KEY, JSON.stringify(data))) {
+        published = clone(data);
+        dirty = false;
+        setStatus('Guardado en este navegador. Para que lo vea todo el mundo, descarga el index.html y súbelo a GitHub.');
+      } else {
+        setStatus('Este navegador no deja guardar. Descarga el index.html para no perder los cambios.');
+      }
+      updateMode();
+      return;
+    }
+    if (!artifactApi || readOnly) { updateMode(); return; }
+    store.set('sessionStorage', 'netvy-draft', JSON.stringify(data));
+    saveBtn.disabled = true;
+    setStatus('Publicando…');
+    try {
+      await artifactApi.publish(buildDocument(data));
+      setStatus('Publicado. La página se está recargando con los cambios.');
+    } catch (err) {
+      const code = err && err.code;
+      if (code === 'conflict') {
+        setStatus('Se publicó otra versión a la vez. La página se recarga con ella; tus cambios se recuperan al volver a entrar.');
+        return;
+      }
+      store.remove('sessionStorage', 'netvy-draft');
+      if (['not_writer', 'not_granted', 'consent_required', 'capability_disabled', 'capability_removed', 'not_declared'].includes(code)) {
+        readOnly = true;
+        updateMode();
+        setStatus('No se publicó: esta cuenta no puede cambiar la página. Entra con la cuenta dueña.');
+        return;
+      }
+      saveBtn.disabled = false;
+      if (code === 'too_large') setStatus('No se publicó: la página quedó demasiado grande. Quita algún proyecto o contacto.');
+      else if (code === 'rate_limited') setStatus('No se publicó: has publicado muchas veces seguidas. Espera un minuto y vuelve a pulsar.');
+      else setStatus('No se publicó por un fallo del servicio. Vuelve a pulsar «Publicar cambios» en un momento.');
+    }
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    const blob = new Blob([buildDocument(normalize(draft))], { type: 'text/html' });
+    const a = el('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    setStatus('Descargado. Sube ese index.html al repositorio para publicarlo.');
+  });
+
+  /* ════════════════════════════════════════════════════════════════════
+     3D stage — a pixel-art grass block floating in the hero.
+     Drag it (finger or mouse) to spin it; the page never scrolls while
+     you do. It keeps its momentum, turns grass-side up again and idles.
+     ════════════════════════════════════════════════════════════════════ */
+  function initStage() {
+    const canvas = $('#stage');
+    const T = window.THREE;
+    if (!T) { canvas.remove(); return; }
+    let renderer;
+    try {
+      renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch (err) {
+      canvas.remove();
+      return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputEncoding = T.sRGBEncoding;
+
+    const scene = new T.Scene();
+    const camera = new T.PerspectiveCamera(12, 1, 0.1, 100);   // long lens ≈ isometric look
+    camera.position.set(0, 0, 18.5);
+
+    // Game-style face shading at rest: top and left face at full brightness, right face ≈ 75%.
+    scene.add(new T.AmbientLight(0xffffff, 0.3));
+    const key = new T.DirectionalLight(0xffffff, 1.015);
+    key.position.set(-3.35, 2.52, 9.07);
+    scene.add(key);
+
+    /* ── 16×16 pixel-art grass block, seeded so every visit looks the same ── */
+    const DIRT = [[0.13, '#452c1a'], [0.21, '#4f3822'], [0.33, '#5f432e'], [0.55, '#67462f'], [0.64, '#6e5038'], [0.87, '#7c5b41'], [1, '#937052']];
+    const GRASS_TOP = [[0.17, '#385830'], [0.34, '#3f6437'], [0.53, '#44673c'], [0.73, '#496e3f'], [0.88, '#527a47'], [1, '#5c874f']];
+    const GRASS_SIDE = [[0.15, '#4c742b'], [0.47, '#568634'], [0.71, '#5c913b'], [0.88, '#6b9447'], [1, '#79a153']];
+    const PEBBLES = ['#4c4d52', '#5d5f65', '#74777d'];
+    function pixelTexture(seed, paint) {
+      let st = seed >>> 0;
+      const rand = () => (st = (Math.imul(st, 1664525) + 1013904223) >>> 0) / 4294967296;
+      const c = document.createElement('canvas');
+      c.width = c.height = 16;
+      const g = c.getContext('2d');
+      const px = (x, y, w, h, color) => { g.fillStyle = color; g.fillRect(x, y, w, h); };
+      const pick = shades => { const v = rand(); return shades.find(([p]) => v <= p)[1]; };
+      const at = n => Math.floor(rand() * n);
+      paint(px, pick, rand, at);
+      const tex = new T.CanvasTexture(c);
+      tex.magFilter = T.NearestFilter;
+      tex.minFilter = T.NearestFilter;
+      tex.generateMipmaps = false;
+      tex.encoding = T.sRGBEncoding;
+      return tex;
+    }
+    function paintDirt(px, pick, rand, at) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(DIRT));
+      for (let i = 0; i < 12; i++) px(at(16), at(14), 1, 2 + (rand() < 0.4), rand() < 0.5 ? '#452c1a' : '#4f3822');
+      for (let i = 0; i < 7; i++) px(at(15), at(16), 2, 1, '#8a6849');
+      for (let i = 0; i < 5; i++) px(at(16), at(16), 1, 1, PEBBLES[at(3)]);
+    }
+    function paintGrassTop(px, pick, rand, at) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(GRASS_TOP));
+      for (let i = 0; i < 8; i++) px(at(15), at(16), 2, 1, '#5c874f');
+      for (let i = 0; i < 8; i++) px(at(16), at(16), 1, 1, '#34522c');
+    }
+    function paintGrassSide(px, pick, rand, at) {
+      paintDirt(px, pick, rand, at);
+      let depth = 3 + at(2);
+      for (let x = 0; x < 16; x++) {
+        depth = Math.min(5, Math.max(2, depth + at(3) - 1));
+        const d = depth + (rand() < 0.12 ? 1 + at(2) : 0);
+        for (let y = 0; y < d; y++) px(x, y, 1, 1, pick(GRASS_SIDE));
+        if (rand() < 0.85) px(x, d, 1, 1, '#3d2817');
+        if (rand() < 0.25) px(x, d + 1, 1, 1, '#452c1a');
+      }
+    }
+    const mat = tex => new T.MeshLambertMaterial({ map: tex });
+    // BoxGeometry face order: +x, -x, +y (top), -y (bottom), +z, -z
+    const faces = [
+      mat(pixelTexture(11, paintGrassSide)),
+      mat(pixelTexture(23, paintGrassSide)),
+      mat(pixelTexture(37, paintGrassTop)),
+      mat(pixelTexture(41, paintDirt)),
+      mat(pixelTexture(59, paintGrassSide)),
+      mat(pixelTexture(73, paintGrassSide)),
+    ];
+    const cube = new T.Mesh(new T.BoxGeometry(2, 2, 2), faces);
+    cube.quaternion.setFromEuler(new T.Euler(0, Math.PI / 4, 0));
+    const tilt = new T.Group();
+    tilt.add(cube);
+    scene.add(tilt);
+
+    const X = new T.Vector3(1, 0, 0), Y = new T.Vector3(0, 1, 0);
+    const qa = new T.Quaternion(), qb = new T.Quaternion(), tmp = new T.Vector3();
+    const BASE_TILT = 0.52, AUTO_SPIN = 0.45;
+    let vx = reduce ? 0 : 5, vy = 0;
+    let autoW = reduce ? 0 : 1, s = reduce ? 1 : 0;
+    let dragging = false, lastX = 0, lastY = 0, lastT = 0;
+    const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+
+    function turn(ay, ax) {
+      qa.setFromAxisAngle(Y, ay); cube.quaternion.premultiply(qa);
+      qa.setFromAxisAngle(X, ax); cube.quaternion.premultiply(qa);
+    }
+    function settle(k) {
+      tmp.copy(Y).applyQuaternion(cube.quaternion);
+      qa.setFromUnitVectors(tmp.normalize(), Y);
+      qb.copy(qa).multiply(cube.quaternion);
+      cube.quaternion.slerp(qb, k);
+    }
+
+    // Keep the page still while a finger is on the block (iOS ignores touch-action on its own).
+    const holdPage = e => { if (e.cancelable) e.preventDefault(); };
+    canvas.addEventListener('touchstart', holdPage, { passive: false });
+    canvas.addEventListener('touchmove', holdPage, { passive: false });
+
+    canvas.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      dragging = true;
+      autoW = 0; vx = vy = 0;
+      lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      canvas.classList.add('is-grabbing');
+      e.preventDefault();
+    });
+    canvas.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      e.preventDefault();
+      const now = performance.now(), dt = Math.max(0.008, (now - lastT) / 1000);
+      const k = (Math.PI * 1.6) / canvas.clientWidth;
+      const ay = (e.clientX - lastX) * k, ax = (e.clientY - lastY) * k;
+      turn(ay, ax);
+      vx = clamp(vx * 0.5 + (ay / dt) * 0.5, -14, 14);
+      vy = clamp(vy * 0.5 + (ax / dt) * 0.5, -14, 14);
+      lastX = e.clientX; lastY = e.clientY; lastT = now;
+    });
+    const release = e => {
+      if (!dragging) return;
+      dragging = false;
+      if (performance.now() - lastT > 90) vx = vy = 0;
+      canvas.classList.remove('is-grabbing');
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+    canvas.addEventListener('lostpointercapture', release);
+    canvas.addEventListener('keydown', e => {
+      const push = { ArrowLeft: [-4, 0], ArrowRight: [4, 0], ArrowUp: [0, -4], ArrowDown: [0, 4] }[e.key];
+      if (!push) return;
+      e.preventDefault();
+      vx += push[0]; vy += push[1]; autoW = 0;
+    });
+    window.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || dragging) return;
+      ptr.tx = clamp(e.clientX / window.innerWidth * 2 - 1, -1, 1);
+      ptr.ty = clamp(e.clientY / window.innerHeight * 2 - 1, -1, 1);
+    }, { passive: true });
+
+    function resize() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas);
+    else window.addEventListener('resize', resize);
+    resize();
+
+    let visible = true, running = false, prev = 0;
+    function frame(now) {
+      if (!visible) { running = false; return; }
+      const dt = Math.min(0.05, Math.max(0, (now - prev) / 1000));
+      prev = now;
+      if (!dragging) {
+        const damp = Math.exp(-2.4 * dt);
+        vx *= damp; vy *= damp;
+        if (!reduce) autoW = Math.min(1, autoW + dt * 0.5);
+        turn((vx + AUTO_SPIN * autoW) * dt, vy * dt);
+        if (Math.abs(vy) < 0.6) settle(1 - Math.exp(-3 * dt));
+      }
+      s += (1 - s) * (1 - Math.exp(-4 * dt));
+      ptr.x += (ptr.tx - ptr.x) * (1 - Math.exp(-4 * dt));
+      ptr.y += (ptr.ty - ptr.y) * (1 - Math.exp(-4 * dt));
+      tilt.rotation.set(BASE_TILT + ptr.y * 0.12, ptr.x * 0.25, 0);
+      tilt.position.y = reduce ? 0 : Math.sin(now / 1000 * 1.1) * 0.08;
+      tilt.scale.setScalar(Math.max(0.0001, s));
+      renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    }
+    function start() {
+      if (running || !visible) return;
+      running = true;
+      prev = performance.now();
+      requestAnimationFrame(frame);
+    }
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; start(); }).observe(canvas);
+    }
+    start();
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Drifting type walls
+     ════════════════════════════════════════════════════════════════════ */
+  function initDrift() {
+    if (reduce) return;
+    const drifters = $$('[data-drift]');
+    let queued = false;
+    function update() {
+      queued = false;
+      const vh = window.innerHeight, y = window.scrollY;
+      drifters.forEach(n => {
+        const f = parseFloat(n.dataset.drift);
+        let x;
+        if (n.dataset.anchor === 'center') {
+          const r = n.getBoundingClientRect();
+          x = (r.top + r.height / 2 - vh / 2) * f;
+        } else {
+          x = -y * f;
+        }
+        n.style.transform = `translate3d(${x.toFixed(1)}px,0,0)`;
+      });
+    }
+    const request = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+    update();
+  }
+
+  /* ── Boot ── */
+  applyLang(lang, false);
+  initStage();
+  initDrift();
+  syncProgress();
+  if (store.get('sessionStorage', 'netvy-admin') === '1') unlock();
 })();
 </script>
-</body>
-</html>
+</body></html>
