@@ -246,7 +246,17 @@
     padding-bottom: var(--spacing-16);
   }
   .label { font-size: var(--text-caption); line-height: var(--leading-caption); font-weight: var(--font-weight-regular); }
-  .hero__region { grid-column: 1 / 4; }
+  /* Mascot: one character that hops between these three spots */
+  .mascot-slot {
+    --mascot-h: clamp(120px, 18vh, 190px);
+    position: relative;
+    flex: none;
+    width: calc(var(--mascot-h) * 0.95);
+    height: var(--mascot-h);
+  }
+  @supports (height: 1svh) { .mascot-slot { --mascot-h: clamp(120px, 18svh, 190px); } }
+  .mascot { display: block; width: 100%; height: 100%; pointer-events: none; }
+  .hero__mascot { grid-column: 1 / 4; align-self: end; }
   .hero__hint { grid-column: 5 / 8; }
   .hero__about {
     grid-column: 9 / 13;
@@ -271,9 +281,11 @@
   }
   .archive__head {
     display: flex;
-    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--gutter);
     margin-bottom: var(--spacing-32);
   }
+  .archive__head #projects-count { margin-left: auto; }
   .archive__list {
     list-style: none;
     display: flex;
@@ -336,6 +348,7 @@
     .contact__main { padding-block-end: calc(var(--spacing-32) * 3); }
   }
   .btn--big { padding: 16px 28px; font-size: var(--text-body-sm); }
+  .contact__cta { display: flex; align-items: center; justify-content: center; gap: var(--gutter); }
   .contact__display {
     display: flex;
     justify-content: center;
@@ -465,7 +478,7 @@
   @media (max-width: 760px) {
     .hero__foot { grid-template-columns: 1fr 1fr; row-gap: var(--spacing-16); }
     .hero__hint { grid-column: 1 / -1; order: -1; }
-    .hero__region { grid-column: 1; }
+    .hero__mascot { grid-column: 1; }
     .hero__about { grid-column: 2; }
 
     .entry__row {
@@ -511,7 +524,7 @@
       <p class="display hero__word hero__word--bottom" aria-hidden="true"><span class="line-inner">Studios</span></p>
     </div>
     <div class="hero__foot fade">
-      <p class="label hero__region">US / WW</p>
+      <div class="mascot-slot hero__mascot" data-mascot="hello" aria-hidden="true"></div>
       <p class="label hero__hint" data-i18n="drag">(Arrastra para girar)</p>
       <div class="hero__about">
         <p class="caption" data-i18n="caption">Somos un estudio que hace réplicas de proyectos muy famosos, como DEDsafio y Extremo.</p>
@@ -522,6 +535,7 @@
 
   <section class="archive" id="proyectos" aria-labelledby="projects-label">
     <div class="archive__head">
+      <div class="mascot-slot archive__mascot" data-mascot="projects" aria-hidden="true"></div>
       <h2 class="label" id="projects-label" data-i18n="projects">Proyectos</h2>
       <p class="label" id="projects-count">(00)</p>
     </div>
@@ -537,7 +551,10 @@
           <span class="splash" id="splash" aria-hidden="true">¡Juntos!</span>
         </span>
       </button>
-      <button type="button" class="btn btn--big" data-contact data-i18n="contactBtn">Contáctanos</button>
+      <div class="contact__cta">
+        <div class="mascot-slot contact__mascot" data-mascot="contact" aria-hidden="true"></div>
+        <button type="button" class="btn btn--big" data-contact data-i18n="contactBtn">Contáctanos</button>
+      </div>
     </div>
     <div class="contact__foot">
       <button type="button" class="foot__secret" id="admin-open">© 2026 netvy studios</button>
@@ -1653,6 +1670,194 @@
     start();
   }
 
+  /* ════════════════════════════════════════════════════════════════════
+     Mascot — a blocky character whose head is the Netvi logo. One canvas
+     hops between three spots: it waves in the hero, gets excited about
+     the projects (or shrugs if there are none yet), and at the end signals
+     "wait!" and points at the contact button.
+     ════════════════════════════════════════════════════════════════════ */
+  function initMascot() {
+    const T = window.THREE;
+    const slots = $$('[data-mascot]');
+    if (!T || !slots.length) return;
+    const canvas = el('canvas', 'mascot');
+    let renderer;
+    try {
+      renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch (err) {
+      return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputEncoding = T.sRGBEncoding;
+    const scene = new T.Scene();
+    const camera = new T.PerspectiveCamera(19, 0.95, 1, 500);
+    camera.position.set(0, 19, 120);
+    camera.lookAt(0, 18, 0);
+    scene.add(new T.AmbientLight(0xffffff, 0.42));
+    const key = new T.DirectionalLight(0xffffff, 0.85);
+    key.position.set(-3, 4, 9);
+    scene.add(key);
+    const aniso = renderer.capabilities.getMaxAnisotropy();
+
+    // Head: the logo on the front, the white frame on the other faces.
+    const LOGO = [['#393838', '#fedc13', '#121112'], ['#24d2c5', '#f0030f', '#004ede'], ['#980fb3', '#fe5302', '#f9b36f']];
+    function faceTexture(withGrid) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      const g = c.getContext('2d');
+      g.fillStyle = '#0b0b0b'; g.fillRect(0, 0, 256, 256);
+      if (!withGrid) {                 // sides: black with a thin white edge so the cube still reads
+        g.strokeStyle = '#fefefe'; g.lineWidth = 8; g.strokeRect(4, 4, 248, 248);
+      } else {
+        g.fillStyle = '#fefefe'; g.fillRect(10, 10, 236, 236);
+        g.fillStyle = '#0b0b0b'; g.fillRect(30, 30, 196, 196);
+        LOGO.forEach((row, r) => row.forEach((col, k) => {
+          const x = 35 + k * 64, y = 35 + r * 64;
+          g.fillStyle = col;
+          g.fillRect(x, y, 58, 58);
+          const shine = g.createLinearGradient(x, y, x + 58, y + 58);   // soft light from the top-left, like the logo
+          shine.addColorStop(0, 'rgba(255,255,255,0.22)');
+          shine.addColorStop(0.6, 'rgba(255,255,255,0)');
+          shine.addColorStop(1, 'rgba(0,0,0,0.12)');
+          g.fillStyle = shine;
+          g.fillRect(x, y, 58, 58);
+        }));
+      }
+      const tex = new T.CanvasTexture(c);
+      tex.encoding = T.sRGBEncoding;
+      tex.anisotropy = aniso;
+      return tex;
+    }
+    const lambert = props => new T.MeshLambertMaterial(props);
+    const color = hex => new T.Color(hex).convertSRGBToLinear();
+    const frameMat = lambert({ map: faceTexture(false) });
+    const logo = lambert({ map: faceTexture(true) });
+    const shirt = lambert({ color: color('#1e1e1e') });
+    const pants = lambert({ color: color('#2c2c2c') });
+    const white = lambert({ color: color('#f2f2f2') });
+    const yellow = lambert({ color: color('#fedc13') });
+    // Shirt front with the logo's colour stripe.
+    const shirtFront = (() => {
+      const c = document.createElement('canvas');
+      c.width = 16; c.height = 24;
+      const g = c.getContext('2d');
+      g.fillStyle = '#1e1e1e'; g.fillRect(0, 0, 16, 24);
+      ['#fedc13', '#f0030f', '#004ede', '#24d2c5', '#980fb3', '#fe5302'].forEach((col, i) => { g.fillStyle = col; g.fillRect(2 + i * 2, 7, 2, 2); });
+      const tex = new T.CanvasTexture(c);
+      tex.magFilter = T.NearestFilter; tex.minFilter = T.NearestFilter; tex.generateMipmaps = false;
+      tex.encoding = T.sRGBEncoding;
+      return lambert({ map: tex });
+    })();
+
+    const box = (w, h, d, mat, x = 0, y = 0, z = 0) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
+    const pop = new T.Group();          // scales in/out when the mascot changes spot
+    const root = new T.Group();         // feet at y = 0
+    const body = new T.Group();
+    pop.add(root); root.add(body); scene.add(pop);
+    body.add(box(8, 12, 4, [shirt, shirt, shirt, shirt, shirtFront, shirt], 0, 18, 0));
+    const neck = new T.Group(); neck.position.y = 24; body.add(neck);
+    neck.add(box(11, 11, 11, [frameMat, frameMat, frameMat, frameMat, logo, frameMat], 0, 5.5, 0));
+    const arm = x => { const g = new T.Group(); g.position.set(x, 22, 0); g.add(box(4, 8, 4, shirt, 0, -2, 0), box(4, 4, 4, white, 0, -8, 0)); body.add(g); return g; };
+    const leg = x => { const g = new T.Group(); g.position.set(x, 12, 0); g.add(box(4, 9, 4, pants, 0, -4.5, 0), box(4, 3, 4, white, 0, -10.5, 0)); root.add(g); return g; };
+    const armL = arm(6), armR = arm(-6);      // armL is on the viewer's right
+    const legL = leg(2), legR = leg(-2);
+    const bang = new T.Group();               // the "!" of surprise
+    bang.add(box(1.8, 4.6, 1.8, yellow, 0, 0, 0), box(1.8, 1.8, 1.8, yellow, 0, -4.2, 0));
+    bang.position.set(8, 39, 0);
+    root.add(bang);
+
+    /* ── Gestures: each returns the target pose at time t (seconds) ── */
+    const idle = t => ({
+      bodyY: Math.sin(t * 2.2) * 0.25, headY: Math.sin(t * 0.7) * 0.2,
+      aLz: 0.08 + Math.sin(t * 2.2) * 0.04, aRz: -0.08 - Math.sin(t * 2.2) * 0.04,
+    });
+    const ACTIONS = {
+      idle,
+      hello: t => (t < 3.2
+        ? { ...idle(t), aRx: -0.15, aRz: -2.6 + Math.sin(t * 10) * 0.32, headZ: 0.12, headY: -0.12, hop: t < 0.4 ? Math.sin(t / 0.4 * Math.PI) * 1.5 : 0 }
+        : idle(t)),
+      wow: t => (t < 0.9
+        ? { hop: t < 0.5 ? Math.sin(t / 0.5 * Math.PI) * 5 : 0, aLz: 2.4, aRz: -2.4, headX: -0.3, bang: Math.min(1.25, t / 0.12) }
+        : { ...idle(t), aLx: -0.35, aLz: 1.15 + Math.sin(t * 2.4) * 0.06, aRx: -0.35, aRz: -1.15 - Math.sin(t * 2.4) * 0.06, rotY: 0.18, headX: 0.12, bang: t < 1.9 ? 1 : 0 }),
+      shrug: t => ({
+        ...idle(t), aLx: -0.55, aLz: 0.5, aRx: -0.55, aRz: -0.5, headZ: 0.22 + Math.sin(t * 1.5) * 0.05,
+        bodyY: Math.sin(t * 2.2) * 0.25 + (t < 0.6 ? Math.sin(t / 0.6 * Math.PI) * 0.9 : 0),
+      }),
+      wait: t => (t < 1.7
+        ? { ...idle(t), aRx: -1.75 + Math.sin(t * 13) * 0.07, aRz: -0.2, headY: 0, headX: 0.05 }
+        : { ...idle(t), rotY: 0.28, headY: 0.12, aLx: -0.12, aLz: 1.5 + Math.sin(t * 6) * 0.07, bodyY: 0 }),
+    };
+    const BASE = { hop: 0, rotY: 0, bodyY: 0, headX: 0, headY: 0, headZ: 0, aLx: 0, aLz: 0.08, aRx: 0, aRz: -0.08, bang: 0 };
+    const cur = { ...BASE, scale: 0 };
+    let action = 'idle', actionStart = performance.now() + 900;   // wave once the title has landed
+    let nextAction = 'hello';
+    const play = name => { action = 'idle'; nextAction = name; actionStart = performance.now() + 250; };
+
+    /* ── Which spot is on screen ── */
+    let active = slots[0], pending = null;
+    active.append(canvas);
+    const ratios = new Map();
+    const actionFor = slot => {
+      const kind = slot.dataset.mascot;
+      if (kind === 'projects') return draft.projects.length ? 'wow' : 'shrug';
+      return kind === 'contact' ? 'wait' : 'hello';
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => ratios.set(e.target, e.isIntersecting ? e.intersectionRatio : 0));
+        let best = null, bestR = 0.5;
+        ratios.forEach((r, slot) => { if (r > bestR) { bestR = r; best = slot; } });
+        if (best && best !== active && best !== pending) pending = best;
+        else if (best === active) pending = null;
+      }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+      slots.forEach(sl => io.observe(sl));
+    }
+
+    function resize() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    if ('ResizeObserver' in window) new ResizeObserver(resize).observe(canvas);
+    else window.addEventListener('resize', resize);
+    resize();
+
+    let last = performance.now();
+    function frame(now) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      // Hop to a new spot: shrink, move the canvas, grow and play that spot's gesture.
+      if (pending && cur.scale < 0.04) {
+        pending.append(canvas);
+        active = pending;
+        pending = null;
+        resize();
+        play(actionFor(active));
+      }
+      if (action === 'idle' && nextAction && now >= actionStart) { action = nextAction; nextAction = null; actionStart = now; }
+      const t = reduce ? 2.5 : Math.max(0, (now - actionStart) / 1000);
+      const target = { ...BASE, ...ACTIONS[action](t), scale: pending ? 0 : 1 };
+      if (reduce) { target.hop = 0; target.bodyY = 0; }
+      const k = reduce ? 1 : 1 - Math.exp(-12 * dt);
+      Object.keys(target).forEach(key => { cur[key] += (target[key] - cur[key]) * (key === 'scale' && !pending ? (reduce ? 1 : 1 - Math.exp(-7 * dt)) : k); });
+      pop.scale.setScalar(Math.max(0.0001, cur.scale));
+      root.position.y = cur.hop;
+      root.rotation.y = cur.rotY;
+      body.position.y = cur.bodyY;
+      neck.rotation.set(cur.headX, cur.headY, cur.headZ);
+      armL.rotation.set(cur.aLx, 0, cur.aLz);
+      armR.rotation.set(cur.aRx, 0, cur.aRz);
+      bang.visible = cur.bang > 0.02;
+      bang.scale.setScalar(Math.max(0.0001, cur.bang));
+      if ([...ratios.values()].some(r => r > 0) || !ratios.size) renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
   function initScrollApart() {
     if (reduce) return;
     const hero = $('.hero');
@@ -1673,6 +1878,7 @@
   const kit = window.THREE ? pixelKit(window.THREE) : null;
   initStage(kit);
   initFloaters(kit);
+  initMascot();
   syncProgress();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitContactWord);
   store.remove('sessionStorage', 'netvy-admin');   // older versions remembered the login
