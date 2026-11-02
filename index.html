@@ -233,6 +233,10 @@
     text-align: center;
   }
   .hero__word .ch { display: inline-block; }
+  /* Scrolling down pushes NETVY to the right and STUDIOS to the left. */
+  .hero__word { transform: translate3d(calc(var(--hero-p, 0) * var(--dir, 0) * 60vw), 0, 0); }
+  .hero__word--top { --dir: 1; }
+  .hero__word--bottom { --dir: -1; }
 
   .hero__foot {
     display: grid;
@@ -484,9 +488,9 @@
     <nav class="locale fade" aria-label="Idioma"></nav>
     <h1 class="sr-only">Netvy Studios</h1>
     <div class="hero__stack">
-      <p class="display hero__word" aria-hidden="true"><span class="line-inner">Netvy</span></p>
+      <p class="display hero__word hero__word--top" aria-hidden="true"><span class="line-inner">Netvy</span></p>
       <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Bloque de pasto. Arrástralo para girarlo." data-i18n-aria="block"></canvas>
-      <p class="display hero__word" aria-hidden="true"><span class="line-inner">Studios</span></p>
+      <p class="display hero__word hero__word--bottom" aria-hidden="true"><span class="line-inner">Studios</span></p>
     </div>
     <div class="hero__foot fade">
       <p class="label hero__region">US / WW</p>
@@ -511,7 +515,7 @@
     <button type="button" class="display contact__display" data-contact>
       <span class="contact__wordwrap">
         <span class="contact__word" id="contact-word" data-i18n="c1">Construyamos</span>
-        <span class="splash" data-i18n="splash" aria-hidden="true">¡Juntos!</span>
+        <span class="splash" id="splash" aria-hidden="true">¡Juntos!</span>
       </span>
     </button>
     <div class="contact__foot">
@@ -726,8 +730,6 @@
   const LANGS = {
     es: { label: 'ES', html: 'es', name: 'Español' },
     en: { label: 'EN', html: 'en', name: 'English' },
-    it: { label: 'IT', html: 'it', name: 'Italiano' },
-    ch: { label: 'CH', html: 'zh', name: '中文' },
   };
   const STR = {
     es: {
@@ -735,7 +737,7 @@
       caption: 'Somos un estudio que hace réplicas de proyectos muy famosos, como DEDsafio y Extremo.',
       drag: '(Arrastra para girar)', block: 'Bloque de pasto. Arrástralo para girarlo.',
       projects: 'Proyectos', noProjects: 'Muy pronto verás aquí nuestros proyectos.', view: 'Ver ↗',
-      c1: 'Construyamos', splash: '¡Juntos!', top: 'Volver arriba',
+      c1: 'Construyamos', top: 'Volver arriba',
       contactTitle: 'Contacto', close: 'Cerrar', copy: 'Copiar', copied: 'Copiado', selected: 'Seleccionado',
       open: 'Abrir ↗', noContacts: 'Todavía no hay datos de contacto.',
       'st.soon': 'Próximamente', 'st.progress': 'En proceso', 'st.done': 'Terminado', 'st.paused': 'Pausado',
@@ -745,32 +747,18 @@
       caption: 'We are a studio that makes replicas of very famous projects, like DEDsafio and Extremo.',
       drag: '(Drag to rotate)', block: 'Grass block. Drag to rotate.',
       projects: 'Projects', noProjects: 'Our projects are coming soon.', view: 'View ↗',
-      c1: "Let's build", splash: 'Together!', top: 'Back to top',
+      c1: "Let's build", top: 'Back to top',
       contactTitle: 'Contact', close: 'Close', copy: 'Copy', copied: 'Copied', selected: 'Selected',
       open: 'Open ↗', noContacts: 'No contact details yet.',
       'st.soon': 'Coming soon', 'st.progress': 'In progress', 'st.done': 'Finished', 'st.paused': 'Paused',
     },
-    it: {
-      cta: 'CONTATTACI', contactBtn: 'Contattaci',
-      caption: 'Siamo uno studio che realizza repliche di progetti molto famosi, come DEDsafio ed Extremo.',
-      drag: '(Trascina per ruotare)', block: 'Blocco d’erba. Trascina per ruotarlo.',
-      projects: 'Progetti', noProjects: 'Presto vedrai qui i nostri progetti.', view: 'Vedi ↗',
-      c1: 'Costruiamo', splash: 'Insieme!', top: 'Torna su',
-      contactTitle: 'Contatti', close: 'Chiudi', copy: 'Copia', copied: 'Copiato', selected: 'Selezionato',
-      open: 'Apri ↗', noContacts: 'Ancora nessun contatto.',
-      'st.soon': 'Prossimamente', 'st.progress': 'In corso', 'st.done': 'Completato', 'st.paused': 'In pausa',
-    },
-    ch: {
-      cta: '联系我们', contactBtn: '联系我们',
-      caption: '我们是一家工作室，可以复刻非常知名的项目，例如 DEDsafio 和 Extremo。',
-      drag: '（拖动旋转）', block: '草方块。拖动即可旋转。',
-      projects: '项目', noProjects: '我们的项目即将上线。', view: '查看 ↗',
-      c1: '一起建造', splash: '一起来！', top: '返回顶部',
-      contactTitle: '联系方式', close: '关闭', copy: '复制', copied: '已复制', selected: '已选中',
-      open: '打开 ↗', noContacts: '暂无联系方式。',
-      'st.soon': '即将推出', 'st.progress': '进行中', 'st.done': '已完成', 'st.paused': '已暂停',
-    },
   };
+  // Game-style splash phrases: a different one greets each visit.
+  const SPLASHES = {
+    es: ['¡Juntos!', '¡Bloque a bloque!', '¡Réplicas épicas!', '¡100% cúbico!', '¡Hecho a mano!', '¡Sin creepers!', '¡Ahora en 3D!', '¡Pico en mano!'],
+    en: ['Together!', 'Block by block!', 'Epic replicas!', '100% cubic!', 'Handcrafted!', 'No creepers!', 'Now in 3D!', 'Pickaxe ready!'],
+  };
+  const splashIndex = Math.floor(Math.random() * SPLASHES.es.length);
   let lang = 'es';
   const saved = store.get('localStorage', 'netvy-lang');
   if (saved && STR[saved]) lang = saved;
@@ -798,6 +786,7 @@
     });
     localeNav.replaceChildren(...nodes);
     if (keepFocus) localeNav.querySelector('button').focus({ preventScroll: true });
+    $('#splash').textContent = SPLASHES[lang][splashIndex];
     renderProjects();
     renderContactDialog();
     fitContactWord();
@@ -975,7 +964,6 @@
   function unlock() {
     if (adminDialog.open) adminDialog.close();
     adminSection.hidden = false;
-    store.set('sessionStorage', 'netvy-admin', '1');
     const stash = store.get('sessionStorage', 'netvy-draft');   // edits kept across a failed publish
     store.remove('sessionStorage', 'netvy-draft');
     if (stash) {
@@ -988,7 +976,6 @@
     renderAdmin();
   }
   function lock() {
-    store.remove('sessionStorage', 'netvy-admin');
     adminSection.hidden = true;
     $('#admin-pass').value = '';
     loginMsg.textContent = '';
@@ -1437,6 +1424,7 @@
         const size = base * (sprite ? 1.05 : 0.75 + rnd() * 0.3);
         return {
           obj, x, y, size,
+          dir: x < W / 2 ? -1 : 1,
           tilt: sprite ? 0.1 : 0.45 + rnd() * 0.2,
           roll: (rnd() - 0.5) * 0.3,
           spin: (0.4 + rnd() * 0.5) * (rnd() < 0.5 ? -1 : 1),
@@ -1451,11 +1439,16 @@
     }
     function draw(now) {
       const t = (now - t0) / 1000;
+      const p = reduce ? 0 : clamp(window.scrollY / Math.max(1, H), 0, 1);   // 0 at the top of the page
+      const fly = p * p * (3 - 2 * p);
       items.forEach(it => {
         const k = it.appearAt == null ? 1 : easeOutBack(clamp((t - it.appearAt) / 0.7, 0, 1));
         it.obj.scale.setScalar(Math.max(0.0001, k * it.size));
-        it.obj.position.set(it.x, -(it.y + (reduce ? 0 : Math.sin(t * it.bobSpeed + it.phase) * it.bob)), 0);
-        it.obj.rotation.set(it.tilt, it.phase + (reduce ? 0 : t * it.spin), it.roll);
+        it.obj.position.set(
+          it.x + it.dir * fly * (W * 0.6 + it.size),
+          -(it.y + (reduce ? 0 : Math.sin(t * it.bobSpeed + it.phase) * it.bob) - fly * it.size),
+          0);
+        it.obj.rotation.set(it.tilt, it.phase + (reduce ? 0 : t * it.spin) + fly * 4 * it.dir, it.roll);
       });
       renderer.render(scene, camera);
     }
@@ -1643,15 +1636,29 @@
     start();
   }
 
+  function initScrollApart() {
+    if (reduce) return;
+    const hero = $('.hero');
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const p = clamp(window.scrollY / Math.max(1, hero.offsetHeight), 0, 1);
+      hero.style.setProperty('--hero-p', (p * p * (3 - 2 * p)).toFixed(4));
+    };
+    window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
   /* ── Boot ── */
   splitLetters();
+  initScrollApart();
   applyLang(lang, false);
   const kit = window.THREE ? pixelKit(window.THREE) : null;
   initStage(kit);
   initFloaters(kit);
   syncProgress();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitContactWord);
-  if (store.get('sessionStorage', 'netvy-admin') === '1') unlock();
+  store.remove('sessionStorage', 'netvy-admin');   // older versions remembered the login
   if (location.hash === '#admin') openAdmin();
 })();
 </script>

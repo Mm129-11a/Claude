@@ -8,8 +8,8 @@ Todo vive en un solo archivo, **`index.html`**.
 - **Portada:** "NETVY STUDIOS" en tipografía gigante y un bloque de pasto 3D (Three.js) que se gira arrastrándolo con el dedo o el ratón. Mientras lo arrastras, la página no se mueve.
 - **Proyectos:** lista con nombre, año, estado (Próximamente / En proceso con % / Terminado / Pausado), tipo y enlace opcional.
 - **Contacto:** el botón «Contáctanos» abre una ventana con los datos de contacto que se ponen desde el admin.
-- **Admin** (abajo del todo): con contraseña. Sirve para añadir, editar, ordenar y borrar proyectos, y para gestionar los datos de contacto.
-- Idiomas: ES (por defecto), EN, IT, CH.
+- **Admin** (oculto): se abre tocando «© 2026 netvy studios» al final de la página, y siempre pide la contraseña. Sirve para añadir, editar, ordenar y borrar proyectos, y para gestionar los datos de contacto.
+- Idiomas: español (por defecto) e inglés.
 
 ## Dónde se guardan los cambios del admin
 
