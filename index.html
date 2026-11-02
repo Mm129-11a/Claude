@@ -4,7 +4,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&family=Silkscreen&display=swap">
 <style id="page-css">
   /* Layout: a black gallery wall — monumental type, one floating block, quiet 12px labels. */
   :root {
@@ -13,10 +13,13 @@
     --color-paper-white: #fefefe;
     --color-faint-white: #2a2a2a;
     --color-scrim: rgba(14, 14, 14, .86);
+    --color-splash: #ffef4a;          /* game-style yellow splash text */
+    --color-splash-shadow: #3f3a0e;
 
     /* Families: ak (sans workhorse) / gs (editorial serif, project titles only) */
     --font-ak: 'ak', 'Neue Haas Grotesk Display Pro', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --font-gs: 'gs', 'GT Sectra', 'Playfair Display', ui-serif, Georgia, 'Times New Roman', serif;
+    --font-pixel: 'Silkscreen', ui-monospace, 'Courier New', monospace;
 
     /* Type scale — whispers and shouts, no middle ground */
     --text-caption: 12px;     --leading-caption: 1.5;
@@ -27,10 +30,10 @@
     --text-heading-lg: clamp(40px, 5vw, 72px);  --leading-heading-lg: 0.9;
     --leading-display: 0.8;
     /* Hero words: "STUDIOS" (4.11em) always fits the width; never taller than ~20% of the screen */
-    --display-hero: clamp(44px, min(calc((100vw - 40px) / 4.35), 19vh), 216px);
-    --display-contact: clamp(44px, calc((100vw - 40px) / 3.6), 216px);
+    --display-hero: clamp(44px, min(calc((100vw - 40px) / 4.35), 17vh), 216px);
+    --display-contact: clamp(36px, calc((100vw - 40px) / 8.4), 216px);   /* refined in JS per language */
     /* The block: square, between the words, shrinks on short or narrow screens */
-    --stage: clamp(180px, min(88vw, 50vh), 620px);
+    --stage: clamp(180px, min(88vw, 45vh), 620px);
 
     --font-weight-regular: 400;
     --font-weight-bold: 700;
@@ -49,8 +52,8 @@
   }
   @supports (height: 1svh) {
     :root {
-      --display-hero: clamp(44px, min(calc((100vw - 40px) / 4.35), 19svh), 216px);
-      --stage: clamp(180px, min(88vw, 50svh), 620px);
+      --display-hero: clamp(44px, min(calc((100vw - 40px) / 4.35), 17svh), 216px);
+      --stage: clamp(180px, min(88vw, 45svh), 620px);
     }
   }
 
@@ -99,7 +102,7 @@
     width: var(--stage);
     height: var(--stage);
     max-width: 100%;
-    margin-block: calc(var(--stage) * -0.15) calc(var(--stage) * -0.1);   /* the block just touches both words */
+    margin-block: calc(var(--stage) * -0.07) calc(var(--stage) * -0.04);   /* close to the words, never over them */
     z-index: 3;
     display: block;
     touch-action: none;
@@ -204,8 +207,18 @@
     display: grid;
     grid-template-rows: 1fr auto;
     gap: var(--spacing-32);
-    padding-top: 72px;                 /* clears the nav and the language switch */
+    padding-top: 80px;                 /* clears the nav and the language switch */
   }
+  .hero__bg {                          /* floating game items, kept clear of every text */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+  }
+  .hero__foot { position: relative; z-index: 1; }
   .hero__stack {
     display: flex;
     flex-direction: column;
@@ -219,6 +232,7 @@
     font-size: var(--display-hero);
     text-align: center;
   }
+  .hero__word .ch { display: inline-block; }
 
   .hero__foot {
     display: grid;
@@ -302,22 +316,40 @@
   }
   .contact__display {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
     width: 100%;
+    padding-top: 1.2em;               /* room for the splash above the word */
     font-size: var(--display-contact);
     text-align: center;
   }
-  .contact__display:hover { opacity: .85; }
+  .contact__display:hover .contact__word { opacity: .85; }
+  .contact__wordwrap { position: relative; display: inline-block; }
+  .splash {
+    position: absolute;
+    right: 6%;
+    bottom: 100%;
+    margin-bottom: .1em;
+    font-family: var(--font-pixel);
+    font-size: max(15px, .2em);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-splash);
+    text-shadow: .12em .12em 0 var(--color-splash-shadow);
+    transform: rotate(-12deg);
+    transform-origin: 0 100%;
+    white-space: nowrap;
+    pointer-events: none;
+  }
   .contact__foot {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--gutter);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--spacing-8) var(--gutter);
     padding-block: var(--spacing-32) var(--spacing-16);
   }
-  .contact__foot > :nth-child(1) { grid-column: 1 / 5; }
-  .contact__foot > :nth-child(2) { grid-column: 5 / 9; }
-  .contact__foot > :nth-child(3) { grid-column: 9 / 13; justify-self: end; }
+  .foot__secret { cursor: default; -webkit-tap-highlight-color: transparent; }
 
   /* ───────────────────────── Contact dialog ───────────────────────── */
   .dialog {
@@ -389,13 +421,21 @@
 
   /* ───────────────────────── Motion ───────────────────────── */
   @media (prefers-reduced-motion: no-preference) {
-    .hero__word .line-inner { animation: enter 1.4s var(--ease-out) both; }
-    .hero__word + .stage + .hero__word .line-inner { animation-delay: .12s; }
+    .hero__word .ch {
+      animation: drop .85s cubic-bezier(.25, 1.45, .5, 1) both;
+      animation-delay: calc(var(--i, 0) * 65ms + 150ms);
+    }
+    .splash { animation: splash 1s ease-in-out infinite; }
     .fade { animation: fade 1.2s .7s var(--ease-out) both; }
   }
-  @keyframes enter {
-    from { transform: translate3d(0, 25%, 0); opacity: 0; }
+  @keyframes drop {
+    from { transform: translate3d(0, -.75em, 0) rotate(-6deg); opacity: 0; }
+    40%  { opacity: 1; }
     to   { transform: none; opacity: 1; }
+  }
+  @keyframes splash {
+    0%, 100% { transform: rotate(-12deg) scale(1); }
+    50%      { transform: rotate(-12deg) scale(1.08); }
   }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -413,10 +453,6 @@
     }
     .entry__title { grid-column: 1 / -1; }
 
-    .contact__foot { grid-template-columns: 1fr 1fr; row-gap: var(--spacing-8); }
-    .contact__foot > :nth-child(1) { grid-column: 1 / -1; }
-    .contact__foot > :nth-child(2) { grid-column: 1; }
-    .contact__foot > :nth-child(3) { grid-column: 2; }
 
     .admin__cols { grid-template-columns: 1fr; }
   }
@@ -440,6 +476,7 @@
 <main id="top">
 
   <section class="hero">
+    <canvas id="floaters" class="hero__bg" aria-hidden="true"></canvas>
     <header class="nav fade">
       <a class="nav__brand" href="#top">netvy studios</a>
       <button type="button" class="nav__cta" data-contact data-i18n="cta">CONTÁCTANOS</button>
@@ -472,29 +509,21 @@
 
   <section class="contact" id="contacto" aria-label="Contacto">
     <button type="button" class="display contact__display" data-contact>
-      <span data-i18n="c1">Di</span>
-      <span data-i18n="c2">hola</span>
+      <span class="contact__wordwrap">
+        <span class="contact__word" id="contact-word" data-i18n="c1">Construyamos</span>
+        <span class="splash" data-i18n="splash" aria-hidden="true">¡Juntos!</span>
+      </span>
     </button>
     <div class="contact__foot">
-      <p>© 2026 netvy studios</p>
+      <button type="button" class="foot__secret" id="admin-open">© 2026 netvy studios</button>
       <a href="#top" data-i18n="top">Volver arriba</a>
-      <a href="#admin">Admin</a>
     </div>
   </section>
 
-  <section class="admin" id="admin" aria-labelledby="admin-title">
+  <section class="admin" id="admin" aria-labelledby="admin-title" hidden>
     <h2 class="label" id="admin-title">Admin</h2>
 
-    <form class="admin__login" id="admin-login" autocomplete="off">
-      <label class="field" for="admin-pass">
-        <span class="field__label">Contraseña</span>
-        <input type="password" id="admin-pass" name="admin-pass" autocomplete="current-password" required>
-      </label>
-      <button type="submit" class="btn">Entrar</button>
-      <p class="admin__msg" id="admin-login-msg" role="status"></p>
-    </form>
-
-    <div class="admin__panel" id="admin-panel" hidden>
+    <div class="admin__panel" id="admin-panel">
       <div class="admin__bar">
         <p class="admin__mode" id="admin-mode"></p>
         <button type="button" class="btn btn--ghost" id="admin-logout">Salir</button>
@@ -586,9 +615,24 @@
   <ul class="dialog__list" id="contact-list"></ul>
   <p class="dialog__empty" id="contact-empty" data-i18n="noContacts">Todavía no hay datos de contacto.</p>
 </dialog>
+
+<dialog class="dialog" id="admin-dialog" aria-labelledby="admin-dialog-title">
+  <div class="dialog__head">
+    <h2 class="dialog__title" id="admin-dialog-title">Admin</h2>
+    <button type="button" class="btn btn--ghost" data-close>Cerrar</button>
+  </div>
+  <form class="admin__login" id="admin-login" autocomplete="off">
+    <label class="field" for="admin-pass">
+      <span class="field__label">Contraseña</span>
+      <input type="password" id="admin-pass" name="admin-pass" autocomplete="current-password" required>
+    </label>
+    <button type="submit" class="btn">Entrar</button>
+    <p class="admin__msg" id="admin-login-msg" role="status"></p>
+  </form>
+</dialog>
 </template>
 <div id="app"></div>
-<script type="application/json" id="site-data">{"projects":[{"id":"dedsafio","name":"DEDsafio","year":"2026","type":"Réplica","status":"soon","progress":0,"url":""},{"id":"extremo","name":"Extremo","year":"2026","type":"Réplica","status":"soon","progress":0,"url":""}],"contacts":[]}</script>
+<script type="application/json" id="site-data">{"projects":[],"contacts":[]}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script id="page-js">
 (() => {
@@ -597,7 +641,7 @@
   /* ── Canonical source, captured before anything renders. The admin panel
         rebuilds the whole page from these pieces + the data when it saves. ── */
   const THREE_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-  const HEAD_LINKS = `<title>Netvy Studios</title><meta name="claude:viewport-fit-sides" content="cover"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&display=swap">`;
+  const HEAD_LINKS = `<title>Netvy Studios</title><meta name="claude:viewport-fit-sides" content="cover"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2367462f'/%3E%3Crect width='16' height='5' fill='%23568634'/%3E%3C/svg%3E"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Playfair+Display&family=Silkscreen&display=swap">`;
   const PASS_HASH = '4b4b91297411e06564ee1bf9eb2e1bc803a15310218b7ae6ce94f84a1524f0f4';
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -690,8 +734,8 @@
       cta: 'CONTÁCTANOS', contactBtn: 'Contáctanos',
       caption: 'Somos un estudio que hace réplicas de proyectos muy famosos, como DEDsafio y Extremo.',
       drag: '(Arrastra para girar)', block: 'Bloque de pasto. Arrástralo para girarlo.',
-      projects: 'Proyectos', noProjects: 'Todavía no hay proyectos.', view: 'Ver ↗',
-      c1: 'Di', c2: 'hola', top: 'Volver arriba',
+      projects: 'Proyectos', noProjects: 'Muy pronto verás aquí nuestros proyectos.', view: 'Ver ↗',
+      c1: 'Construyamos', splash: '¡Juntos!', top: 'Volver arriba',
       contactTitle: 'Contacto', close: 'Cerrar', copy: 'Copiar', copied: 'Copiado', selected: 'Seleccionado',
       open: 'Abrir ↗', noContacts: 'Todavía no hay datos de contacto.',
       'st.soon': 'Próximamente', 'st.progress': 'En proceso', 'st.done': 'Terminado', 'st.paused': 'Pausado',
@@ -700,8 +744,8 @@
       cta: 'GET IN TOUCH', contactBtn: 'Contact us',
       caption: 'We are a studio that makes replicas of very famous projects, like DEDsafio and Extremo.',
       drag: '(Drag to rotate)', block: 'Grass block. Drag to rotate.',
-      projects: 'Projects', noProjects: 'No projects yet.', view: 'View ↗',
-      c1: 'Get in', c2: 'touch', top: 'Back to top',
+      projects: 'Projects', noProjects: 'Our projects are coming soon.', view: 'View ↗',
+      c1: "Let's build", splash: 'Together!', top: 'Back to top',
       contactTitle: 'Contact', close: 'Close', copy: 'Copy', copied: 'Copied', selected: 'Selected',
       open: 'Open ↗', noContacts: 'No contact details yet.',
       'st.soon': 'Coming soon', 'st.progress': 'In progress', 'st.done': 'Finished', 'st.paused': 'Paused',
@@ -710,8 +754,8 @@
       cta: 'CONTATTACI', contactBtn: 'Contattaci',
       caption: 'Siamo uno studio che realizza repliche di progetti molto famosi, come DEDsafio ed Extremo.',
       drag: '(Trascina per ruotare)', block: 'Blocco d’erba. Trascina per ruotarlo.',
-      projects: 'Progetti', noProjects: 'Ancora nessun progetto.', view: 'Vedi ↗',
-      c1: 'Dicci', c2: 'ciao', top: 'Torna su',
+      projects: 'Progetti', noProjects: 'Presto vedrai qui i nostri progetti.', view: 'Vedi ↗',
+      c1: 'Costruiamo', splash: 'Insieme!', top: 'Torna su',
       contactTitle: 'Contatti', close: 'Chiudi', copy: 'Copia', copied: 'Copiato', selected: 'Selezionato',
       open: 'Apri ↗', noContacts: 'Ancora nessun contatto.',
       'st.soon': 'Prossimamente', 'st.progress': 'In corso', 'st.done': 'Completato', 'st.paused': 'In pausa',
@@ -720,8 +764,8 @@
       cta: '联系我们', contactBtn: '联系我们',
       caption: '我们是一家工作室，可以复刻非常知名的项目，例如 DEDsafio 和 Extremo。',
       drag: '（拖动旋转）', block: '草方块。拖动即可旋转。',
-      projects: '项目', noProjects: '暂无项目。', view: '查看 ↗',
-      c1: '联系', c2: '我们', top: '返回顶部',
+      projects: '项目', noProjects: '我们的项目即将上线。', view: '查看 ↗',
+      c1: '一起建造', splash: '一起来！', top: '返回顶部',
       contactTitle: '联系方式', close: '关闭', copy: '复制', copied: '已复制', selected: '已选中',
       open: '打开 ↗', noContacts: '暂无联系方式。',
       'st.soon': '即将推出', 'st.progress': '进行中', 'st.done': '已完成', 'st.paused': '已暂停',
@@ -756,6 +800,30 @@
     if (keepFocus) localeNav.querySelector('button').focus({ preventScroll: true });
     renderProjects();
     renderContactDialog();
+    fitContactWord();
+  }
+
+  // The bottom word fills the width in every language.
+  function fitContactWord() {
+    const word = $('#contact-word'), wrap = word.parentElement, box = $('.contact__display');
+    wrap.style.fontSize = '100px';
+    const w = word.getBoundingClientRect().width;
+    const avail = box.clientWidth;
+    if (!w || !avail) { wrap.style.fontSize = ''; return; }
+    wrap.style.fontSize = Math.max(32, Math.min(216, Math.floor(avail / w * 96))) + 'px';
+  }
+  window.addEventListener('resize', fitContactWord);
+
+  // Each letter of the title drops in on its own when the page opens.
+  function splitLetters() {
+    let i = 0;
+    $$('.hero__word .line-inner').forEach(span => {
+      span.replaceChildren(...[...span.textContent].map(ch => {
+        const c = el('span', 'ch', ch);
+        c.style.setProperty('--i', i++);
+        return c;
+      }));
+    });
   }
 
   /* ════════════════════════════════════════════════════════════════════
@@ -900,12 +968,13 @@
   }
 
   const loginForm = $('#admin-login'), loginMsg = $('#admin-login-msg'), panel = $('#admin-panel');
+  const adminSection = $('#admin'), adminDialog = $('#admin-dialog');
   const saveBtn = $('#admin-save'), downloadBtn = $('#admin-download'), statusEl = $('#admin-status');
   const setStatus = msg => { statusEl.textContent = msg; };
 
   function unlock() {
-    loginForm.hidden = true;
-    panel.hidden = false;
+    if (adminDialog.open) adminDialog.close();
+    adminSection.hidden = false;
     store.set('sessionStorage', 'netvy-admin', '1');
     const stash = store.get('sessionStorage', 'netvy-draft');   // edits kept across a failed publish
     store.remove('sessionStorage', 'netvy-draft');
@@ -920,17 +989,28 @@
   }
   function lock() {
     store.remove('sessionStorage', 'netvy-admin');
-    panel.hidden = true;
-    loginForm.hidden = false;
+    adminSection.hidden = true;
     $('#admin-pass').value = '';
-    loginMsg.textContent = dirty ? 'Saliste con cambios sin publicar: siguen en esta pestaña hasta que la recargues.' : '';
+    loginMsg.textContent = '';
   }
+  const showAdmin = () => adminSection.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  function openAdmin() {
+    if (!adminSection.hidden) { showAdmin(); return; }
+    loginMsg.textContent = '';
+    if (typeof adminDialog.showModal === 'function') adminDialog.showModal(); else adminDialog.setAttribute('open', '');
+    $('#admin-pass').focus();
+  }
+  $('#admin-open').addEventListener('click', openAdmin);
+  $$('[data-close]', adminDialog).forEach(b => b.addEventListener('click', () => adminDialog.close()));
+  adminDialog.addEventListener('click', e => { if (e.target === adminDialog) adminDialog.close(); });
+  window.addEventListener('hashchange', () => { if (location.hash === '#admin') openAdmin(); });
   loginForm.addEventListener('submit', async e => {
     e.preventDefault();
     const pass = $('#admin-pass').value;
     if ((await sha256Hex(pass)) === PASS_HASH) {
       loginMsg.textContent = '';
       unlock();
+      showAdmin();
     } else {
       loginMsg.textContent = 'Contraseña incorrecta.';
       $('#admin-pass').select();
@@ -977,7 +1057,7 @@
     return b;
   }
   function renderAdmin() {
-    if (panel.hidden) return;
+    if (adminSection.hidden) return;
     const ol = $('#admin-projects');
     if (!draft.projects.length) {
       ol.replaceChildren(el('li', 'admin__meta', 'Aún no hay proyectos. Añade el primero con el formulario de abajo.'));
@@ -1134,36 +1214,9 @@
   });
 
   /* ════════════════════════════════════════════════════════════════════
-     3D stage — a pixel-art grass block floating in the hero.
-     Drag it (finger or mouse) to spin it; the page never scrolls while
-     you do. It keeps its momentum, turns grass-side up again and idles.
+     Pixel-art kit — seeded 16×16 textures for every block on the page.
      ════════════════════════════════════════════════════════════════════ */
-  function initStage() {
-    const canvas = $('#stage');
-    const T = window.THREE;
-    if (!T) { canvas.remove(); return; }
-    let renderer;
-    try {
-      renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    } catch (err) {
-      canvas.remove();
-      return;
-    }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setClearColor(0x000000, 0);
-    renderer.outputEncoding = T.sRGBEncoding;
-
-    const scene = new T.Scene();
-    const camera = new T.PerspectiveCamera(12, 1, 0.1, 100);   // long lens ≈ isometric look
-    camera.position.set(0, 0, 18.5);
-
-    // Game-style face shading at rest: top and left face at full brightness, right face ≈ 75%.
-    scene.add(new T.AmbientLight(0xffffff, 0.3));
-    const key = new T.DirectionalLight(0xffffff, 1.015);
-    key.position.set(-3.35, 2.52, 9.07);
-    scene.add(key);
-
-    /* ── 16×16 pixel-art grass block, seeded so every visit looks the same ── */
+  function pixelKit(T) {
     const DIRT = [[0.13, '#452c1a'], [0.21, '#4f3822'], [0.33, '#5f432e'], [0.55, '#67462f'], [0.64, '#6e5038'], [0.87, '#7c5b41'], [1, '#937052']];
     const GRASS_TOP = [[0.17, '#385830'], [0.34, '#3f6437'], [0.53, '#44673c'], [0.73, '#496e3f'], [0.88, '#527a47'], [1, '#5c874f']];
     const GRASS_SIDE = [[0.15, '#4c742b'], [0.47, '#568634'], [0.71, '#5c913b'], [0.88, '#6b9447'], [1, '#79a153']];
@@ -1207,6 +1260,263 @@
         if (rand() < 0.25) px(x, d + 1, 1, 1, '#452c1a');
       }
     }
+    const STONE = [[0.25, '#6a6a6a'], [0.55, '#787878'], [0.85, '#858585'], [1, '#939393']];
+    const BARK = [[0.3, '#4f3b22'], [0.7, '#62492b'], [1, '#735735']];
+    const PLANK = [[0.3, '#9a7a48'], [0.7, '#a78753'], [1, '#b3935d']];
+    const LEAF = [[0.25, '#2c5e1f'], [0.6, '#3a7429'], [0.9, '#478a32'], [1, '#56a03b']];
+    function paintStone(px, pick, rand, at) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(STONE));
+      for (let i = 0; i < 10; i++) px(at(15), at(16), 2, 1, rand() < 0.5 ? '#5b5b5b' : '#9c9c9c');
+    }
+    const ore = (light, mid, dark) => (px, pick, rand, at) => {
+      paintStone(px, pick, rand, at);
+      for (let k = 0; k < 4; k++) {
+        const cx = 2 + at(11), cy = 2 + at(11);
+        px(cx, cy, 2, 2, mid);
+        px(cx + 1, cy, 1, 1, light);
+        px(cx, cy + 1, 1, 1, dark);
+        if (rand() < 0.6) px(cx + 2, cy + 1, 1, 1, mid);
+        if (rand() < 0.6) px(cx - 1, cy, 1, 1, dark);
+      }
+    };
+    function paintLogSide(px, pick, rand) {
+      for (let x = 0; x < 16; x++) {
+        const base = pick(BARK);
+        for (let y = 0; y < 16; y++) px(x, y, 1, 1, rand() < 0.25 ? pick(BARK) : base);
+      }
+    }
+    function paintLogTop(px, pick) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+        const d = Math.max(Math.abs(x - 7.5), Math.abs(y - 7.5));
+        px(x, y, 1, 1, d > 6.5 ? pick(BARK) : (Math.floor(d) % 2 ? '#b38f58' : '#9e7b47'));
+      }
+    }
+    function paintPlanks(px, pick) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(PLANK));
+      for (let y = 3; y < 16; y += 4) px(0, y, 16, 1, '#6c5230');
+      for (let b = 0; b < 4; b++) px(b % 2 ? 4 : 11, b * 4, 1, 3, '#7c5f37');
+    }
+    function paintLeaves(px, pick, rand, at) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(LEAF));
+      for (let i = 0; i < 16; i++) px(at(16), at(16), 1, 1, '#1a3812');
+    }
+    const TNT_LETTERS = ['###.#..#.###', '.#..##.#..#.', '.#..#.##..#.', '.#..#..#..#.', '.#..#..#..#.'];
+    function paintTntSide(px) {
+      for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+        const band = y >= 5 && y <= 11;
+        px(x, y, 1, 1, band ? '#e8e6e1' : (x % 4 === 0 ? '#9c2a1e' : x % 4 === 2 ? '#d8513f' : '#c23b2b'));
+      }
+      TNT_LETTERS.forEach((row, r) => [...row].forEach((c, i) => { if (c === '#') px(2 + i, 6 + r, 1, 1, '#1b1b1b'); }));
+    }
+    function paintTntTop(px) { px(0, 0, 16, 16, '#b2392b'); px(3, 3, 10, 10, '#cf4a39'); px(7, 7, 2, 2, '#2b2b2b'); }
+    function paintTntBottom(px) { px(0, 0, 16, 16, '#b2392b'); px(3, 3, 10, 10, '#c4412f'); }
+    return {
+      pixelTexture, paintDirt, paintGrassTop, paintGrassSide, paintStone,
+      paintDiamondOre: ore('#e3fffd', '#4fe3e1', '#178f94'),
+      paintGoldOre: ore('#fff8b0', '#f3cf36', '#a87a0c'),
+      paintLogSide, paintLogTop, paintPlanks, paintLeaves, paintTntSide, paintTntTop, paintTntBottom,
+    };
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     Floating items — little blocks and pixel items drifting in the free
+     space of the hero. Their spots are measured so they never sit on text.
+     ════════════════════════════════════════════════════════════════════ */
+  function initFloaters(kit) {
+    const canvas = $('#floaters'), hero = $('.hero');
+    const T = window.THREE;
+    if (!T || !kit) { canvas.remove(); return; }
+    let renderer;
+    try {
+      renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch (err) {
+      canvas.remove();
+      return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputEncoding = T.sRGBEncoding;
+    const scene = new T.Scene();
+    const camera = new T.OrthographicCamera(0, 1, 0, -1, -2000, 2000);   // 1 unit = 1 CSS pixel
+    camera.position.z = 500;
+    scene.add(new T.AmbientLight(0xffffff, 0.35));
+    const key = new T.DirectionalLight(0xffffff, 0.95);
+    key.position.set(-3.35, 2.52, 9.07);
+    scene.add(key);
+
+    const box = new T.BoxGeometry(1, 1, 1);
+    const L = tex => new T.MeshLambertMaterial({ map: tex });
+    const tx = (seed, paint) => L(kit.pixelTexture(seed, paint));
+    const same = m => [m, m, m, m, m, m];
+    const grassSide = tx(11, kit.paintGrassSide), logSide = tx(31, kit.paintLogSide), logTop = tx(33, kit.paintLogTop), tntSide = tx(53, kit.paintTntSide);
+    const MATS = {
+      grass: [grassSide, grassSide, tx(37, kit.paintGrassTop), tx(41, kit.paintDirt), grassSide, grassSide],
+      stone: same(tx(5, kit.paintStone)),
+      diamondOre: same(tx(17, kit.paintDiamondOre)),
+      goldOre: same(tx(29, kit.paintGoldOre)),
+      log: [logSide, logSide, logTop, logTop, logSide, logSide],
+      planks: same(tx(43, kit.paintPlanks)),
+      leaves: same(tx(47, kit.paintLeaves)),
+      tnt: [tntSide, tntSide, tx(55, kit.paintTntTop), tx(57, kit.paintTntBottom), tntSide, tntSide],
+    };
+    // Pixel items, extruded one pixel deep like dropped items in the game.
+    const SPRITES = {
+      gem: {
+        rows: ['...KKKKKK...', '..KWWCCCCK..', '.KWCCCCCCDK.', 'KCCCCCCCCDDK', 'KCCCCCCCDDDK', '.KCCCCCDDDK.', '..KCCCDDDK..', '...KCDDDK...', '....KDDK....', '.....KK.....'],
+        pal: { K: '#0d4a4f', W: '#eaffff', C: '#4fe3e1', D: '#1d9fa5' },
+      },
+      apple: {
+        rows: ['......B.....', '.....B.LL...', '.....BLL....', '..RRRBRRR...', '.RRRRRRRRR..', 'RRWRRRRRRRR.', 'RWRRRRRRRRD.', 'RRRRRRRRRRD.', 'RRRRRRRRRDD.', '.RRRRRRRDD..', '..RRRRRDD...', '...RR.RR....'],
+        pal: { B: '#5a3d1e', L: '#4c9a2a', R: '#d0312d', W: '#ff8a80', D: '#8e1b17' },
+      },
+    };
+    const spriteMat = new T.MeshLambertMaterial();
+    function spriteMesh(def) {
+      const cells = [];
+      def.rows.forEach((row, y) => [...row].forEach((ch, x) => { if (def.pal[ch]) cells.push([x, y, def.pal[ch]]); }));
+      const w = def.rows[0].length, h = def.rows.length, n = Math.max(w, h);
+      const mesh = new T.InstancedMesh(box, spriteMat, cells.length);
+      const m = new T.Matrix4(), c = new T.Color(), sc = new T.Vector3(1 / n, 1 / n, 1 / n);
+      cells.forEach(([x, y, col], i) => {
+        m.makeTranslation((x - w / 2 + 0.5) / n, -(y - h / 2 + 0.5) / n, 0).scale(sc);
+        mesh.setMatrixAt(i, m);
+        mesh.setColorAt(i, c.set(col).convertSRGBToLinear());
+      });
+      return mesh;
+    }
+    const TYPES = ['diamondOre', 'tnt', 'gem', 'log', 'goldOre', 'apple', 'leaves', 'planks', 'grass', 'stone'];
+    const easeOutBack = x => 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow(x - 1, 2);
+
+    let items = [], W = 0, H = 0, firstLayout = true;
+    const t0 = performance.now();
+    function layout() {
+      const hr = hero.getBoundingClientRect();
+      W = Math.round(hr.width); H = Math.round(hr.height);
+      if (!W || !H) return;
+      renderer.setSize(W, H, false);
+      camera.right = W; camera.bottom = -H;
+      camera.updateProjectionMatrix();
+
+      // Everything a floating item must stay away from.
+      const pad = 14;
+      const avoid = [...$$('.hero__word .line-inner', hero), $('#stage'), ...$$('.nav > *', hero), $('.locale', hero), ...$$('.hero__foot > *', hero)]
+        .filter(Boolean)
+        .map(n => n.getBoundingClientRect())
+        .filter(r => r.width && r.height)
+        .map(r => ({ l: r.left - hr.left - pad, t: r.top - hr.top - pad, r: r.right - hr.left + pad, b: r.bottom - hr.top + pad }));
+      const base = clamp(Math.min(W, H) * 0.075, 28, 72);
+      const half = base * 0.8, step = Math.max(10, base * 0.5);
+      const spots = [];
+      for (let y = half + 8; y <= H - half - 8; y += step) {
+        for (let x = half + 4; x <= W - half - 4; x += step) {
+          if (!avoid.some(b => x + half > b.l && x - half < b.r && y + half > b.t && y - half < b.b)) spots.push([x, y]);
+        }
+      }
+      // Spread them out: always take the free spot farthest from the ones already used.
+      let seed = 7;
+      const rnd = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
+      const max = W < 700 ? 6 : 10, picks = [];
+      if (spots.length) picks.push(spots[Math.floor(rnd() * spots.length)]);
+      while (picks.length < max && spots.length) {
+        let best = null, bestD = -1;
+        for (const sp of spots) {
+          let d = Infinity;
+          for (const pk of picks) d = Math.min(d, Math.hypot(sp[0] - pk[0], sp[1] - pk[1]));
+          if (d > bestD) { bestD = d; best = sp; }
+        }
+        if (bestD < base * 1.9) break;
+        picks.push(best);
+      }
+
+      items.forEach(it => scene.remove(it.obj));
+      items = picks.map(([x, y], i) => {
+        const type = TYPES[i % TYPES.length];
+        const sprite = !!SPRITES[type];
+        const obj = sprite ? spriteMesh(SPRITES[type]) : new T.Mesh(box, MATS[type]);
+        scene.add(obj);
+        const size = base * (sprite ? 1.05 : 0.75 + rnd() * 0.3);
+        return {
+          obj, x, y, size,
+          tilt: sprite ? 0.1 : 0.45 + rnd() * 0.2,
+          roll: (rnd() - 0.5) * 0.3,
+          spin: (0.4 + rnd() * 0.5) * (rnd() < 0.5 ? -1 : 1),
+          bob: size * 0.12,
+          bobSpeed: 0.9 + rnd() * 0.6,
+          phase: rnd() * Math.PI * 2,
+          appearAt: firstLayout && !reduce ? 0.7 + i * 0.09 : null,
+        };
+      });
+      firstLayout = false;
+      draw(performance.now());
+    }
+    function draw(now) {
+      const t = (now - t0) / 1000;
+      items.forEach(it => {
+        const k = it.appearAt == null ? 1 : easeOutBack(clamp((t - it.appearAt) / 0.7, 0, 1));
+        it.obj.scale.setScalar(Math.max(0.0001, k * it.size));
+        it.obj.position.set(it.x, -(it.y + (reduce ? 0 : Math.sin(t * it.bobSpeed + it.phase) * it.bob)), 0);
+        it.obj.rotation.set(it.tilt, it.phase + (reduce ? 0 : t * it.spin), it.roll);
+      });
+      renderer.render(scene, camera);
+    }
+
+    let visible = true, running = false, queued = false;
+    function frame(now) {
+      if (!visible || reduce) { running = false; return; }
+      draw(now);
+      requestAnimationFrame(frame);
+    }
+    function start() {
+      if (running || !visible || reduce) return;
+      running = true;
+      requestAnimationFrame(frame);
+    }
+    const relayout = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; layout(); }); } };
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(relayout);
+      [hero, $('.hero__stack'), $('.hero__foot')].forEach(n => n && ro.observe(n));
+    } else {
+      window.addEventListener('resize', relayout);
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; start(); }).observe(hero);
+    }
+    layout();
+    start();
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     3D stage — a pixel-art grass block floating in the hero.
+     Drag it (finger or mouse) to spin it; the page never scrolls while
+     you do. It keeps its momentum, turns grass-side up again and idles.
+     ════════════════════════════════════════════════════════════════════ */
+  function initStage(kit) {
+    const canvas = $('#stage');
+    const T = window.THREE;
+    if (!T || !kit) { canvas.remove(); return; }
+    let renderer;
+    try {
+      renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch (err) {
+      canvas.remove();
+      return;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputEncoding = T.sRGBEncoding;
+
+    const scene = new T.Scene();
+    const camera = new T.PerspectiveCamera(12, 1, 0.1, 100);   // long lens ≈ isometric look
+    camera.position.set(0, 0, 18.5);
+
+    // Game-style face shading at rest: top and left face at full brightness, right face ≈ 75%.
+    scene.add(new T.AmbientLight(0xffffff, 0.3));
+    const key = new T.DirectionalLight(0xffffff, 1.015);
+    key.position.set(-3.35, 2.52, 9.07);
+    scene.add(key);
+
+    const { pixelTexture, paintDirt, paintGrassTop, paintGrassSide } = kit;
     const mat = tex => new T.MeshLambertMaterial({ map: tex });
     // BoxGeometry face order: +x, -x, +y (top), -y (bottom), +z, -z
     const faces = [
@@ -1334,10 +1644,15 @@
   }
 
   /* ── Boot ── */
+  splitLetters();
   applyLang(lang, false);
-  initStage();
+  const kit = window.THREE ? pixelKit(window.THREE) : null;
+  initStage(kit);
+  initFloaters(kit);
   syncProgress();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitContactWord);
   if (store.get('sessionStorage', 'netvy-admin') === '1') unlock();
+  if (location.hash === '#admin') openAdmin();
 })();
 </script>
 </body></html>
