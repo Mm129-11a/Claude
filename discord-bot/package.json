@@ -1,0 +1,23 @@
+{
+  "name": "netvi-discord-bot",
+  "description": "Netvi, la mascota 3D de Netvy Studios, paseando por un servidor de Discord",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "render": "node render/render-gifs.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "discord.js": "^14.28.0"
+  },
+  "devDependencies": {
+    "gifenc": "^1.0.3",
+    "three": "^0.128.0"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.12"
+  }
+}

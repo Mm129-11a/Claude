@@ -12,6 +12,10 @@ Todo vive en un solo archivo, **`index.html`**.
 - **Admin** (oculto): se abre tocando «© 2026 netvy studios» al final de la página, y siempre pide la contraseña. Sirve para añadir, editar, ordenar y borrar proyectos, y para gestionar los datos de contacto.
 - Idiomas: español (por defecto) e inglés.
 
+## Bot de Discord
+
+En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de Discord: pasea por los canales, habla con los miembros (con Claude) y responde a comandos como `/llamar` o `/bailar`. Las instrucciones están en su README.
+
 ## Dónde se guardan los cambios del admin
 
 Los proyectos y contactos van **dentro de la propia página** (bloque `<script id="site-data">`).
