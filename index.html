@@ -293,7 +293,7 @@
 
   <!-- Hero: typographic wall + floating object -->
   <section class="hero">
-    <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Dirt block. Drag to rotate." data-i18n-aria="block"></canvas>
+    <canvas id="stage" class="stage" tabindex="0" role="img" aria-label="Grass block. Drag to rotate." data-i18n-aria="block"></canvas>
     <h1 class="display" aria-label="Offfice for future living">
       <span class="line l1" data-drift="0.35" aria-hidden="true"><span class="line-inner">Offfice for</span></span>
       <span class="line l2" data-drift="-0.25" aria-hidden="true"><span class="line-inner">Future</span></span>
@@ -407,9 +407,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ════════════════════════════════════════════════════════════════════
-   3D stage — a pixel-art dirt block floating in the hero.
+   3D stage — a pixel-art grass block floating in the hero.
    Drag it (finger or mouse) to spin it; it keeps its momentum, then
-   settles back onto a face and idles on a slow turntable spin.
+   turns grass-side up again and idles on a slow turntable spin.
    ════════════════════════════════════════════════════════════════════ */
 function initStage(reduce) {
   const canvas = document.getElementById('stage');
@@ -439,28 +439,18 @@ function initStage(reduce) {
 
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-  /* ── 16×16 pixel-art dirt, seeded so every visit looks the same ── */
-  function dirtTexture(seed) {
+  /* ── 16×16 pixel-art grass block, seeded so every visit looks the same ── */
+  const DIRT = [[0.12, '#4b3121'], [0.40, '#694830'], [0.72, '#7b5536'], [0.92, '#8e6445'], [1, '#a07451']];
+  const GRASS = [[0.10, '#3a6420'], [0.35, '#497c27'], [0.70, '#58912e'], [0.90, '#66a235'], [1, '#76b13e']];
+  function pixelTexture(seed, paint) {
     let st = seed >>> 0;
     const rand = () => (st = (Math.imul(st, 1664525) + 1013904223) >>> 0) / 4294967296;
-    const px = (x, y, w, h, color) => { g.fillStyle = color; g.fillRect(x, y, w, h); };
     const c = document.createElement('canvas');
     c.width = c.height = 16;
     const g = c.getContext('2d');
-    const shades = [[0.12, '#4b3121'], [0.40, '#694830'], [0.72, '#7b5536'], [0.92, '#8e6445'], [1, '#a07451']];
-    for (let y = 0; y < 16; y++) {
-      for (let x = 0; x < 16; x++) {
-        const v = rand();
-        px(x, y, 1, 1, shades.find(([p]) => v <= p)[1]);
-      }
-    }
-    for (let i = 0; i < 10; i++) {           // darker clumps
-      const horiz = rand() < 0.5;
-      px(Math.floor(rand() * 15), Math.floor(rand() * 15), horiz ? 2 : 1, horiz ? 1 : 2, '#553825');
-    }
-    for (let i = 0; i < 6; i++) {            // little pebbles
-      px(Math.floor(rand() * 16), Math.floor(rand() * 16), 1, 1, rand() < 0.5 ? '#6f6359' : '#978a81');
-    }
+    const px = (x, y, w, h, color) => { g.fillStyle = color; g.fillRect(x, y, w, h); };
+    const pick = shades => { const v = rand(); return shades.find(([p]) => v <= p)[1]; };
+    paint(px, pick, rand);
     const tex = new T.CanvasTexture(c);
     tex.magFilter = T.NearestFilter;          // crisp pixels, no smoothing
     tex.minFilter = T.NearestFilter;
@@ -468,9 +458,37 @@ function initStage(reduce) {
     tex.encoding = T.sRGBEncoding;
     return tex;
   }
-
-  const faces = [11, 23, 37, 41, 59, 73].map(seed =>
-    new T.MeshStandardMaterial({ map: dirtTexture(seed), roughness: 1, metalness: 0 }));
+  function paintDirt(px, pick, rand) {
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(DIRT));
+    for (let i = 0; i < 10; i++) {           // darker clumps
+      const horiz = rand() < 0.5;
+      px(Math.floor(rand() * 15), Math.floor(rand() * 15), horiz ? 2 : 1, horiz ? 1 : 2, '#553825');
+    }
+    for (let i = 0; i < 6; i++) {            // little pebbles
+      px(Math.floor(rand() * 16), Math.floor(rand() * 16), 1, 1, rand() < 0.5 ? '#6f6359' : '#978a81');
+    }
+  }
+  function paintGrassTop(px, pick, rand) {
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) px(x, y, 1, 1, pick(GRASS));
+    for (let i = 0; i < 14; i++) px(Math.floor(rand() * 16), Math.floor(rand() * 16), 1, 1, rand() < 0.6 ? '#335a1c' : '#86c04b');
+  }
+  function paintGrassSide(px, pick, rand) {
+    paintDirt(px, pick, rand);
+    for (let x = 0; x < 16; x++) {           // grass hanging over the edge, uneven like drips
+      const depth = 2 + (rand() < 0.6) + (rand() < 0.35) + (rand() < 0.12);
+      for (let y = 0; y < depth; y++) px(x, y, 1, 1, pick(GRASS));
+    }
+  }
+  const mat = tex => new T.MeshStandardMaterial({ map: tex, roughness: 1, metalness: 0 });
+  // BoxGeometry face order: +x, -x, +y (top), -y (bottom), +z, -z
+  const faces = [
+    mat(pixelTexture(11, paintGrassSide)),
+    mat(pixelTexture(23, paintGrassSide)),
+    mat(pixelTexture(37, paintGrassTop)),
+    mat(pixelTexture(41, paintDirt)),
+    mat(pixelTexture(59, paintGrassSide)),
+    mat(pixelTexture(73, paintGrassSide)),
+  ];
   const cube = new T.Mesh(new T.BoxGeometry(2, 2, 2), faces);
   cube.quaternion.setFromEuler(new T.Euler(0, Math.PI / 4, 0));   // a corner toward the viewer
   const tilt = new T.Group();                                      // shows the top face
@@ -479,8 +497,7 @@ function initStage(reduce) {
 
   /* ── Rotation state ── */
   const X = new T.Vector3(1, 0, 0), Y = new T.Vector3(0, 1, 0);
-  const AXES = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].map(a => new T.Vector3(...a));
-  const qa = new T.Quaternion(), qb = new T.Quaternion(), tmp = new T.Vector3(), best = new T.Vector3();
+  const qa = new T.Quaternion(), qb = new T.Quaternion(), tmp = new T.Vector3();
   const BASE_TILT = 0.55, AUTO_SPIN = 0.45;
   let vx = reduce ? 0 : 5, vy = 0;          // angular velocity (rad/s) — starts with a playful spin-in
   let autoW = reduce ? 0 : 1, s = reduce ? 1 : 0;
@@ -491,14 +508,10 @@ function initStage(reduce) {
     qa.setFromAxisAngle(Y, ay); cube.quaternion.premultiply(qa);
     qa.setFromAxisAngle(X, ax); cube.quaternion.premultiply(qa);
   }
-  // Ease whichever face is closest to "up" back to level (keeps the spin around Y).
+  // Ease the grass back to the top after a flip (keeps the spin around Y).
   function settle(k) {
-    let top = -2;
-    for (const a of AXES) {
-      tmp.copy(a).applyQuaternion(cube.quaternion);
-      if (tmp.y > top) { top = tmp.y; best.copy(tmp); }
-    }
-    qa.setFromUnitVectors(best.normalize(), Y);
+    tmp.copy(Y).applyQuaternion(cube.quaternion);
+    qa.setFromUnitVectors(tmp.normalize(), Y);
     qb.copy(qa).multiply(cube.quaternion);
     cube.quaternion.slerp(qb, k);
   }
@@ -616,7 +629,7 @@ function initStage(reduce) {
     en: {
       cta: 'GET IN TOUCH',
       caption: 'Future living design research studio. Installations, commercial and private spaces.',
-      drag: '(Drag to rotate)', block: 'Dirt block. Drag to rotate.',
+      drag: '(Drag to rotate)', block: 'Grass block. Drag to rotate.',
       archive: 'Archive', details: 'PROJECT DETAILS', top: 'Back to top',
       't.armchair': 'Armchair', 't.chair': 'Chair', 't.lounge': 'Lounge chair', 't.pouf': 'Pouf',
       'f.interior': 'Interior', 'f.installation': 'Installation', 'f.commercial': 'Commercial', 'f.private': 'Private space',
@@ -624,7 +637,7 @@ function initStage(reduce) {
     it: {
       cta: 'CONTATTACI',
       caption: 'Studio di ricerca sul design dell’abitare futuro. Installazioni, spazi commerciali e privati.',
-      drag: '(Trascina per ruotare)', block: 'Blocco di terra. Trascina per ruotarlo.',
+      drag: '(Trascina per ruotare)', block: 'Blocco d’erba. Trascina per ruotarlo.',
       archive: 'Archivio', details: 'DETTAGLI PROGETTO', top: 'Torna su',
       't.armchair': 'Poltrona', 't.chair': 'Sedia', 't.lounge': 'Poltrona lounge', 't.pouf': 'Pouf',
       'f.interior': 'Interni', 'f.installation': 'Installazione', 'f.commercial': 'Commerciale', 'f.private': 'Spazio privato',
@@ -632,7 +645,7 @@ function initStage(reduce) {
     es: {
       cta: 'CONTÁCTANOS',
       caption: 'Estudio de investigación en diseño para el habitar futuro. Instalaciones, espacios comerciales y privados.',
-      drag: '(Arrastra para girar)', block: 'Bloque de tierra. Arrástralo para girarlo.',
+      drag: '(Arrastra para girar)', block: 'Bloque de pasto. Arrástralo para girarlo.',
       archive: 'Archivo', details: 'DETALLES DEL PROYECTO', top: 'Volver arriba',
       't.armchair': 'Butaca', 't.chair': 'Silla', 't.lounge': 'Sillón lounge', 't.pouf': 'Puf',
       'f.interior': 'Interiorismo', 'f.installation': 'Instalación', 'f.commercial': 'Comercial', 'f.private': 'Espacio privado',
@@ -640,7 +653,7 @@ function initStage(reduce) {
     ch: {
       cta: '联系我们',
       caption: '面向未来生活的设计研究工作室。装置、商业与私人空间。',
-      drag: '（拖动旋转）', block: '泥土方块。拖动即可旋转。',
+      drag: '（拖动旋转）', block: '草方块。拖动即可旋转。',
       archive: '档案', details: '项目详情', top: '返回顶部',
       't.armchair': '扶手椅', 't.chair': '椅子', 't.lounge': '休闲椅', 't.pouf': '坐墩',
       'f.interior': '室内', 'f.installation': '装置', 'f.commercial': '商业', 'f.private': '私人空间',

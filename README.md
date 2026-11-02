@@ -15,7 +15,7 @@ python3 -m http.server 8000   # → http://localhost:8000
 | Top navigation | `offfice studio` a la izquierda, **GET IN TOUCH** (700) a la derecha, 12px, sin fondo |
 | Locale switcher | `IT / ES / CH` en funcionamiento (EN por defecto). Recuerda el idioma elegido |
 | Display headline | 216px (`clamp(96px, 15vw, 216px)`), interlineado 0.80, se sale del viewport por ambos lados y se desplaza en horizontal al hacer scroll |
-| Objeto 3D (modo Minecraft) | Un bloque de tierra pixelado (texturas 16×16 generadas por código, sin suavizado) hecho con Three.js (r128). Vive solo en la portada, flota sobre el titular y **se gira arrastrándolo con el dedo o el ratón**: conserva la inercia, vuelve a asentarse sobre una cara y sigue girando despacio. También responde a las flechas del teclado |
+| Objeto 3D (modo Minecraft) | Un bloque de pasto pixelado (arriba pasto, lados de tierra con el borde verde, abajo tierra; texturas 16×16 generadas por código, sin suavizado) hecho con Three.js (r128). Vive solo en la portada, flota sobre el titular y **se gira arrastrándolo con el dedo o el ratón**: conserva la inercia, vuelve a quedar con el pasto hacia arriba y sigue girando despacio. También responde a las flechas del teclado |
 | Description caption | 12px, mayúsculas, interlineado 1.56 |
 | Archive list | 8 proyectos: título en serif 72px + año / PROJECT DETAILS / tipo / ámbito en 12px, separados 32px. Al pasar el ratón por una fila, las demás se atenúan |
 | Section labels | `US / WW`, `Archive`, `(08)` |
