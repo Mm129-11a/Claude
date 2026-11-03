@@ -189,10 +189,19 @@ client.on(Events.GuildMemberAdd, async member => {
 });
 
 process.on('unhandledRejection', err => console.error('[error]', err));
-if (config.token) {
+// Connects to Discord; on failure it explains what to fix and tries again every 2 minutes,
+// so fixing the token or the intents in the portal is enough (no restart needed).
+function login() {
   client.login(config.token).catch(err => {
-    // Keep the status page up instead of exiting, so the host does not restart in a loop.
     console.error('No he podido conectar con Discord:', err.message);
-    console.error('Revisa DISCORD_TOKEN: es el token de la sección «Bot» del Discord Developer Portal (Reset Token), no el Application ID ni la Public Key.');
+    if (/disallowed intents/i.test(err.message)) {
+      console.error('Activa «Message Content Intent» en Discord Developer Portal → tu app → Bot → Privileged Gateway Intents' +
+        (config.welcomeChannel ? ' (y también «Server Members Intent», porque usas WELCOME_CHANNEL_ID)' : '') + ', y guarda.');
+    } else if (/invalid token/i.test(err.message)) {
+      console.error('Revisa DISCORD_TOKEN: es el token de la sección «Bot» del Discord Developer Portal (Reset Token), no el Application ID ni la Public Key.');
+    }
+    console.error('Vuelvo a intentarlo en 2 minutos.');
+    setTimeout(login, 120_000);
   });
 }
+if (config.token) login();
