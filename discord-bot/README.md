@@ -51,7 +51,17 @@ En `.env` puedes elegir por qué canales pasea, cuáles evitar, cada cuánto se 
 
 ### 3. Tenerlo encendido siempre
 
-El bot solo está en el servidor mientras `npm start` está funcionando. Para que pasee las 24 horas tiene que correr en un ordenador que no se apague: un servidor o VPS, una Raspberry Pi, o un servicio como Render (tipo *Background Worker*) o Railway. Pon allí las mismas variables del `.env`.
+El bot solo está en el servidor mientras está funcionando en algún ordenador. Ya está montado en **Render** como servicio `netvi-discord-bot` (plan gratis, región Frankfurt), y se actualiza solo con cada cambio de la rama `offfice-replica`:
+
+1. Entra en https://dashboard.render.com → **netvi-discord-bot** → **Environment**.
+2. Añade `DISCORD_TOKEN` (y `ANTHROPIC_API_KEY` si quieres que hable con Claude) y guarda. Render lo reinicia solo.
+3. Comprueba en https://netvi-discord-bot.onrender.com que pone «Netvi está conectado a Discord».
+
+Con el plan gratis, Render apaga el servicio tras 15 minutos sin visitas a su página, y entonces Netvi se desconecta de Discord. Cada visita a la web de Netvy Studios lo vuelve a despertar (tarda alrededor de un minuto). Para que no se desconecte nunca, cámbialo al plan **Starter** en **Settings → Instance Type**.
+
+## Conexión con la web
+
+El bot responde en `/status` (por ejemplo https://netvi-discord-bot.onrender.com/status) con el canal en el que está. La web de Netvy Studios lo consulta cada minuto y, debajo del muñeco, pone «Netvi está en Discord, paseando por #canal» (o «durmiendo»). Si el bot no está conectado, esa línea no aparece. Solo se publican los nombres del servidor y del canal, nunca mensajes ni miembros.
 
 ## Cambiar las animaciones
 

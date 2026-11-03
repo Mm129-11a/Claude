@@ -14,7 +14,7 @@ Todo vive en un solo archivo, **`index.html`**.
 
 ## Bot de Discord
 
-En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de Discord: pasea por los canales, habla con los miembros (con Claude) y responde a comandos como `/llamar` o `/bailar`. Las instrucciones están en su README.
+En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de Discord: pasea por los canales, habla con los miembros (con Claude) y responde a comandos como `/llamar` o `/bailar`. Está desplegado en Render (`netvi-discord-bot`) y la web muestra debajo del muñeco en qué canal de Discord está Netvi ahora mismo. Las instrucciones están en su README.
 
 ## Dónde se guardan los cambios del admin
 

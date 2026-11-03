@@ -258,6 +258,10 @@
   .mascot { display: block; width: 100%; height: 100%; pointer-events: none; }
   .hero__mascot { grid-column: 1 / 4; align-self: end; }
   .hero__hint { grid-column: 5 / 8; }
+  /* Live line fed by the Discord bot: where Netvi is walking right now */
+  .discord-status { display: flex; align-items: center; gap: 0.5em; margin-top: 0.4em; }
+  .discord-status__dot { flex: none; width: 0.6em; height: 0.6em; border-radius: 50%; background: #23a55a; }
+  .discord-status--asleep .discord-status__dot { background: #f0b232; }
   .hero__about {
     grid-column: 9 / 13;
     display: flex;
@@ -525,7 +529,10 @@
     </div>
     <div class="hero__foot fade">
       <div class="mascot-slot hero__mascot" data-mascot="hello" aria-hidden="true"></div>
-      <p class="label hero__hint" data-i18n="drag">(Arrastra para girar)</p>
+      <div class="label hero__hint">
+        <p data-i18n="drag">(Arrastra para girar)</p>
+        <p class="discord-status" id="discord-status" hidden><span class="discord-status__dot" aria-hidden="true"></span><span id="discord-status-text"></span></p>
+      </div>
       <div class="hero__about">
         <p class="caption" data-i18n="caption">Somos un estudio que hace réplicas de proyectos muy famosos, como DEDsafio y Extremo.</p>
         <button type="button" class="btn" data-contact data-i18n="contactBtn">Contáctanos</button>
@@ -779,6 +786,7 @@
       contactTitle: 'Contacto', close: 'Cerrar', copy: 'Copiar', copied: 'Copiado', selected: 'Seleccionado',
       open: 'Abrir ↗', noContacts: 'Todavía no hay datos de contacto.',
       'st.soon': 'Próximamente', 'st.progress': 'En proceso', 'st.done': 'Terminado', 'st.paused': 'Pausado',
+      'bot.walk': '{n} está en Discord, paseando por #{c}', 'bot.sleep': '{n} está durmiendo en #{c} (Discord)', 'bot.on': '{n} está conectado en Discord',
     },
     en: {
       cta: 'GET IN TOUCH', contactBtn: 'Contact us',
@@ -789,6 +797,7 @@
       contactTitle: 'Contact', close: 'Close', copy: 'Copy', copied: 'Copied', selected: 'Selected',
       open: 'Open ↗', noContacts: 'No contact details yet.',
       'st.soon': 'Coming soon', 'st.progress': 'In progress', 'st.done': 'Finished', 'st.paused': 'Paused',
+      'bot.walk': '{n} is on Discord, walking around #{c}', 'bot.sleep': '{n} is asleep in #{c} (Discord)', 'bot.on': '{n} is online on Discord',
     },
   };
   // Game-style yellow splash next to the closing word.
@@ -823,6 +832,7 @@
     $('#splash').textContent = SPLASH[lang];
     renderProjects();
     renderContactDialog();
+    renderBotStatus();
     fitContactWord();
   }
 
@@ -1858,6 +1868,40 @@
     requestAnimationFrame(frame);
   }
 
+  /* ════════════════════════════════════════════════════════════════════
+     Discord bot status — the Netvi bot (discord-bot/) reports which channel
+     it is walking around; shown under the mascot while it is online.
+     ════════════════════════════════════════════════════════════════════ */
+  const BOT_STATUS_URL = 'https://netvi-discord-bot.onrender.com/status';
+  let botStatus = null;
+  function renderBotStatus() {
+    const line = $('#discord-status');
+    if (!line) return;
+    const place = botStatus && botStatus.online && (botStatus.places || []).find(p => p.channel);
+    line.hidden = !(botStatus && botStatus.online);
+    if (line.hidden) return;
+    const name = botStatus.name || 'Netvi';
+    const key = place ? (place.asleep ? 'bot.sleep' : 'bot.walk') : 'bot.on';
+    $('#discord-status-text').textContent = t(key).replace('{n}', name).replace('{c}', place ? place.channel : '');
+    line.classList.toggle('discord-status--asleep', Boolean(place && place.asleep));
+  }
+  function initBotStatus() {
+    if (!BOT_STATUS_URL || !window.fetch) return;
+    const poll = () => {
+      if (document.hidden) return;
+      const ctrl = 'AbortController' in window ? new AbortController() : null;
+      const timer = ctrl && setTimeout(() => ctrl.abort(), 10000);
+      fetch(BOT_STATUS_URL, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => { botStatus = data; })
+        .catch(() => { botStatus = null; })   // bot asleep on the host or unreachable: just hide the line
+        .finally(() => { clearTimeout(timer); renderBotStatus(); });
+    };
+    poll();
+    setInterval(poll, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
+  }
+
   function initScrollApart() {
     if (reduce) return;
     const hero = $('.hero');
@@ -1879,6 +1923,7 @@
   initStage(kit);
   initFloaters(kit);
   initMascot();
+  initBotStatus();
   syncProgress();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitContactWord);
   store.remove('sessionStorage', 'netvy-admin');   // older versions remembered the login
