@@ -34,6 +34,7 @@ import { respond, normalize } from '../src/chat.js';
 test('free chat engine understands common messages', () => {
   assert.equal(normalize('¡Holaaa NETVI!'), '¡hola netvi!');
   assert.equal(respond('@Netvi', 'Ana').anim, 'wave');                       // just called by name
+  assert.match(respond('Oye netvy', 'Jomm').text, /Jomm|Aquí|Presente/);
   assert.equal(respond('hola netvi', 'Ana').anim, 'wave');
   assert.match(respond('netvi tira un dado', 'Ana').text, /🎲 .*\*\*[1-6]\*\*/);
   assert.match(respond('netvi pizza o tacos?', 'Ana').text, /pizza|tacos/);

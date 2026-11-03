@@ -40,8 +40,12 @@ const JOKES = [
 
 const RULES = [
   // [test(norm, raw) -> match | null, (ctx, match) -> { anim, text }]
-  [n => (/^[!?.,¿¡ ]*$/.test(n) ? true : null),
+  [n => (/^(?:oye|oie|ey|eh|psst|escucha|mira|disculpa|perdona|amigo|bro)?[!?.,¿¡ ]*$/.test(n) ? true : null),
     c => ({ anim: 'wave', text: pick([`¿Sí, ${c.u}? ¿Me llamabas? 👀`, `¡Aquí estoy, ${c.u}!`, `¡Presente! ¿Qué pasa, ${c.u}?`]) })],
+
+  // Short acknowledgements: "ok", "sí", "no", "vale"…
+  [n => /^(ok|okay|oki|vale|va|si|sip|sep|simon|claro|bueno|dale|listo|no|nop|nel|nada|ah|aja|mm+|hmm+)[!?.,¿¡ ]*$/.test(n) || null,
+    (c, _m) => ({ anim: 'talk', text: pick(['¡Vale! 👍', `Perfecto, ${c.u} 😄`, '¡Entendido!', 'Ajá 👀 ¿Algo más?']) })],
 
   [n => /\b(tonto|idiota|feo|fea|malo|callate|basura|inutil|estupido|pesado|odio)\b/.test(n) || null,
     c => ({ anim: 'shrug', text: pick(['Eso me ha dolido un poquito… pero te perdono 😌', `Vaya, ${c.u}, hoy vienes picante 🌶️`, 'Yo te sigo queriendo igual 💖', '*se pone a llorar en pixeles* 😢']) })],
@@ -157,5 +161,5 @@ export function respond(text, author, channel = 'general') {
   const word = keyword(norm);
   return word
     ? { anim: pick(['talk', 'wow']), text: pick([`¿**${word}**? Cuéntame más 👀`, `Ajá, ${word}… ¡qué interesante!`, `Me has dejado pensando con lo de **${word}** 🤔`]) }
-    : { anim: pick(['talk', 'shrug', 'wow']), text: pick(['¡Jeje!', '¿En serio? 👀', 'Ajá, ajá…', '¡Me encanta!']) };
+    : { anim: pick(['talk', 'wave']), text: pick([`¿Sí, ${author}? Cuéntame 👀`, `Te escucho, ${author} 👂`, '¿Qué pasa? Dime 😄']) };
 }
