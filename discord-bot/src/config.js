@@ -24,6 +24,8 @@ export const config = {
   wanderMax: num(process.env.WANDER_MAX_MINUTES, 70),
   // Only wander into / do things in channels where someone wrote in the last N minutes (0 = anywhere).
   activeWindow: num(process.env.ACTIVE_WINDOW_MINUTES, 180),
+  // Chance (0-1) that, when it is time to move, it stays and does something where it is instead.
+  stayChance: num(process.env.STAY_CHANCE, 0.25),
   quietHours: process.env.QUIET_HOURS || '1-9',        // "start-end" in 24h, empty to disable
   timezone: process.env.TIMEZONE || 'Europe/Madrid',
   reactChance: num(process.env.REACT_CHANCE, 0.06),

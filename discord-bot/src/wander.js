@@ -108,7 +108,7 @@ async function tick(guild) {
       st.manualAwake = false;
       const here = guild.channels.cache.get(st.channelId);
       // Sometimes it stays and does something where it is; usually it moves on.
-      if (here && isActive(here.id) && Math.random() < 0.25) {
+      if (here && isActive(here.id) && Math.random() < config.stayChance) {
         const [anim, text] = pick([['dance', '*se pone a bailar solo* 🎶'], ['think', '*se queda pensando en sus cosas* 🤔'], ['idle', '*mira alrededor*'], ['wow', '¡Uy! ¿Qué ha sido eso?']]);
         await here.send({ content: text, files: [gif(anim)], allowedMentions: NO_PINGS }).catch(() => {});
       } else {
