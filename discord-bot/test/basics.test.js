@@ -52,3 +52,30 @@ test('"A or B" questions answer with one of the options, not the lead-in words',
   }
   assert.match(respond('qué prefieres, playa o montaña?', 'Ana').text, /playa|montaña/);
 });
+
+import { solveMath } from '../src/math.js';
+import { knowledgeTopic } from '../src/knowledge.js';
+import { cleanText } from '../src/chat.js';
+
+test('solves maths written with words or symbols', () => {
+  const r = t => solveMath(cleanText(t))?.result;
+  assert.equal(r('netvi cuánto es 12 por 7?'), '84');
+  assert.equal(r('raíz de 81'), '9');
+  assert.equal(r('20% de 150'), '30');
+  assert.equal(r('(3+4)*2'), '14');
+  assert.equal(r('2 elevado a 10'), '1024');
+  assert.equal(r('100 entre 8'), '12,5');
+  assert.equal(solveMath(cleanText('10 / 0')).result, null);
+  assert.equal(solveMath(cleanText('tengo 3 perros')), null);
+  assert.equal(solveMath(cleanText('pizza o tacos?')), null);
+});
+
+test('spots general-knowledge questions and their topic', () => {
+  const k = t => knowledgeTopic(cleanText(t));
+  assert.equal(k('netvi qué es un agujero negro?'), 'agujero negro');
+  assert.equal(k('quién fue Albert Einstein'), 'albert einstein');
+  assert.equal(k('cuál es la capital de Japón?'), 'capital de japon');
+  assert.equal(k('netvi quién eres'), null);
+  assert.equal(k('cuántos años tienes netvi'), null);
+  assert.equal(k('cómo estás'), null);
+});

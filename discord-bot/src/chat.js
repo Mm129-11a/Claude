@@ -41,7 +41,7 @@ const JOKES = [
   'Mi cabeza es un logo de 9 colores. Mi peluquero dice que es imposible de peinar 💇',
 ];
 
-const RULES = [
+const EARLY = [
   // [test(norm, raw) -> match | null, (ctx, match) -> { anim, text }]
   [n => (/^(?:oye|oie|ey|eh|psst|escucha|mira|disculpa|perdona|amigo|bro)?[!?.,¿¡ ]*$/.test(n) ? true : null),
     c => ({ anim: 'wave', text: pick([`¿Sí, ${c.u}? ¿Me llamabas? 👀`, `¡Aquí estoy, ${c.u}!`, `¡Presente! ¿Qué pasa, ${c.u}?`]) })],
@@ -50,6 +50,9 @@ const RULES = [
   [n => /^(ok|okay|oki|vale|va|si|sip|sep|simon|claro|bueno|dale|listo|no|nop|nel|nada|ah|aja|mm+|hmm+)[!?.,¿¡ ]*$/.test(n) || null,
     (c, _m) => ({ anim: 'talk', text: pick(['¡Vale! 👍', `Perfecto, ${c.u} 😄`, '¡Entendido!', 'Ajá 👀 ¿Algo más?']) })],
 
+];
+
+const SERVER = [
   // ── This server (FBI roleplay): point people to the right channel ──
   [n => /\b(como (entro|ingreso|me uno|unirme|entrar)|quiero (entrar|ingresar|unirme|ser agente)|postular|postulacion|examen|examenes|prueba de ingreso|ingreso)\b/.test(n) || null,
     c => ({ anim: 'wow', text: `Para entrar al FBI haz el examen en ${c.ref('examenes-de-ingreso')} 📝 Los resultados salen en ${c.ref('resultados')}. ¡Suerte, futuro agente!` })],
@@ -81,6 +84,9 @@ const RULES = [
   [n => /\b(soy nuevo|soy nueva|acabo de entrar|recien llegado|bienvenida|bienvenidas)\b/.test(n) || null,
     c => ({ anim: 'wave', text: `¡Bienvenid@, ${c.u}! 👋 Empieza por ${c.ref('reglamentos')} y, si quieres ser agente, el examen está en ${c.ref('examenes-de-ingreso')}.` })],
 
+];
+
+const REST = [
   [n => /\b(tonto|idiota|feo|fea|malo|callate|basura|inutil|estupido|pesado|odio)\b/.test(n) || null,
     c => ({ anim: 'shrug', text: pick(['Eso me ha dolido un poquito… pero te perdono 😌', `Vaya, ${c.u}, hoy vienes picante 🌶️`, 'Yo te sigo queriendo igual 💖', '*se pone a llorar en pixeles* 😢']) })],
 
@@ -190,10 +196,24 @@ const RULES = [
       : pick(['Mmm… déjame pensarlo 🤔', 'Buena pregunta… no tengo ni idea 😅']) })],
 ];
 
+const RULES = [...EARLY, ...SERVER, ...REST];
+
+/** What was said to Netvi, normalised and without its own name ("oye netvi, ..."). */
+export const cleanText = text => normalize(text).replace(/\b(netvi|netvy)\b[,:!.]*/g, ' ').replace(/\s+/g, ' ').trim();
+
+/** An answer only if the message is about this server (channels, exam, ranks…), else null. */
+export function serverAnswer(text, author, channel = 'general', ref = name => `#${name}`) {
+  const norm = cleanText(text);
+  for (const [test, make] of SERVER) {
+    const m = test(norm, text);
+    if (m) return make({ u: author, channel, ref }, m);
+  }
+  return null;
+}
+
 /** Builds an answer to `text` from `author` in `channel`. */
 export function respond(text, author, channel = 'general', ref = name => `#${name}`) {
-  // Drop the bot's own name ("oye netvi, ...") so the rules see only what was said to it.
-  const norm = normalize(text).replace(/\b(netvi|netvy)\b[,:!.]*/g, ' ').replace(/\s+/g, ' ').trim();
+  const norm = cleanText(text);
   const ctx = { u: author, channel, ref };
   for (const [test, make] of RULES) {
     const m = test(norm, text);

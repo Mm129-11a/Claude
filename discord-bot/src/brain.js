@@ -3,7 +3,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from './config.js';
 import { pick } from './anims.js';
-import { respond } from './chat.js';
+import { respond, serverAnswer, cleanText } from './chat.js';
+import { solveMath } from './math.js';
+import { knowledgeTopic, lookup } from './knowledge.js';
 
 // Animations Claude may choose for a reply (arrive/leave/walk are for wandering only).
 const MOODS = ['talk', 'wave', 'wow', 'shrug', 'dance', 'think', 'love', 'sleep', 'idle'];
@@ -77,7 +79,7 @@ export async function reply({ server, channel, history, author, text, ref }) {
     `Servidor: ${server} · Canal: #${channel}\n\nÚltimos mensajes del canal:\n${transcript(history)}\n\n` +
     `${author} te dice ahora: ${text}\n\nResponde a ${author}.`,
   );
-  return answer || cannedReply(text, author, channel, ref);
+  return answer || await cannedReply(text, author, channel, ref);
 }
 
 /** What Netvi says when it walks into a channel. */
@@ -95,7 +97,25 @@ export async function entrance({ server, channel, history }) {
   ]);
 }
 
-/** Answer without Claude: the free conversation engine in chat.js. */
-function cannedReply(text, author, channel, ref) {
+/**
+ * Answer without Claude, all free: questions about this server first, then
+ * maths, then general-knowledge questions (Wikipedia), then the chat engine.
+ */
+async function cannedReply(text, author, channel, ref) {
+  const server = serverAnswer(text, author, channel, ref);
+  if (server) return server;
+  const norm = cleanText(text);
+  const math = solveMath(norm);
+  if (math) {
+    return math.result === null
+      ? { anim: 'shrug', text: `🧮 ${math.expression}… ¡eso no tiene resultado! (no se puede dividir entre 0) 😅` }
+      : { anim: 'think', text: pick([`🧮 ${math.expression} = **${math.result}**`, `Fácil: ${math.expression} = **${math.result}** 😎`, `Mmm… ${math.expression} = **${math.result}** 🧮`]) };
+  }
+  const topic = knowledgeTopic(norm);
+  if (topic) {
+    const found = await lookup(topic);
+    if (found) return { anim: 'think', text: `📚 ${found.text}${found.url ? `\n<${found.url}>` : ''}` };
+    return { anim: 'shrug', text: pick([`Uf, de **${topic}** no he encontrado nada… ¿lo preguntas de otra forma? 🤔`, `He buscado **${topic}** y no sé la respuesta, ${author} 😅`]) };
+  }
   return respond(text, author, channel, ref);
 }
