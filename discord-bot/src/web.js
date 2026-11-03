@@ -22,7 +22,22 @@ export function startWeb(getClient) {
     res.end('No encontrado\n');
   });
   server.listen(port, () => console.log(`Web de estado en el puerto ${port} (/status)`));
+  keepAwake();
   return server;
+}
+
+/**
+ * Render's free plan stops a web service after 15 minutes without visits,
+ * which would disconnect the bot. Visiting our own public URL every 10
+ * minutes keeps it running. Render sets RENDER_EXTERNAL_URL; KEEP_AWAKE=0 turns it off.
+ */
+function keepAwake() {
+  const base = process.env.RENDER_EXTERNAL_URL;
+  if (!base || process.env.KEEP_AWAKE === '0') return;
+  setInterval(() => {
+    fetch(new URL('/health', base), { signal: AbortSignal.timeout(20_000) }).catch(err => console.error('[despierto]', err.message));
+  }, 10 * 60_000);
+  console.log(`Me mantengo despierto visitando ${base} cada 10 minutos.`);
 }
 
 /** Public info only: names of channels Netvi is in, never message content or members. */

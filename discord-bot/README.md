@@ -9,7 +9,7 @@ Netvi, el muñeco 3D de Netvy Studios (el de la web, con el logo como cabeza), c
 ## Qué hace
 
 - **Pasea:** cada 25–70 minutos se despide del canal en el que está y aparece andando en otro, con preferencia por los canales donde se está hablando. Al llegar saluda y, si hay conversación, comenta de qué va. A veces se queda y hace algo (baila, piensa, mira alrededor). En su estado de Discord pone por qué canal anda.
-- **Habla:** contesta cuando lo mencionas, cuando respondes a uno de sus mensajes, cuando escribes su nombre («netvi») o por mensaje privado. Lee los últimos mensajes del canal para saber de qué va la conversación y responde con Claude, acompañando cada respuesta con un GIF que va con lo que dice (saluda, baila, piensa, se encoge de hombros…). Sin clave de Claude contesta con frases de reserva.
+- **Habla:** contesta cuando lo mencionas, cuando respondes a uno de sus mensajes, cuando escribes su nombre («netvi») o por mensaje privado. Lee los últimos mensajes del canal para saber de qué va la conversación y responde con Claude, acompañando cada respuesta con un GIF que va con lo que dice (saluda, baila, piensa, se encoge de hombros…). Sin clave de Claude (que es de pago) usa su propio sistema gratis (`src/chat.js`): reconoce saludos, preguntas, peticiones de chistes, «¿A o B?», dados y monedas, la hora, cómo se siente la persona y temas del servidor (rangos, casos del FBI, juegos), y responde a cada cosa.
 - **Interactúa:**
   - `/llamar`: viene corriendo a tu canal.
   - `/saludar`, `/bailar`, `/acariciar`: te saluda, baila o se pone contento.
@@ -57,7 +57,7 @@ El bot solo está en el servidor mientras está funcionando en algún ordenador.
 2. Añade `DISCORD_TOKEN` (y `ANTHROPIC_API_KEY` si quieres que hable con Claude) y guarda. Render lo reinicia solo.
 3. Comprueba en https://netvi-discord-bot.onrender.com que pone «Netvi está conectado a Discord».
 
-Con el plan gratis, Render apaga el servicio tras 15 minutos sin visitas a su página, y entonces Netvi se desconecta de Discord. Cada visita a la web de Netvy Studios lo vuelve a despertar (tarda alrededor de un minuto). Para que no se desconecte nunca, cámbialo al plan **Starter** en **Settings → Instance Type**.
+El plan gratis de Render apaga los servicios tras 15 minutos sin visitas. Para evitarlo, el bot visita su propia página cada 10 minutos (se desactiva con `KEEP_AWAKE=0`). Un servicio encendido todo el mes usa unas 720 de las 750 horas gratis al mes de Render, así que no conviene tener otro servicio web gratis encendido a la vez. Si algún día da problemas, el plan **Starter** (Settings → Instance Type) lo deja siempre encendido.
 
 ## Conexión con la web
 

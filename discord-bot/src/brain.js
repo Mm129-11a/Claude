@@ -3,6 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from './config.js';
 import { pick } from './anims.js';
+import { respond } from './chat.js';
 
 // Animations Claude may choose for a reply (arrive/leave/walk are for wandering only).
 const MOODS = ['talk', 'wave', 'wow', 'shrug', 'dance', 'think', 'love', 'sleep', 'idle'];
@@ -76,7 +77,7 @@ export async function reply({ server, channel, history, author, text }) {
     `Servidor: ${server} · Canal: #${channel}\n\nÚltimos mensajes del canal:\n${transcript(history)}\n\n` +
     `${author} te dice ahora: ${text}\n\nResponde a ${author}.`,
   );
-  return answer || cannedReply(text, author);
+  return answer || cannedReply(text, author, channel);
 }
 
 /** What Netvi says when it walks into a channel. */
@@ -94,16 +95,7 @@ export async function entrance({ server, channel, history }) {
   ]);
 }
 
-const CANNED = [
-  [/\b(hola|buenas|hey|ey|hi|hello)\b/i, 'wave', ['¡Hola, {u}! 👋', '¡Buenas, {u}! ¿Qué tal?']],
-  [/\b(baila|bailar|fiesta|dance|música|musica)\b/i, 'dance', ['¡A bailar! 🎶', 'Mira qué pasos 💃']],
-  [/\b(te quiero|guap|lindo|bonito|crack|gracias|love)\b/i, 'love', ['¡Ayy, gracias {u}! 💖', '¡Tú sí que molas, {u}!']],
-  [/\b(dormir|sueño|noche|duerme)\b/i, 'sleep', ['Zzz… ¿eh? ¡Estoy despierto! 😴']],
-  [/\?\s*$/, 'think', ['Mmm… déjame pensarlo 🤔', 'Buena pregunta… no tengo ni idea 😅']],
-  [/\b(adiós|adios|chao|bye|me voy)\b/i, 'wave', ['¡Hasta luego, {u}! 👋']],
-];
-
-function cannedReply(text, author) {
-  for (const [re, anim, lines] of CANNED) if (re.test(text)) return { anim, text: pick(lines).replace('{u}', author) };
-  return { anim: pick(['talk', 'shrug', 'wow']), text: pick(['¡Jeje!', '¿En serio? 👀', '¡Qué interesante!', 'Ajá, ajá…', '¡Me encanta!']) };
+/** Answer without Claude: the free conversation engine in chat.js. */
+function cannedReply(text, author, channel) {
+  return respond(text, author, channel);
 }

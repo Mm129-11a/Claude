@@ -28,3 +28,17 @@ test('quiet hours, including ranges past midnight', () => {
 test('every animation has its GIF', () => {
   for (const a of ANIMS) assert.ok(existsSync(new URL(`../assets/${a}.gif`, import.meta.url)), a);
 });
+
+import { respond, normalize } from '../src/chat.js';
+
+test('free chat engine understands common messages', () => {
+  assert.equal(normalize('¡Holaaa NETVI!'), '¡hola netvi!');
+  assert.equal(respond('@Netvi', 'Ana').anim, 'wave');                       // just called by name
+  assert.equal(respond('hola netvi', 'Ana').anim, 'wave');
+  assert.match(respond('netvi tira un dado', 'Ana').text, /🎲 .*\*\*[1-6]\*\*/);
+  assert.match(respond('netvi pizza o tacos?', 'Ana').text, /pizza|tacos/);
+  assert.equal(respond('cuentame un chiste netvi', 'Ana').anim, 'dance');
+  assert.match(respond('oye netvi, eres un bot?', 'Ana').text, /bot|muñeco/);
+  assert.match(respond('netvi por que el cielo es azul?', 'Ana').text, /cielo|pensar/);
+  assert.ok(respond('netvi ayer fui al estadio', 'Ana').text.length > 0);
+});
