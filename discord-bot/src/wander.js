@@ -79,6 +79,7 @@ export function settleIn(guild, channel) {
   st.channelId = channel.id;
   st.since = Date.now();
   if (!st.asleep) setPresence(guild.client, `Paseando por #${channel.name}`);
+  schedule(guild);   // a full stay in the new channel before moving on
 }
 
 export async function sleep(guild, text) {
@@ -151,5 +152,5 @@ export function start(guild) {
   const st = ensure(guild);
   const first = walkable(guild).first();
   if (first && !st.channelId) settleIn(guild, first);
-  schedule(guild, minutes(2));
+  schedule(guild);   // first move after a full WANDER interval, also after a restart
 }
