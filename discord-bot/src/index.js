@@ -4,10 +4,14 @@ import { config } from './config.js';
 import { gif, pick } from './anims.js';
 import * as brain from './brain.js';
 import * as wander from './wander.js';
+import { startWeb } from './web.js';
+
+let client = null;
+startWeb(() => client);
 
 if (!config.token) {
-  console.error('Falta DISCORD_TOKEN. Copia .env.example a .env y pon el token de tu bot.');
-  process.exit(1);
+  // Keep the web server up (so a host like Render does not restart in a loop) until the token is set.
+  console.error('Falta DISCORD_TOKEN. Ponlo en .env (o en las variables de entorno de Render) y reinicia.');
 }
 
 const intents = [
@@ -19,7 +23,7 @@ const intents = [
 ];
 if (config.welcomeChannel) intents.push(GatewayIntentBits.GuildMembers);
 
-const client = new Client({ intents, partials: [Partials.Channel, Partials.Message, Partials.Reaction] });
+client = new Client({ intents, partials: [Partials.Channel, Partials.Message, Partials.Reaction] });
 const NO_PINGS = { parse: [] };
 
 /* ── Slash commands ─────────────────────────────────────────────────── */
@@ -185,7 +189,9 @@ client.on(Events.GuildMemberAdd, async member => {
 });
 
 process.on('unhandledRejection', err => console.error('[error]', err));
-client.login(config.token).catch(err => {
-  console.error('No he podido conectar con Discord:', err.message);
-  process.exit(1);
-});
+if (config.token) {
+  client.login(config.token).catch(err => {
+    console.error('No he podido conectar con Discord:', err.message);
+    process.exit(1);
+  });
+}
