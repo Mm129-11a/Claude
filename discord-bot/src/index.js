@@ -191,7 +191,8 @@ client.on(Events.GuildMemberAdd, async member => {
 process.on('unhandledRejection', err => console.error('[error]', err));
 if (config.token) {
   client.login(config.token).catch(err => {
+    // Keep the status page up instead of exiting, so the host does not restart in a loop.
     console.error('No he podido conectar con Discord:', err.message);
-    process.exit(1);
+    console.error('Revisa DISCORD_TOKEN: es el token de la sección «Bot» del Discord Developer Portal (Reset Token), no el Application ID ni la Public Key.');
   });
 }

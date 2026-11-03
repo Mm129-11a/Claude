@@ -10,7 +10,8 @@ const list = v => (v || '').split(',').map(s => s.trim()).filter(Boolean);
 const num = (v, d) => (v === undefined || v === '' || Number.isNaN(Number(v)) ? d : Number(v));
 
 export const config = {
-  token: process.env.DISCORD_TOKEN,
+  // Tolerates stray spaces, quotes or a "Bot " prefix pasted along with the token.
+  token: (process.env.DISCORD_TOKEN || '').trim().replace(/^["']|["']$/g, '').replace(/^Bot\s+/i, '').trim(),
   anthropicKey: process.env.ANTHROPIC_API_KEY || '',
   model: process.env.CLAUDE_MODEL || 'claude-opus-5-5',
   name: process.env.BOT_NAME || 'Netvi',
