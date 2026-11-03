@@ -79,3 +79,14 @@ test('spots general-knowledge questions and their topic', () => {
   assert.equal(k('cuántos años tienes netvi'), null);
   assert.equal(k('cómo estás'), null);
 });
+
+test('gets angry at insults and cries only at sad news', () => {
+  assert.equal(respond('netvi eres feo', 'Jomm').anim, 'angry');
+  assert.equal(respond('netvy tonto', 'Jomm').anim, 'angry');
+  const lost = respond('netvi perdí mi materia', 'Jomm');
+  assert.equal(lost.anim, 'cry');
+  assert.match(lost.text, /perdiste tu materia/);
+  assert.match(respond('netvi se murió mi perro', 'Jomm').text, /tu perro/);
+  assert.ok(!/próxima/.test(respond('netvi se murió mi perro', 'Jomm').text));   // no "next time" for a death
+  for (const t of ['netvi hola', 'netvi jajaja', 'netvi cuéntame un chiste', 'netvi cómo estás']) assert.notEqual(respond(t, 'Jomm').anim, 'cry', t);
+});

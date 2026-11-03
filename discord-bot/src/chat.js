@@ -52,6 +52,37 @@ const EARLY = [
 
 ];
 
+const MOOD = [
+  // Insults: Netvi gets angry (stamping, fist up, anger vein).
+  [n => { const m = /\b(feo|fea|feisimo|horrible|tonto|tonta|idiota|estupido|estupida|inutil|basura|callate|malo|pesado|pesada|apestas|burro|menso|bobo|tarado|mugroso|asqueroso|te odio|no sirves|eres lo peor)\b/.exec(n); return m ? m[1] : null; },
+    (c, word) => ({ anim: 'angry', text: pick([
+      `¡¿Cómo que ${word}?! 😤 ¡Retíralo ahora mismo!`,
+      '¡Oye! Eso no se dice 💢',
+      `¡${c.u}! ¡Me has hecho enfadar! 😠`,
+      '¡Grrr! ¡Mi cabeza tiene nueve colores y es preciosa! 💢',
+      `${word.charAt(0).toUpperCase() + word.slice(1)} tú… ¡hmpf! 😤`,
+    ]) })],
+
+  // Sad news: Netvi cries with them, repeating what happened in their own words.
+  [(n, raw) => {
+    const t = ` ${raw.toLowerCase().replace(/[!?¡¿.,;]+/g, ' ').replace(/\s+/g, ' ')} `;
+    const obj = str => str.trim().split(/ (?:y|pero|porque|hoy|ayer|otra vez|de nuevo|netvi|netvy)\b/)[0].split(' ').slice(0, 5).join(' ')
+      .replace(/^mi /, 'tu ').replace(/^mis /, 'tus ');
+    // Someone or a pet died: "se murió mi perro", "mi abuelo falleció".
+    let m = /\b(?:se (?:me )?muri[oó]|muri[oó]|falleci[oó])\s+((?:mi|mis|el|la|los|las|un|una)\s+[\p{L} ]{2,40})/u.exec(t)
+      || /\b((?:mi|mis)\s+[\p{L}]+(?: [\p{L}]+)?)\s+(?:se (?:me )?)?(?:muri[oó]|falleci[oó])/u.exec(t);
+    if (m) return { kind: 'death', what: obj(m[1]) };
+    // Lost or failed something: "perdí mi materia", "reprobé el examen".
+    const VERBS = { 'perdi': 'perdiste', 'perdí': 'perdiste', 'reprobe': 'reprobaste', 'reprobé': 'reprobaste', 'suspendi': 'suspendiste', 'suspendí': 'suspendiste', 'trone': 'tronaste', 'troné': 'tronaste', 'truene': 'tronaste', 'me quitaron': 'te quitaron', 'me robaron': 'te robaron', 'me rompieron': 'te rompieron' };
+    m = /\b(perd[ií]|reprob[eé]|suspend[ií]|tron[eé]|truene|me quitaron|me robaron|me rompieron)\s+([\p{L} ]{2,40})/u.exec(t);
+    if (m) return { kind: 'loss', verb: VERBS[m[1]] || 'perdiste', what: obj(m[2]) };
+    return /\b(triste|tristeza|deprimid[oa]|llorar|lloro|llorando|me siento (mal|solo|sola|fatal)|mal dia|me dejo|me dejaron|terminamos|me corrieron|me despidieron|extrano|extraño|me fue mal)\b/.test(n) ? { kind: 'sad' } : null;
+  }, (c, { kind, verb, what }) => ({ anim: 'cry', text:
+    kind === 'death' ? pick([`Lo siento muchísimo por ${what}… 😭 Un abrazo enorme, ${c.u} 🫂`, `*llora contigo* 😢 Perder a ${what} es durísimo. Aquí estoy para lo que necesites, ${c.u} 💙`])
+    : kind === 'loss' ? pick([`Oh no… ¿${verb} ${what}? 😢 Eso duele, ${c.u}… ¡pero la próxima vez saldrá mejor!`, `*se le caen las lágrimas* 😭 ¿En serio ${verb} ${what}? Lo siento mucho, ${c.u}. ¡Ánimo, que te recuperas!`, `Ay, ${c.u}… 😢 ¿${verb} ${what}? Te mando un abrazo de bloques 🫂`])
+    : pick([`Snif… 😢 No estés mal, ${c.u}. Aquí tienes un abrazo de bloques 🫂`, `*se le caen las lágrimas* 😭 Ánimo, ${c.u}, esto también pasará.`, 'Ay no… 😢 Si necesitas hablar, aquí estoy 💙']) })],
+];
+
 const SERVER = [
   // ── This server (FBI roleplay): point people to the right channel ──
   [n => /\b(como (entro|ingreso|me uno|unirme|entrar)|quiero (entrar|ingresar|unirme|ser agente)|postular|postulacion|examen|examenes|prueba de ingreso|ingreso)\b/.test(n) || null,
@@ -87,9 +118,6 @@ const SERVER = [
 ];
 
 const REST = [
-  [n => /\b(tonto|idiota|feo|fea|malo|callate|basura|inutil|estupido|pesado|odio)\b/.test(n) || null,
-    c => ({ anim: 'shrug', text: pick(['Eso me ha dolido un poquito… pero te perdono 😌', `Vaya, ${c.u}, hoy vienes picante 🌶️`, 'Yo te sigo queriendo igual 💖', '*se pone a llorar en pixeles* 😢']) })],
-
   [n => /\b(chiste|broma|algo gracioso|hazme reir|cuentame algo)\b/.test(n) || null,
     () => ({ anim: 'dance', text: pick(JOKES) })],
 
@@ -158,9 +186,6 @@ const REST = [
   [n => /\b(jaja|jajaja|jsjs|jeje|xd|lol|lmao|jajs)\b|😂|🤣/.test(n) || null,
     () => ({ anim: 'dance', text: pick(['¡Jajaja! 😂', 'JAJA me muero 🤣', '¡Eso ha estado bueno! 😆']) })],
 
-  [n => /\b(triste|mal|deprimid|llorar|lloro|cansad)\w*/.test(n) || null,
-    c => ({ anim: 'love', text: pick([`Ánimo, ${c.u}. Aquí tienes un abrazo de bloques 🫂`, 'Si necesitas hablar, aquí estoy 💖', 'Los días malos también pasan. ¡Tú puedes! 💪']) })],
-
   [n => /\b(feliz|genial|contento|contenta|increible|lo logre|gane)\b/.test(n) || null,
     c => ({ anim: 'wow', text: pick([`¡Qué bien, ${c.u}! 🎉`, '¡Eso hay que celebrarlo! 🥳', '¡Me alegro un montón!']) })],
 
@@ -196,15 +221,15 @@ const REST = [
       : pick(['Mmm… déjame pensarlo 🤔', 'Buena pregunta… no tengo ni idea 😅']) })],
 ];
 
-const RULES = [...EARLY, ...SERVER, ...REST];
+const RULES = [...EARLY, ...MOOD, ...SERVER, ...REST];
 
 /** What was said to Netvi, normalised and without its own name ("oye netvi, ..."). */
 export const cleanText = text => normalize(text).replace(/\b(netvi|netvy)\b[,:!.]*/g, ' ').replace(/\s+/g, ' ').trim();
 
-/** An answer only if the message is about this server (channels, exam, ranks…), else null. */
+/** An answer only for insults, sad news or questions about this server (channels, exam, ranks…), else null. */
 export function serverAnswer(text, author, channel = 'general', ref = name => `#${name}`) {
   const norm = cleanText(text);
-  for (const [test, make] of SERVER) {
+  for (const [test, make] of [...MOOD, ...SERVER]) {
     const m = test(norm, text);
     if (m) return make({ u: author, channel, ref }, m);
   }

@@ -99,7 +99,27 @@
     g.fillStyle = col; g.fillText(ch, 32, 35);
   }), transparent: true, depthTest: false });
   const SYMBOLS = { bang: symbolMat('!', '#fedc13'), ask: symbolMat('?', '#24d2c5'), zzz: symbolMat('z', '#ffffff'), heart: symbolMat('♥', '#f0030f'), note: symbolMat('♪', '#fedc13') };
-  const sprites = [0, 1, 2].map(() => { const s = new T.Sprite(SYMBOLS.bang); s.visible = false; scene.add(s); return s; });
+  // Anger vein (the cartoon "💢"): four thick red brackets bending towards the centre.
+  SYMBOLS.anger = new T.SpriteMaterial({ map: texFrom(96, 96, g => {
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => {
+      const c = v => 48 + v;
+      g.beginPath();
+      g.moveTo(c(sx * 8), c(sy * 34));
+      g.quadraticCurveTo(c(sx * 10), c(sy * 10), c(sx * 34), c(sy * 8));
+      g.lineWidth = 17; g.strokeStyle = '#0b0b0b'; g.stroke();
+      g.lineWidth = 10; g.strokeStyle = '#ff2a2a'; g.stroke();
+    });
+  }), transparent: true, depthTest: false });
+  // Tear drop: light blue with a white shine.
+  SYMBOLS.tear = new T.SpriteMaterial({ map: texFrom(64, 64, g => {
+    g.beginPath();
+    g.moveTo(32, 6); g.bezierCurveTo(44, 26, 52, 36, 52, 44); g.arc(32, 44, 20, 0, Math.PI); g.bezierCurveTo(12, 36, 20, 26, 32, 6);
+    g.lineWidth = 5; g.strokeStyle = '#0b3a6e'; g.stroke();
+    g.fillStyle = '#4fb4ff'; g.fill();
+    g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.ellipse(25, 42, 4, 7, -0.4, 0, Math.PI * 2); g.fill();
+  }), transparent: true, depthTest: false });
+  const sprites = [0, 1, 2, 3, 4, 5].map(() => { const s = new T.Sprite(SYMBOLS.bang); s.visible = false; scene.add(s); return s; });
 
   const BASE = { x: 0, hop: 0, rotY: 0, bodyY: 0, bodyZ: 0, headX: 0, headY: 0, headZ: 0, aLx: 0, aLz: 0.08, aRx: 0, aRz: -0.08, lLx: 0, lRx: 0, fx: [] };
   const breathe = t => ({ bodyY: Math.sin(t * TAU / 2) * 0.25, aLz: 0.08 + Math.sin(t * TAU / 2) * 0.04, aRz: -0.08 - Math.sin(t * TAU / 2) * 0.04 });
@@ -135,6 +155,25 @@
       fx: [{ s: 'ask', x: 9, y: 41 + Math.sin(t * TAU / 2) * 1.2, k: 1 }] })],
     sleep: [3, t => ({ bodyY: Math.sin(t * TAU / 3) * 0.35, headX: 0.38, headZ: 0.12, aLz: 0.05, aRz: -0.05,
       fx: [0, 1, 2].map(i => { const p = ((t / 3) + i / 3) % 1; return { s: 'zzz', x: 8 + p * 8, y: 34 + p * 14, k: (0.5 + p * 0.7) * (p < 0.85 ? 1 : (1 - p) / 0.15) }; }) })],
+    // Stamping and shaking fists, leaning forward, with an anger vein above the head.
+    angry: [1, t => {
+      const p = t % 1, s1 = Math.sin(p * TAU), shake = Math.sin(p * TAU * 8);
+      return { bodyZ: shake * 0.05, headX: -0.25, headZ: shake * 0.06,
+        aRx: -0.15, aRz: -2.75 + Math.sin(p * TAU * 4) * 0.3,          // fist shaking in the air
+        aLx: 0.25, aLz: 0.18 + shake * 0.05,                             // other fist clenched at the side
+        lLx: Math.max(0, s1) * 0.6, lRx: Math.max(0, -s1) * 0.6, hop: Math.abs(s1) * 1.2,   // stamping
+        fx: [{ s: 'anger', x: 9, y: 40 + shake * 0.3, k: 1.5 + Math.max(0, Math.sin(p * TAU * 2)) * 0.35 }] };
+    }],
+    // Hands over the face, sobbing, with tears streaming down both sides.
+    cry: [1.6, t => {
+      const p = (t % 1.6) / 1.6;
+      const tears = [0, 1, 2].flatMap(i => {
+        const q = (p * 2 + i / 3) % 1;
+        return [-1, 1].map(side => ({ s: 'tear', x: side * (6.5 + q * 2.5), y: 30 - q * 22, k: 0.55 * (q < 0.85 ? 1 : (1 - q) / 0.15) }));
+      });
+      return { bodyY: Math.abs(Math.sin(p * TAU * 2)) * 0.5, headX: 0.32 + Math.sin(p * TAU * 2) * 0.05, headZ: Math.sin(p * TAU) * 0.06,
+        aLx: -2.15, aLz: -0.4, aRx: -2.15, aRz: 0.4, fx: tears };
+    }],
     love: [1.5, t => {
       const p = (t % 1.5) / 1.5;
       return { ...breathe(t), hop: Math.max(0, Math.sin(p * TAU)) * 2, aLx: -0.9, aLz: -0.45, aRx: -0.9, aRz: 0.45, headZ: Math.sin(p * TAU) * 0.15,

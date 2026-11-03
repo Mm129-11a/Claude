@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets');
 
-export const ANIMS = ['idle', 'walk', 'wave', 'wow', 'shrug', 'dance', 'talk', 'think', 'sleep', 'love', 'arrive', 'leave'];
+export const ANIMS = ['idle', 'walk', 'wave', 'wow', 'shrug', 'dance', 'talk', 'think', 'sleep', 'love', 'arrive', 'leave', 'angry', 'cry'];
 
 export function gif(name) {
   const anim = ANIMS.includes(name) ? name : 'talk';
