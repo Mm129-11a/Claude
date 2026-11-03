@@ -43,3 +43,12 @@ test('free chat engine understands common messages', () => {
   assert.match(respond('netvi por que el cielo es azul?', 'Ana').text, /cielo|pensar/);
   assert.ok(respond('netvi ayer fui al estadio', 'Ana').text.length > 0);
 });
+
+test('"A or B" questions answer with one of the options, not the lead-in words', () => {
+  for (let i = 0; i < 20; i++) {
+    const text = respond('Pero cuál sushi o tacos', 'Jomm').text;
+    assert.match(text, /\*\*(sushi|tacos)\*\*/);
+    assert.ok(!/pero|cual/.test(text), text);
+  }
+  assert.match(respond('qué prefieres, playa o montaña?', 'Ana').text, /playa|montaña/);
+});

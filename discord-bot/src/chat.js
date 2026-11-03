@@ -28,6 +28,9 @@ function clockIn(tz, opts) {
   try { return new Intl.DateTimeFormat('es', { timeZone: tz, ...opts }).format(new Date()); } catch { return null; }
 }
 
+// Words that introduce an "A or B" question rather than being part of the options.
+const CHOICE_FILLER = new Set('pero y entonces bueno vale oye cual cuales que quien elige escoge eliges escoges prefieres prefiere mejor entre de los las el la tu te ti a mas gusta dime netvi netvy'.split(' '));
+
 const JOKES = [
   '¿Qué le dice un bloque de tierra a otro? ¡Qué bajo has caído! 🟫',
   '¿Por qué el agente del FBI se llevó una escalera? Porque el caso estaba en otro nivel 🕵️',
@@ -90,11 +93,21 @@ const RULES = [
   [n => /\b(moneda|cara o cruz|cara o sello)\b/.test(n) || null,
     () => ({ anim: 'wow', text: `🪙 ¡Ha salido **${pick(['cara', 'cruz'])}**!` })],
 
-  // "¿pizza o hamburguesa?", "elige entre rojo o azul"
+  // "¿pizza o hamburguesa?", "pero cuál, sushi o tacos?", "elige entre rojo o azul"
   [n => {
-    const m = /(?:elige|escoge|prefieres|mejor|cual)?(?: entre)?\s*([a-zñ0-9 ]{2,40}?)\s+o\s+([a-zñ0-9 ]{2,40}?)\s*\??$/.exec(n);
-    return m && (/\?|elige|escoge|prefieres|mejor|cual/.test(n)) ? [m[1].split(' ').slice(-3).join(' '), m[2]] : null;
-  }, (c, [a, b]) => ({ anim: 'think', text: pick([`Mmm… me quedo con **${pick([a, b])}** 🤔`, `¡**${pick([a, b])}**, sin dudarlo!`, `Difícil… pero **${pick([a, b])}**.`]) })],
+    const m = /([a-zñ0-9 ,]{2,60}?)\s+o\s+([a-zñ0-9 ]{2,40}?)\s*[?!.]*$/.exec(n.replace(/[¿¡]/g, ''));
+    if (!m || !/\?|elige|escoge|prefieres|mejor|cual|que te gusta mas/.test(n)) return null;
+    // Keep only the option itself: drop lead-in words ("pero cuál", "qué prefieres", "elige entre"…).
+    const words = m[1].split(/[ ,]+/).filter(Boolean);
+    let i = words.length;
+    while (i > 0 && !CHOICE_FILLER.has(words[i - 1])) i--;
+    const a = words.slice(i).slice(-3).join(' ');
+    const b = m[2].trim().split(' ').filter(w => !CHOICE_FILLER.has(w)).join(' ');
+    return a && b && a !== b ? [a, b] : null;
+  }, (c, [a, b]) => {
+    const choice = pick([a, b]);
+    return { anim: 'think', text: pick([`Mmm… me quedo con **${choice}** 🤔`, `¡**${choice}**, sin dudarlo!`, `Entre ${a} y ${b}… **${choice}**, fijo.`, `Difícil… pero **${choice}** 😋`]) };
+  }],
 
   // "¿te gusta X?"
   [n => { const m = /\bte gusta(?:n)? (?:el |la |los |las )?([a-zñ0-9 ]{2,30}?)\??$/.exec(n); return m ? m[1] : null; },
