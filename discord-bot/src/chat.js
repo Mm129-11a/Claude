@@ -47,6 +47,37 @@ const RULES = [
   [n => /^(ok|okay|oki|vale|va|si|sip|sep|simon|claro|bueno|dale|listo|no|nop|nel|nada|ah|aja|mm+|hmm+)[!?.,¿¡ ]*$/.test(n) || null,
     (c, _m) => ({ anim: 'talk', text: pick(['¡Vale! 👍', `Perfecto, ${c.u} 😄`, '¡Entendido!', 'Ajá 👀 ¿Algo más?']) })],
 
+  // ── This server (FBI roleplay): point people to the right channel ──
+  [n => /\b(como (entro|ingreso|me uno|unirme|entrar)|quiero (entrar|ingresar|unirme|ser agente)|postular|postulacion|examen|examenes|prueba de ingreso|ingreso)\b/.test(n) || null,
+    c => ({ anim: 'wow', text: `Para entrar al FBI haz el examen en ${c.ref('examenes-de-ingreso')} 📝 Los resultados salen en ${c.ref('resultados')}. ¡Suerte, futuro agente!` })],
+
+  [n => /\b(resultado|resultados|aprobe|aprobado|aprobada|suspendi|reprobe|nota|calificacion)\b/.test(n) || null,
+    c => ({ anim: 'think', text: `Los resultados se publican en ${c.ref('resultados')} 🧐 ¡Crucemos los dedos de bloque!` })],
+
+  [n => /\b(regla|reglas|norma|normas|reglamento|reglamentos|prohibido|se puede hacer)\b/.test(n) || null,
+    c => ({ anim: 'talk', text: `Las normas están en ${c.ref('reglamentos')} 📖 Léelas bien, que un agente siempre cumple el reglamento 😎` })],
+
+  [n => /\b10-?4\b/.test(n) || null,
+    () => ({ anim: 'wave', text: pick(['¡10-4, recibido! 📻', '10-4, agente. Cambio y corto 📻']) })],
+
+  [n => /\b(codigo|codigos|clave|claves|radio|frecuencia)\b/.test(n) || null,
+    c => ({ anim: 'talk', text: `Los códigos de radio los tienes en ${c.ref('codigo-radio')} 📻 ¡10-4!` })],
+
+  [n => /\b(permiso|permisos|ausencia|ausente|licencia|vacaciones|no podre venir|no voy a poder)\b/.test(n) || null,
+    c => ({ anim: 'talk', text: `Los permisos y ausencias se piden en ${c.ref('permisos')} 🙋 Así los jefes lo tienen en cuenta.` })],
+
+  [n => /\b(soporte|ticket|reportar|reporte|denunciar|tengo un problema|bug|ayuda con)\b/.test(n) || null,
+    c => ({ anim: 'think', text: `Para eso mejor abre un ticket en ${c.ref('soporte')} 🛠️ El equipo te ayudará enseguida.` })],
+
+  [n => /\b(formacion|entrenamiento|entrenar|curso|cursos|academia|capacitacion|clase|clases)\b/.test(n) || null,
+    c => ({ anim: 'wow', text: `Las formaciones y entrenamientos se organizan en ${c.ref('formacion')} 🎓 ¡A ponerse en forma, agente!` })],
+
+  [n => /\b(rango|rangos|ascenso|ascender|subir de rango|sargento|teniente|capitan|comisario|director|jerarquia)\b/.test(n) || null,
+    c => ({ anim: 'think', text: pick([`Los rangos están en ${c.ref('rangos')} 🎖️ Con esfuerzo y buenas actuaciones se sube.`, `Mira ${c.ref('rangos')} para ver la jerarquía, ${c.u}. ¡Tú tienes pinta de futuro director! 😎`]) })],
+
+  [n => /\b(soy nuevo|soy nueva|acabo de entrar|recien llegado|bienvenida|bienvenidas)\b/.test(n) || null,
+    c => ({ anim: 'wave', text: `¡Bienvenid@, ${c.u}! 👋 Empieza por ${c.ref('reglamentos')} y, si quieres ser agente, el examen está en ${c.ref('examenes-de-ingreso')}.` })],
+
   [n => /\b(tonto|idiota|feo|fea|malo|callate|basura|inutil|estupido|pesado|odio)\b/.test(n) || null,
     c => ({ anim: 'shrug', text: pick(['Eso me ha dolido un poquito… pero te perdono 😌', `Vaya, ${c.u}, hoy vienes picante 🌶️`, 'Yo te sigo queriendo igual 💖', '*se pone a llorar en pixeles* 😢']) })],
 
@@ -126,9 +157,6 @@ const RULES = [
   [n => /\b(hambre|comer|comida|pizza|tacos|hamburguesa|cena|almuerzo|desayuno)\b/.test(n) || null,
     () => ({ anim: 'wow', text: pick(['¡Ñam! Yo solo como píxeles, pero eso suena delicioso 🍕', 'No me hables de comida que me da hambre 🤤', '¡Invítame! Bueno… no puedo comer, pero acompaño 😅']) })],
 
-  [n => /\b(rango|rangos|ascenso|ascender|subir de rango|placa|sargento|teniente|capitan|comisario|director)\b/.test(n) || null,
-    c => ({ anim: 'think', text: pick([`Para los rangos, mira el canal de rangos y pregunta a los altos mandos, ${c.u} 🎖️`, '¡Con esfuerzo se sube de rango! Yo ya soy Agente Mascota de primera clase 🎖️', 'Los ascensos los deciden los jefes… pero tú tienes pinta de futuro director 😎']) })],
-
   [n => /\b(fbi|agente|caso|mision|sospechoso|arresto|arrestar|investigar|investigacion|operativo|criminal|detective|evidencia|placa|patrulla)\b/.test(n) || null,
     c => ({ anim: 'think', text: pick([`*se pone las gafas de agente* 🕶️ Cuéntame los detalles del caso, ${c.u}.`, 'El FBI nunca duerme… bueno, yo sí, de 1 a 9 😴🕵️', 'Recibido, agente. Me pongo a investigar 🔎', '¡Sospechoso a la vista! Ah no, es mi reflejo 😅']) })],
 
@@ -150,10 +178,10 @@ const RULES = [
 ];
 
 /** Builds an answer to `text` from `author` in `channel`. */
-export function respond(text, author, channel = 'general') {
+export function respond(text, author, channel = 'general', ref = name => `#${name}`) {
   // Drop the bot's own name ("oye netvi, ...") so the rules see only what was said to it.
   const norm = normalize(text).replace(/\b(netvi|netvy)\b[,:!.]*/g, ' ').replace(/\s+/g, ' ').trim();
-  const ctx = { u: author, channel };
+  const ctx = { u: author, channel, ref };
   for (const [test, make] of RULES) {
     const m = test(norm, text);
     if (m) return make(ctx, m);

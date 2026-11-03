@@ -15,13 +15,25 @@ export const stateOf = guildId => states.get(guildId);
 const minutes = n => n * 60_000;
 const isActive = id => !config.activeWindow || Date.now() - (lastActivity.get(id) || 0) < minutes(config.activeWindow);
 
+/** Channel name without emoji, decorations or accents: "¦•📝exámenes-de-ingreso" -> "examenes-de-ingreso". */
+export const plainName = name => name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9-]/g, '');
+
+/** Matches a channel by ID or by (part of) its plain name. */
+const nameMatches = (ch, wanted) => ch.id === wanted || (plainName(wanted) && plainName(ch.name).includes(plainName(wanted)));
+
+/** "examenes" -> a clickable link to the server's channel with that name, if there is one. */
+export function channelRef(guild, name) {
+  const ch = guild?.channels.cache.find(c => c.type === ChannelType.GuildText && plainName(c.name).includes(plainName(name)));
+  return ch ? `<#${ch.id}>` : `#${name}`;
+}
+
 /** Text channels Netvi may walk into. */
 export function walkable(guild) {
   const me = guild.members.me;
   return guild.channels.cache.filter(ch =>
     ch.type === ChannelType.GuildText &&
-    (!config.channels.length || config.channels.includes(ch.id) || config.channels.includes(ch.name)) &&
-    !config.excludeChannels.includes(ch.id) && !config.excludeChannels.includes(ch.name) &&
+    (!config.channels.length || config.channels.some(c => nameMatches(ch, c))) &&
+    !config.excludeChannels.some(c => nameMatches(ch, c)) &&
     ch.permissionsFor(me)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.ReadMessageHistory]),
   );
 }

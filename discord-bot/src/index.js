@@ -160,6 +160,7 @@ client.on(Events.MessageCreate, async message => {
     history: await wander.recentHistory(message.channel, { limit: 15, before: message.id }),
     author: message.member?.displayName || message.author.globalName || message.author.username,
     text,
+    ref: name => wander.channelRef(guild, name),
   });
   await message.reply({ content: said || '…', files: [gif(anim)], allowedMentions: { parse: [], repliedUser: true } }).catch(err => console.error('[chat]', err.message));
 });

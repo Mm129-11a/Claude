@@ -72,12 +72,12 @@ async function ask(userContent) {
 const transcript = history => history.map(h => `${h.author}: ${h.text}`).join('\n') || '(nadie ha escrito nada aún)';
 
 /** A reply to someone who talked to Netvi. */
-export async function reply({ server, channel, history, author, text }) {
+export async function reply({ server, channel, history, author, text, ref }) {
   const answer = await ask(
     `Servidor: ${server} · Canal: #${channel}\n\nÚltimos mensajes del canal:\n${transcript(history)}\n\n` +
     `${author} te dice ahora: ${text}\n\nResponde a ${author}.`,
   );
-  return answer || cannedReply(text, author, channel);
+  return answer || cannedReply(text, author, channel, ref);
 }
 
 /** What Netvi says when it walks into a channel. */
@@ -96,6 +96,6 @@ export async function entrance({ server, channel, history }) {
 }
 
 /** Answer without Claude: the free conversation engine in chat.js. */
-function cannedReply(text, author, channel) {
-  return respond(text, author, channel);
+function cannedReply(text, author, channel, ref) {
+  return respond(text, author, channel, ref);
 }
