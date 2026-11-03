@@ -8,7 +8,7 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 /** Lowercase, no accents, no repeated letters ("Holaaa" -> "hola"), no mentions. */
 export function normalize(text) {
   return text.toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .normalize('NFD').replace(/n\u0303/g, 'ñ').replace(/[\u0300-\u036f]/g, '')
     .replace(/<[@#][!&]?\d+>/g, ' ')
     .replace(/@/g, ' ')
     .replace(/(.)\1{2,}/g, '$1')

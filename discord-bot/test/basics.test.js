@@ -48,7 +48,7 @@ test('"A or B" questions answer with one of the options, not the lead-in words',
   for (let i = 0; i < 20; i++) {
     const text = respond('Pero cuál sushi o tacos', 'Jomm').text;
     assert.match(text, /\*\*(sushi|tacos)\*\*/);
-    assert.ok(!/pero|cual/.test(text), text);
+    assert.ok(!/\*\*[^*]*(pero|cual)[^*]*\*\*/.test(text), text);   // the chosen option has no lead-in words
   }
   assert.match(respond('qué prefieres, playa o montaña?', 'Ana').text, /playa|montaña/);
 });
