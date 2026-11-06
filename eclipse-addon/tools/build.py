@@ -16,7 +16,8 @@ SIZE = {
     "sun": DIST["sun"] * t(SUN_DEG) / DISK_FILL,
     "moon": DIST["moon"] * t(MOON_DEG) / DISK_FILL,
     "corona": DIST["corona"] * t(MOON_DEG) / CORONA_HOLE,
-    "glow": DIST["glow"] * t(26),
+    "glow_in": DIST["glow"] * t(SUN_DEG * 3.2),
+    "glow_out": DIST["glow"] * t(34),
     "flash": DIST["flash"] * t(22),
     "sky": DIST["sky"] * t(SKY_DEG),
 }
@@ -108,22 +109,36 @@ def tent(r, g, b, alpha):
     return [r, g, b, f"{alpha:.3f} * {TENT}"]
 
 put("sun", "particles_alpha", "disk", SIZE["sun"], [1, 0.985, 0.93, 1], 0.1)
-sky_rgb = (0.47, 0.65, 1.0)
-for k in range(8):                       # luna: azul oscuro con cielo claro, negra con cielo oscuro
-    f = 1 - k / 7
-    put(f"moon_{k}", "particles_alpha", "disk", SIZE["moon"],
-        [round(c * 0.62 * f + 0.012, 3) for c in sky_rgb] + [1], 0.1)
+def lerp_colors(stops, x):
+    for (x0, c0), (x1, c1) in zip(stops, stops[1:]):
+        if x <= x1:
+            f = (x - x0) / (x1 - x0)
+            return [round(a + (b - a) * f, 3) for a, b in zip(c0, c1)]
+    return list(stops[-1][1])
+hexc = lambda h: tuple(int(h[i:i + 2], 16) / 255 for i in (1, 3, 5))
+# Color del cielo según qué tan tapado está el sol: azul -> naranja -> rojo oscuro -> negro
+SKY_STOPS = [(0, hexc("#f4b070")), (0.45, hexc("#ec6c1a")), (0.75, hexc("#6e260c")), (1, hexc("#050405"))]
+# Luna: azul oscuro con cielo claro, café oscuro con cielo naranja, negra al final
+MOON_STOPS = [(0, hexc("#3e5490")), (0.4, hexc("#3a2418")), (0.75, hexc("#160a06")), (1, hexc("#030303"))]
+for k in range(8):
+    put(f"moon_{k}", "particles_alpha", "disk", SIZE["moon"], lerp_colors(MOON_STOPS, k / 7) + [1], 0.1)
+# Brillo del sol: dos capas que suman luz (aditivas)
 for k in range(1, 7):
-    put(f"glow_{k}", "particles_blend", "glow", SIZE["glow"], tent(1, 1, 0.97, 0.55 * k / 6), 0.2)
-for k in range(1, 13):
-    put(f"sky_{k}", "particles_blend", "sky", SIZE["sky"], tent(0.012, 0.016, 0.035, 0.6 * k / 12), 0.2)
+    put(f"glowin_{k}", "particles_add", "glow", SIZE["glow_in"], tent(1, 0.98, 0.9, 0.5 * k / 6), 0.2)
+    put(f"glowout_{k}", "particles_add", "glow", SIZE["glow_out"], tent(1, 0.93, 0.8, 0.28 * k / 6), 0.2)
+# Cielo: etapa s (1..12, color y fuerza) x banda de altura w (0 abajo, 2 arriba)
+for st in range(1, 13):
+    d = st / 12
+    a = 0.6 * min(1, d / 0.45) ** 0.8
+    for w, wf in enumerate((0.65, 0.85, 1.0)):
+        put(f"sky_{st}_{w}", "particles_blend", "sky", SIZE["sky"], tent(*lerp_colors(SKY_STOPS, d), a * wf), 0.2)
 for k in range(1, 5):
     put(f"corona_{k}", "particles_blend", "corona", SIZE["corona"], tent(1, 1, 1, 0.75 * k / 4), 0.2)
     put(f"flash_{k}", "particles_blend", "flash", SIZE["flash"], tent(1, 1, 1, 0.85 * k / 4), 0.2)
 
 # --- niebla: oscurece lo lejano y deja el horizonte naranja (empieza lejos para no tapar el eclipse) ---
-fogs = {"dark1": (40, 200, "#7f93bd"), "dark2": (34, 170, "#5d6684"), "dark3": (30, 150, "#5e4a48"),
-        "dark4": (28, 130, "#4a3226"), "totality": (30, 150, "#8a4a26")}
+fogs = {"dark1": (40, 200, "#e0a070"), "dark2": (34, 170, "#d0682a"), "dark3": (30, 150, "#7a3214"),
+        "dark4": (28, 130, "#24100a"), "totality": (30, 150, "#5a2a12")}
 for n, (s, e, c) in fogs.items():
     json.dump({"format_version": "1.16.100", "minecraft:fog_settings": {
         "description": {"identifier": f"eclipse:{n}"},

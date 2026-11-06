@@ -2,9 +2,9 @@
  "format_version": "1.10.0",
  "particle_effect": {
   "description": {
-   "identifier": "eclipse:glow_6",
+   "identifier": "eclipse:glowout_3",
    "basic_render_parameters": {
-    "material": "particles_blend",
+    "material": "particles_add",
     "texture": "textures/particle/eclipse_glow"
    }
   },
@@ -27,8 +27,8 @@
    },
    "minecraft:particle_appearance_billboard": {
     "size": [
-     7.609,
-     7.609
+     10.522,
+     10.522
     ],
     "facing_camera_mode": "rotate_xyz",
     "uv": {
@@ -47,9 +47,9 @@
    "minecraft:particle_appearance_tinting": {
     "color": [
      1,
-     1,
-     0.97,
-     "0.550 * (1 - math.abs(variable.particle_age - 0.1) / 0.1)"
+     0.93,
+     0.8,
+     "0.140 * (1 - math.abs(variable.particle_age - 0.1) / 0.1)"
     ]
    }
   }

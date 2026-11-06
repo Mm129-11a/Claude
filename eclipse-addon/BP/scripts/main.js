@@ -33,7 +33,7 @@ const SKY_POINTS = (() => {
     const y = minZ + ((1 - minZ) * (i + 0.5)) / n;
     const r = Math.sqrt(1 - y * y);
     const el = (Math.asin(y) * 180) / Math.PI;
-    pts.push({ x: r * Math.cos(ga * i), y, z: r * Math.sin(ga * i), weight: 0.55 + 0.45 * Math.min(1, (el - 12) / 50) });
+    pts.push({ x: r * Math.cos(ga * i), y, z: r * Math.sin(ga * i), band: el < 25 ? 0 : el < 50 ? 1 : 2 });
   }
   return pts;
 })();
@@ -137,12 +137,14 @@ function update() {
   if (t < P) off = 2.45 - 2.33 * smooth(t / P); // llega hasta dejar una rayita de sol
   else off = 0.12 * (1 - clamp01((t - P) / 40)); // y termina de taparlo
   const cov = covered(off);
-  const dark = t < P ? Math.pow(clamp01((cov - 0.12) / 0.83), 1.5) : 1; // qué tan oscuro está el cielo
+  const dark = t < P ? Math.pow(clamp01((cov - 0.05) / 0.9), 1.2) : 1; // 0 azul, 0.5 naranja, 1 negro
 
   if (t === P) world.setTimeOfDay(MIDNIGHT);
 
   const moonLevel = Math.round(dark * 7);
-  const glowLevel = Math.round(Math.pow(1 - cov, 0.8) * 6);
+  const glowIn = Math.round(Math.pow(1 - cov, 0.3) * 6); // el sol brilla fuerte hasta casi taparse
+  const glowOut = Math.round(Math.pow(1 - cov, 0.6) * 6);
+  const skyStage = Math.round(dark * 12);
   const fog =
     t >= P ? "totality" : dark > 0.8 ? "dark4" : dark > 0.55 ? "dark3" : dark > 0.3 ? "dark2" : dark > 0.08 ? "dark1" : null;
 
@@ -158,16 +160,17 @@ function update() {
 
     spawn(p, `eclipse:moon_${moonLevel}`, skyPoint(head, DIST.moon, off * SUN_DEG));
     if (t < P + 40) spawn(p, "eclipse:sun", skyPoint(head, DIST.sun, 0));
-    if (glowLevel > 0 && t < P) spawn(p, `eclipse:glow_${glowLevel}`, skyPoint(head, DIST.glow, 0));
+    if (t < P + 10) {
+      if (glowIn > 0) spawn(p, `eclipse:glowin_${glowIn}`, skyPoint(head, DIST.glow, 0));
+      if (glowOut > 0) spawn(p, `eclipse:glowout_${glowOut}`, skyPoint(head, DIST.glow, 0));
+    }
     if (coronaLevel > 0) spawn(p, `eclipse:corona_${coronaLevel}`, skyPoint(head, DIST.corona, 0));
     if (flashLevel > 0) spawn(p, `eclipse:flash_${flashLevel}`, skyPoint(head, DIST.flash, -SUN_DEG * 0.92));
 
-    // Cielo que se oscurece (solo de día; de noche ya está oscuro)
-    if (t < P && dark > 0) {
+    // Cielo: se pone naranja y luego negro (solo de día; de noche ya está oscuro)
+    if (t < P && skyStage > 0) {
       for (const s of SKY_POINTS) {
-        const k = Math.round(dark * s.weight * 12);
-        if (k > 0)
-          spawn(p, `eclipse:sky_${k}`, {
+        spawn(p, `eclipse:sky_${skyStage}_${s.band}`, {
             x: head.x + s.x * DIST.sky,
             y: head.y + s.y * DIST.sky,
             z: head.z + s.z * DIST.sky,

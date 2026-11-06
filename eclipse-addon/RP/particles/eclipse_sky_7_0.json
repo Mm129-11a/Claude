@@ -2,7 +2,7 @@
  "format_version": "1.10.0",
  "particle_effect": {
   "description": {
-   "identifier": "eclipse:sky_2",
+   "identifier": "eclipse:sky_7_0",
    "basic_render_parameters": {
     "material": "particles_blend",
     "texture": "textures/particle/eclipse_sky"
@@ -46,10 +46,10 @@
    },
    "minecraft:particle_appearance_tinting": {
     "color": [
-     0.012,
-     0.016,
-     0.035,
-     "0.100 * (1 - math.abs(variable.particle_age - 0.1) / 0.1)"
+     0.706,
+     0.302,
+     0.078,
+     "0.390 * (1 - math.abs(variable.particle_age - 0.1) / 0.1)"
     ]
    }
   }

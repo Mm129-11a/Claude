@@ -16,9 +16,9 @@ Necesita Minecraft Bedrock 1.21.100 o más nuevo.
 El eclipse sale **justo arriba de cada jugador**: todo el server lo ve, solo hay que mirar hacia arriba.
 
 ## Qué pasa (como en el video)
-1. Se hace mediodía. Sale un sol redondo con brillo justo arriba.
+1. Se hace mediodía. Sale un sol redondo que brilla fuerte, justo arriba.
 2. La luna redonda entra desde arriba a la derecha y lo va tapando (22 s).
-   El cielo se va poniendo oscuro y el horizonte naranja.
+   Mientras lo tapa, el cielo pasa de azul a naranja, luego rojo oscuro y al final negro.
 3. Queda una rayita de sol, sale el destello en forma de estrella,
    se hace de noche y aparecen las estrellas.
 4. Queda la luna negra con el anillo de luz (corona) hasta que lo apagues.
