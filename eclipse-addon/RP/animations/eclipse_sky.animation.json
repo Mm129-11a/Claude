@@ -7,30 +7,30 @@
     "root": {
      "rotation": [
       0,
-      "-query.body_y_rotation",
+      "-q.body_y_rotation",
       0
      ]
     },
     "moon": {
      "position": [
-      "query.property('eclipse:mx')",
+      "v.mpx * 0.70711",
       0,
-      "query.property('eclipse:mz')"
+      "v.mpx * -0.70711"
      ]
     },
     "flash": {
      "position": [
-      "query.property('eclipse:fx')",
+      -23.541,
       0,
-      "query.property('eclipse:fz')"
+      23.541
      ],
-     "scale": "math.max(0.001, query.property('eclipse:flash'))"
+     "scale": "math.max(0.001, v.flash)"
     },
     "glow": {
-     "scale": "math.max(0.001, query.property('eclipse:glow'))"
+     "scale": "math.max(0.001, v.glow)"
     },
     "corona": {
-     "scale": "math.max(0.001, query.property('eclipse:corona'))"
+     "scale": "math.max(0.001, v.corona)"
     }
    }
   }

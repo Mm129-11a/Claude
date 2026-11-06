@@ -182,27 +182,59 @@ json.dump({"format_version": "1.12.0", "minecraft:geometry": [{
                     "visible_bounds_offset": [0, (DOME + DOME_LOW) / 2, 0]},
     "bones": bones}]}, open(f"{RP}/models/entity/eclipse_sky.geo.json", "w"), indent=1)
 
+# ---------------- línea de tiempo (la calcula el celular de cada jugador, cuadro por cuadro) ----------------
+# t = segundos desde que empezó el eclipse = tiempo de vida de la entidad + "variant"
+# (variant = segundos que ya llevaba el eclipse cuando apareció la entidad, para los que entran tarde).
+PARTIAL = 22.0                     # segundos que tarda la luna en tapar el sol
+MOON_FROM = (1.0, -1.0)            # de qué lado viene la luna (x, z)
+MAX_VARIANT = 30
+fl = math.hypot(*MOON_FROM); FX, FZ = MOON_FROM[0] / fl, MOON_FROM[1] / fl
+R2 = MOON_DEG / SUN_DEG
+MOON_PX = H["moon"] * P
+FLASH_PX = -tan(SUN_DEG * 0.92) * H["flash"] * P
+Pp = f"{PARTIAL}"
+TIMELINE = [
+    "v.t = q.life_time + q.variant;",
+    f"v.u = math.clamp(v.t / {Pp}, 0, 1);",
+    "v.sm = v.u * v.u * (3 - 2 * v.u);",
+    f"v.off = v.t < {Pp} ? 2.45 - 2.33 * v.sm : 0.12 * (1 - math.clamp((v.t - {Pp}) / 2, 0, 1));",
+    "v.dd = math.max(v.off, 0.0001);",
+    f"v.a1 = math.acos(math.clamp((v.dd * v.dd + 1 - {R2 * R2:.5f}) / (2 * v.dd), -1, 1)) * math.pi / 180;",
+    f"v.a2 = {R2 * R2:.5f} * math.acos(math.clamp((v.dd * v.dd + {R2 * R2 - 1:.5f}) / (2 * v.dd * {R2:.5f}), -1, 1)) * math.pi / 180;",
+    f"v.kk = 0.5 * math.sqrt(math.max(0, ({1 + R2:.5f} - v.dd) * (v.dd - {R2 - 1:.5f}) * (v.dd + {R2 - 1:.5f}) * (v.dd + {1 + R2:.5f})));",
+    f"v.cov = v.off >= {1 + R2:.5f} ? 0 : (v.off <= {R2 - 1:.5f} ? 1 : (v.a1 + v.a2 - v.kk) / math.pi);",
+    f"v.dark = v.t < {Pp} ? math.pow(math.clamp((v.cov - 0.05) / 0.9, 0, 1), 1.2) : 1;",
+    f"v.stage = v.t < {Pp} ? math.round(v.dark * {STAGES}) : 0;",
+    "v.moonk = math.round(v.dark * 7);",
+    f"v.mpx = math.sin(v.off * {SUN_DEG}) / math.cos(v.off * {SUN_DEG}) * {MOON_PX};",
+    f"v.glow = v.t < {PARTIAL + 0.5} ? 0.35 + 0.65 * math.pow(1 - v.cov, 0.3) : 0;",
+    f"v.flash = (v.t >= {PARTIAL - 0.3} && v.t < {PARTIAL + 2.5}) ? math.clamp(v.t < {PARTIAL + 0.3} ? (v.t - {PARTIAL - 0.3}) / 0.6 : 1 - (v.t - {PARTIAL + 0.3}) / 2.2, 0, 1) : 0;",
+    f"v.cu = math.clamp((v.t - {PARTIAL + 0.75}) / 2.25, 0, 1);",
+    f"v.corona = v.t < {PARTIAL + 0.75} ? 0 : (0.85 + 0.15 * v.cu * v.cu * (3 - 2 * v.cu)) * (1 + 0.02 * math.sin(v.t * 127));",
+    f"v.sun = v.t < {PARTIAL + 2};",
+    # Solo lo ve quien lo lleva en el hombro (los demás jugadores están más lejos de él)
+    "v.show = q.distance_from_camera < 5;",
+]
+
 # ---------------- animación: anula el giro del jugador y mueve luna/destello ----------------
-prop = lambda n: f"query.property('eclipse:{n}')"
 json.dump({"format_version": "1.8.0", "animations": {"animation.eclipse_sky.follow": {"loop": True, "bones": {
-    "root": {"rotation": [0, "-query.body_y_rotation", 0]},
-    "moon": {"position": [prop("mx"), 0, prop("mz")]},
-    "flash": {"position": [prop("fx"), 0, prop("fz")], "scale": f"math.max(0.001, {prop('flash')})"},
-    "glow": {"scale": f"math.max(0.001, {prop('glow')})"},
-    "corona": {"scale": f"math.max(0.001, {prop('corona')})"},
+    "root": {"rotation": [0, "-q.body_y_rotation", 0]},
+    "moon": {"position": [f"v.mpx * {FX:.5f}", 0, f"v.mpx * {FZ:.5f}"]},
+    "flash": {"position": [round(FLASH_PX * FX, 3), 0, round(FLASH_PX * FZ, 3)], "scale": "math.max(0.001, v.flash)"},
+    "glow": {"scale": "math.max(0.001, v.glow)"},
+    "corona": {"scale": "math.max(0.001, v.corona)"},
 }}}}, open(f"{RP}/animations/eclipse_sky.animation.json", "w"), indent=1)
 
 # ---------------- cómo se dibuja (3 pasadas: cielo, sol/luna, brillos) ----------------
-SHOW = "variable.show"
 def rc(material, visible):
     return {"geometry": "Geometry.default", "materials": [{"*": f"Material.{material}"}],
             "textures": ["Texture.default"], "ignore_lighting": True,
             "part_visibility": [{"*": False}, {"root": True}] + [{b: e} for b, e in visible.items()]}
 json.dump({"format_version": "1.8.0", "render_controllers": {
-    "controller.render.eclipse_sky_dome": rc("blend", {f"dome_{s}": f"{SHOW} && {prop('stage')} == {s}" for s in range(1, STAGES + 1)}),
-    "controller.render.eclipse_sky_solid": rc("solid", {"sun": f"{SHOW} && {prop('sun')}", "moon": "1",
-                                                        **{f"moon_{k}": f"{SHOW} && {prop('moon')} == {k}" for k in range(8)}}),
-    "controller.render.eclipse_sky_glow": rc("blend", {n: f"{SHOW} && {prop(n)} > 0.01" for n in ("glow", "corona", "flash")}),
+    "controller.render.eclipse_sky_dome": rc("blend", {f"dome_{k}": f"v.show && v.stage == {k}" for k in range(1, STAGES + 1)}),
+    "controller.render.eclipse_sky_solid": rc("solid", {"sun": "v.show && v.sun", "moon": True,
+                                                        **{f"moon_{k}": f"v.show && v.moonk == {k}" for k in range(8)}}),
+    "controller.render.eclipse_sky_glow": rc("blend", {n: f"v.show && v.{n} > 0.01" for n in ("glow", "corona", "flash")}),
 }}, open(f"{RP}/render_controllers/eclipse_sky.render_controllers.json", "w"), indent=1)
 
 json.dump({"format_version": "1.10.0", "minecraft:client_entity": {"description": {
@@ -211,29 +243,21 @@ json.dump({"format_version": "1.10.0", "minecraft:client_entity": {"description"
     "textures": {"default": "textures/entity/eclipse_sky"},
     "geometry": {"default": "geometry.eclipse_sky"},
     "animations": {"follow": "animation.eclipse_sky.follow"},
-    "scripts": {
-        # Solo lo ve su dueño (está pegado a su cámara); los demás ven el suyo
-        "pre_animation": [f"variable.show = {prop('hide')} == 0 && query.distance_from_camera < 7;"],
-        "animate": ["follow"]},
+    "scripts": {"pre_animation": TIMELINE, "animate": ["follow"]},
     "render_controllers": ["controller.render.eclipse_sky_dome", "controller.render.eclipse_sky_solid",
                            "controller.render.eclipse_sky_glow"],
     "enable_attachables": False}}}, open(f"{RP}/entity/eclipse_sky.entity.json", "w"), indent=1)
 
 # ---------------- entidad (comportamiento) ----------------
-def fprop(lo, hi): return {"type": "float", "range": [lo, hi], "default": 0, "client_sync": True}
+groups = {f"eclipse:at_{n}": {"minecraft:variant": {"value": n}} for n in range(1, MAX_VARIANT + 1)}
+events = {f"eclipse:at_{n}": {"add": {"component_groups": [f"eclipse:at_{n}"]}} for n in range(1, MAX_VARIANT + 1)}
 json.dump({"format_version": "1.20.80", "minecraft:entity": {
-    "description": {"identifier": "eclipse:sky", "is_spawnable": False, "is_summonable": True, "is_experimental": False,
-        "properties": {
-            "eclipse:mx": fprop(-400, 400), "eclipse:mz": fprop(-400, 400),
-            "eclipse:fx": fprop(-400, 400), "eclipse:fz": fprop(-400, 400),
-            "eclipse:glow": fprop(0, 2), "eclipse:corona": fprop(0, 2), "eclipse:flash": fprop(0, 2),
-            "eclipse:stage": {"type": "int", "range": [0, STAGES], "default": 0, "client_sync": True},
-            "eclipse:moon": {"type": "int", "range": [0, 7], "default": 0, "client_sync": True},
-            "eclipse:sun": {"type": "bool", "default": True, "client_sync": True},
-            "eclipse:hide": {"type": "bool", "default": False, "client_sync": True}}},
+    "description": {"identifier": "eclipse:sky", "is_spawnable": False, "is_summonable": True, "is_experimental": False},
+    "component_groups": groups,
     "components": {
         # "parrot_tame" deja que vaya montada en el hombro del jugador
         "minecraft:type_family": {"family": ["eclipse_sky", "parrot_tame", "inanimate"]},
+        "minecraft:variant": {"value": 0},
         "minecraft:collision_box": {"width": 0.1, "height": 0.1},
         "minecraft:physics": {"has_gravity": False, "has_collision": False},
         "minecraft:pushable": {"is_pushable": False, "is_pushable_by_piston": False},
@@ -241,8 +265,16 @@ json.dump({"format_version": "1.20.80", "minecraft:entity": {
         "minecraft:health": {"value": 1, "max": 1},
         "minecraft:knockback_resistance": {"value": 1},
         "minecraft:fire_immune": {},
-        "minecraft:breathable": {"breathes_air": True, "breathes_water": True, "suffocate_time": 0}}}},
-    open(f"{BP}/entities/eclipse_sky.json", "w"), indent=1)
+        "minecraft:breathable": {"breathes_air": True, "breathes_water": True, "suffocate_time": 0}},
+    "events": events}}, open(f"{BP}/entities/eclipse_sky.json", "w"), indent=1)
+
+# Los mismos números para el script del servidor (hora, niebla)
+open(f"{BP}/scripts/timeline.js", "w").write(
+    "// Generado por tools/build.py: no lo edites a mano, cambia build.py y vuelve a correrlo.\n"
+    f"export const PARTIAL_SECONDS = {PARTIAL};\n"
+    f"export const SUN_DEG = {SUN_DEG};\n"
+    f"export const MOON_DEG = {MOON_DEG};\n"
+    f"export const MAX_VARIANT = {MAX_VARIANT};\n")
 
 # ---------------- sol y luna normales del juego, redondos ----------------
 def sun_env(r, a):

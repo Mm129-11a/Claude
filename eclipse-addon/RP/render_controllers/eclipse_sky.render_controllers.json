@@ -20,40 +20,40 @@
      "root": true
     },
     {
-     "dome_1": "variable.show && query.property('eclipse:stage') == 1"
+     "dome_1": "v.show && v.stage == 1"
     },
     {
-     "dome_2": "variable.show && query.property('eclipse:stage') == 2"
+     "dome_2": "v.show && v.stage == 2"
     },
     {
-     "dome_3": "variable.show && query.property('eclipse:stage') == 3"
+     "dome_3": "v.show && v.stage == 3"
     },
     {
-     "dome_4": "variable.show && query.property('eclipse:stage') == 4"
+     "dome_4": "v.show && v.stage == 4"
     },
     {
-     "dome_5": "variable.show && query.property('eclipse:stage') == 5"
+     "dome_5": "v.show && v.stage == 5"
     },
     {
-     "dome_6": "variable.show && query.property('eclipse:stage') == 6"
+     "dome_6": "v.show && v.stage == 6"
     },
     {
-     "dome_7": "variable.show && query.property('eclipse:stage') == 7"
+     "dome_7": "v.show && v.stage == 7"
     },
     {
-     "dome_8": "variable.show && query.property('eclipse:stage') == 8"
+     "dome_8": "v.show && v.stage == 8"
     },
     {
-     "dome_9": "variable.show && query.property('eclipse:stage') == 9"
+     "dome_9": "v.show && v.stage == 9"
     },
     {
-     "dome_10": "variable.show && query.property('eclipse:stage') == 10"
+     "dome_10": "v.show && v.stage == 10"
     },
     {
-     "dome_11": "variable.show && query.property('eclipse:stage') == 11"
+     "dome_11": "v.show && v.stage == 11"
     },
     {
-     "dome_12": "variable.show && query.property('eclipse:stage') == 12"
+     "dome_12": "v.show && v.stage == 12"
     }
    ]
   },
@@ -76,34 +76,34 @@
      "root": true
     },
     {
-     "sun": "variable.show && query.property('eclipse:sun')"
+     "sun": "v.show && v.sun"
     },
     {
-     "moon": "1"
+     "moon": true
     },
     {
-     "moon_0": "variable.show && query.property('eclipse:moon') == 0"
+     "moon_0": "v.show && v.moonk == 0"
     },
     {
-     "moon_1": "variable.show && query.property('eclipse:moon') == 1"
+     "moon_1": "v.show && v.moonk == 1"
     },
     {
-     "moon_2": "variable.show && query.property('eclipse:moon') == 2"
+     "moon_2": "v.show && v.moonk == 2"
     },
     {
-     "moon_3": "variable.show && query.property('eclipse:moon') == 3"
+     "moon_3": "v.show && v.moonk == 3"
     },
     {
-     "moon_4": "variable.show && query.property('eclipse:moon') == 4"
+     "moon_4": "v.show && v.moonk == 4"
     },
     {
-     "moon_5": "variable.show && query.property('eclipse:moon') == 5"
+     "moon_5": "v.show && v.moonk == 5"
     },
     {
-     "moon_6": "variable.show && query.property('eclipse:moon') == 6"
+     "moon_6": "v.show && v.moonk == 6"
     },
     {
-     "moon_7": "variable.show && query.property('eclipse:moon') == 7"
+     "moon_7": "v.show && v.moonk == 7"
     }
    ]
   },
@@ -126,13 +126,13 @@
      "root": true
     },
     {
-     "glow": "variable.show && query.property('eclipse:glow') > 0.01"
+     "glow": "v.show && v.glow > 0.01"
     },
     {
-     "corona": "variable.show && query.property('eclipse:corona') > 0.01"
+     "corona": "v.show && v.corona > 0.01"
     },
     {
-     "flash": "variable.show && query.property('eclipse:flash') > 0.01"
+     "flash": "v.show && v.flash > 0.01"
     }
    ]
   }

@@ -27,13 +27,15 @@ El sol y la luna normales del juego también quedan redondos.
 
 ## Cómo funciona
 A cada jugador se le monta en el hombro una entidad invisible (como un loro) que dibuja
-el sol, la luna y el cielo oscuro arriba de él. Como va montada, el juego la mueve contigo
-en cada cuadro: se ve suave aunque camines, corras o vueles. Cada quien ve solo el suyo.
+el sol, la luna y el cielo naranja/oscuro arriba de él. Como va montada, el juego la mueve
+contigo en cada cuadro: se ve suave aunque camines, corras o vueles.
+El celular de cada jugador calcula el eclipse segundo a segundo; el servidor solo pone
+la hora (mediodía y luego medianoche) y la niebla del horizonte.
 
 ## Editar
-- `BP/scripts/main.js`: arriba está `CONFIG` (cuánto dura, de dónde viene la luna).
-- `tools/build.py`: dibuja la textura, el modelo y los colores del cielo. Cámbialo y córrelo con
+- `tools/build.py`: arriba están la duración (`PARTIAL`), de dónde viene la luna (`MOON_FROM`),
+  los colores del cielo, tamaños y alturas. Cámbialo y córrelo con
   `python3 tools/build.py RP BP` para regenerar todo.
+- `BP/scripts/main.js`: el comando, la hora y la niebla.
 - `RP/textures/entity/eclipse_sky.png`: todas las imágenes del eclipse juntas.
 - `RP/models/entity/eclipse_sky.geo.json`: el modelo (se puede abrir en Blockbench).
-- `RP/fogs/`: colores del horizonte.

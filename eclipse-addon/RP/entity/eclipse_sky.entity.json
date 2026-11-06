@@ -18,7 +18,25 @@
    },
    "scripts": {
     "pre_animation": [
-     "variable.show = query.property('eclipse:hide') == 0 && query.distance_from_camera < 7;"
+     "v.t = q.life_time + q.variant;",
+     "v.u = math.clamp(v.t / 22.0, 0, 1);",
+     "v.sm = v.u * v.u * (3 - 2 * v.u);",
+     "v.off = v.t < 22.0 ? 2.45 - 2.33 * v.sm : 0.12 * (1 - math.clamp((v.t - 22.0) / 2, 0, 1));",
+     "v.dd = math.max(v.off, 0.0001);",
+     "v.a1 = math.acos(math.clamp((v.dd * v.dd + 1 - 1.08160) / (2 * v.dd), -1, 1)) * math.pi / 180;",
+     "v.a2 = 1.08160 * math.acos(math.clamp((v.dd * v.dd + 0.08160) / (2 * v.dd * 1.04000), -1, 1)) * math.pi / 180;",
+     "v.kk = 0.5 * math.sqrt(math.max(0, (2.04000 - v.dd) * (v.dd - 0.04000) * (v.dd + 0.04000) * (v.dd + 2.04000)));",
+     "v.cov = v.off >= 2.04000 ? 0 : (v.off <= 0.04000 ? 1 : (v.a1 + v.a2 - v.kk) / math.pi);",
+     "v.dark = v.t < 22.0 ? math.pow(math.clamp((v.cov - 0.05) / 0.9, 0, 1), 1.2) : 1;",
+     "v.stage = v.t < 22.0 ? math.round(v.dark * 12) : 0;",
+     "v.moonk = math.round(v.dark * 7);",
+     "v.mpx = math.sin(v.off * 5.5) / math.cos(v.off * 5.5) * 384.0;",
+     "v.glow = v.t < 22.5 ? 0.35 + 0.65 * math.pow(1 - v.cov, 0.3) : 0;",
+     "v.flash = (v.t >= 21.7 && v.t < 24.5) ? math.clamp(v.t < 22.3 ? (v.t - 21.7) / 0.6 : 1 - (v.t - 22.3) / 2.2, 0, 1) : 0;",
+     "v.cu = math.clamp((v.t - 22.75) / 2.25, 0, 1);",
+     "v.corona = v.t < 22.75 ? 0 : (0.85 + 0.15 * v.cu * v.cu * (3 - 2 * v.cu)) * (1 + 0.02 * math.sin(v.t * 127));",
+     "v.sun = v.t < 24.0;",
+     "v.show = q.distance_from_camera < 5;"
     ],
     "animate": [
      "follow"
