@@ -1,16 +1,16 @@
 {
-  "format_version": "1.16.100",
-  "minecraft:fog_settings": {
-    "description": {
-      "identifier": "eclipse:dark2"
-    },
-    "distance": {
-      "air": {
-        "fog_start": 0.5,
-        "fog_end": 1.0,
-        "fog_color": "#5d6b8e",
-        "render_distance_type": "render"
-      }
-    }
+ "format_version": "1.16.100",
+ "minecraft:fog_settings": {
+  "description": {
+   "identifier": "eclipse:dark2"
+  },
+  "distance": {
+   "air": {
+    "fog_start": 34,
+    "fog_end": 170,
+    "fog_color": "#5d6684",
+    "render_distance_type": "fixed"
+   }
   }
+ }
 }

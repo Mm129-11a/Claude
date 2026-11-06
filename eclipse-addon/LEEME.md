@@ -2,9 +2,10 @@
 
 ## Instalar
 1. Abre `Eclipse.mcaddon` (se importa solo en Minecraft).
-2. En tu mundo: Configuración → Paquetes de comportamiento → activa **Eclipse**
-   (el de texturas se activa solo).
-3. Usa gráficos normales (Elegantes), no "Vibrant Visuals".
+   Si ya tenías la versión anterior, bórrala primero (Configuración → Almacenamiento).
+2. En tu mundo: Paquetes de comportamiento → activa **Eclipse**.
+   En Paquetes de recursos pon **Eclipse (texturas)** hasta arriba de la lista.
+3. Usa gráficos normales (no "Vibrant Visuals").
 
 Necesita Minecraft Bedrock 1.21.100 o más nuevo.
 
@@ -12,18 +13,21 @@ Necesita Minecraft Bedrock 1.21.100 o más nuevo.
 - `/eclipse` → empieza el eclipse (solo operadores).
 - `/eclipse` otra vez → termina y regresa la hora que tenías.
 
-Mira hacia el **oeste** (donde se pone el sol).
+El eclipse sale **justo arriba de cada jugador**: todo el server lo ve, solo hay que mirar hacia arriba.
 
-## Qué pasa
-1. Se pone la hora con el sol al oeste y se congela el ciclo de día.
-2. Durante 20 s la luna negra tapa el sol y el horizonte se va oscureciendo.
-3. Sale el destello (anillo de diamante), se hace de noche y queda la luna negra
-   con su anillo de luz (corona) y el horizonte naranja, hasta que lo apagues.
+## Qué pasa (como en el video)
+1. Se hace mediodía. Sale un sol redondo con brillo justo arriba.
+2. La luna redonda entra desde arriba a la derecha y lo va tapando (22 s).
+   El cielo se va poniendo oscuro y el horizonte naranja.
+3. Queda una rayita de sol, sale el destello en forma de estrella,
+   se hace de noche y aparecen las estrellas.
+4. Queda la luna negra con el anillo de luz (corona) hasta que lo apagues.
+
+El sol y la luna normales del juego también quedan redondos.
 
 ## Editar
-- `BP/scripts/main.js`: arriba está `CONFIG` (duración, hora, tamaño de la luna...).
-  Si el sol se asoma por un lado de la luna, sube `sunRadiusDeg`.
-- `RP/textures/particle/`: luna, corona y destello (PNG).
-- `RP/textures/environment/sun.png`: sol redondo como el del video.
-  Bórralo si quieres el sol cuadrado normal.
-- `RP/fogs/`: colores del cielo oscuro y del horizonte naranja.
+- `BP/scripts/main.js`: arriba está `CONFIG` (cuánto dura, de dónde viene la luna).
+- `tools/build.py`: dibuja todas las texturas y partículas. Cámbialo y córrelo con
+  `python3 tools/build.py RP BP` para regenerarlas.
+- `RP/textures/`: las imágenes (PNG) por si las quieres pintar a mano.
+- `RP/fogs/`: colores del horizonte.
