@@ -5,7 +5,7 @@
 // Se pone mediodía, así el sol del juego queda exactamente arriba y lo tapa nuestro sol redondo.
 // Al final se hace medianoche (salen las estrellas) y la luna del juego queda
 // exactamente arriba, escondida detrás de nuestra luna negra.
-import { world, system, CommandPermissionLevel, CustomCommandStatus } from "@minecraft/server";
+import { world, system, CommandPermissionLevel, CustomCommandStatus, MolangVariableMap } from "@minecraft/server";
 
 // ---------------- Ajustes (puedes cambiarlos) ----------------
 const CONFIG = {
@@ -66,9 +66,9 @@ function covered(d) {
   return (a1 + a2 - k) / Math.PI;
 }
 
-function spawn(player, id, pos) {
+function spawn(player, id, pos, vars) {
   try {
-    player.spawnParticle(id, pos);
+    player.spawnParticle(id, pos, vars);
   } catch (e) {
     if (!warned) {
       warned = true;
@@ -99,7 +99,7 @@ function start() {
   }
   world.gameRules.doDayLightCycle = false;
   world.setTimeOfDay(NOON);
-  state = { tick: 0, fog: new Map() };
+  state = { tick: 0, fog: new Map(), motion: new Map() };
   world.sendMessage("§6☀ Empieza el eclipse... mira hacia arriba");
 }
 
@@ -122,6 +122,30 @@ function restoreTime() {
     world.gameRules.doDayLightCycle = saved.cycle;
   } catch {}
   world.setDynamicProperty(SAVE_KEY, undefined);
+}
+
+// Velocidad del jugador (bloques por segundo), suavizada, para que el eclipse lo siga sin brincos
+function motionOf(player, head) {
+  const prev = state.motion.get(player.id);
+  let v = { x: 0, y: 0, z: 0 };
+  if (prev) {
+    const d = { x: head.x - prev.head.x, y: head.y - prev.head.y, z: head.z - prev.head.z };
+    const teleported = Math.hypot(d.x, d.y, d.z) > 4;
+    const k = 0.5;
+    v = teleported
+      ? v
+      : {
+          x: prev.v.x * (1 - k) + d.x * 20 * k,
+          y: prev.v.y * (1 - k) + d.y * 20 * k,
+          z: prev.v.z * (1 - k) + d.z * 20 * k,
+        };
+  }
+  state.motion.set(player.id, { head, v });
+  const vars = new MolangVariableMap();
+  vars.setFloat("variable.vx", v.x);
+  vars.setFloat("variable.vy", v.y);
+  vars.setFloat("variable.vz", v.z);
+  return vars;
 }
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
@@ -157,15 +181,16 @@ function update() {
   for (const p of world.getAllPlayers()) {
     if (p.dimension.id !== "minecraft:overworld") continue;
     const head = p.getHeadLocation();
+    const vars = motionOf(p, head);
 
-    spawn(p, `eclipse:moon_${moonLevel}`, skyPoint(head, DIST.moon, off * SUN_DEG));
-    if (t < P + 40) spawn(p, "eclipse:sun", skyPoint(head, DIST.sun, 0));
+    spawn(p, `eclipse:moon_${moonLevel}`, skyPoint(head, DIST.moon, off * SUN_DEG), vars);
+    if (t < P + 40) spawn(p, "eclipse:sun", skyPoint(head, DIST.sun, 0), vars);
     if (t < P + 10) {
-      if (glowIn > 0) spawn(p, `eclipse:glowin_${glowIn}`, skyPoint(head, DIST.glow, 0));
-      if (glowOut > 0) spawn(p, `eclipse:glowout_${glowOut}`, skyPoint(head, DIST.glow, 0));
+      if (glowIn > 0) spawn(p, `eclipse:glowin_${glowIn}`, skyPoint(head, DIST.glow, 0), vars);
+      if (glowOut > 0) spawn(p, `eclipse:glowout_${glowOut}`, skyPoint(head, DIST.glow, 0), vars);
     }
-    if (coronaLevel > 0) spawn(p, `eclipse:corona_${coronaLevel}`, skyPoint(head, DIST.corona, 0));
-    if (flashLevel > 0) spawn(p, `eclipse:flash_${flashLevel}`, skyPoint(head, DIST.flash, -SUN_DEG * 0.92));
+    if (coronaLevel > 0) spawn(p, `eclipse:corona_${coronaLevel}`, skyPoint(head, DIST.corona, 0), vars);
+    if (flashLevel > 0) spawn(p, `eclipse:flash_${flashLevel}`, skyPoint(head, DIST.flash, -SUN_DEG * 0.92), vars);
 
     // Cielo: se pone naranja y luego negro (solo de día; de noche ya está oscuro)
     if (t < P && skyStage > 0) {
@@ -174,7 +199,7 @@ function update() {
             x: head.x + s.x * DIST.sky,
             y: head.y + s.y * DIST.sky,
             z: head.z + s.z * DIST.sky,
-          });
+          }, vars);
       }
     }
 

@@ -99,6 +99,10 @@ def particle(name, material, tex, size, color, life):
             "minecraft:emitter_lifetime_once": {"active_time": 0.05},
             "minecraft:emitter_shape_point": {"offset": [0, 0, 0]},
             "minecraft:particle_lifetime_expression": {"max_lifetime": life},
+            # Se mueve a la misma velocidad que el jugador entre un tick y otro: así te sigue suave
+            "minecraft:particle_motion_parametric": {"relative_position": [
+                "variable.vx * variable.particle_age", "variable.vy * variable.particle_age",
+                "variable.vz * variable.particle_age"]},
             "minecraft:particle_appearance_billboard": {
                 "size": [round(size, 3), round(size, 3)], "facing_camera_mode": "rotate_xyz",
                 "uv": {"texture_width": 1, "texture_height": 1, "uv": [0, 0], "uv_size": [1, 1]}},
