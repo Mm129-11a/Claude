@@ -1,31 +1,58 @@
 // Eclipse solar para Minecraft Bedrock.
 // Comando: /eclipse  (solo operadores). Una vez lo empieza, otra vez lo termina.
 //
-// Cómo funciona: a cada jugador se le monta en el hombro una entidad invisible ("eclipse:sky"),
-// como un loro. Esa entidad dibuja el sol, la luna y el cielo naranja/oscuro justo arriba de él.
-// Como va montada, el juego la mueve con el jugador en cada cuadro: se ve suave aunque corras o vueles.
-// Todo el dibujo lo calcula el celular de cada jugador con la línea de tiempo de tools/build.py.
-// Este script solo pone la hora (mediodía y luego medianoche), la niebla y monta la entidad.
+// Cómo funciona: el eclipse se dibuja justo arriba de cada jugador (todo el server lo ve).
+// Se pone mediodía, así el sol del juego queda exactamente arriba y lo tapa nuestro sol redondo.
+// Al final se hace medianoche (salen las estrellas) y la luna del juego queda
+// exactamente arriba, escondida detrás de nuestra luna negra.
 import { world, system, CommandPermissionLevel, CustomCommandStatus } from "@minecraft/server";
-import { PARTIAL_SECONDS, SUN_DEG, MOON_DEG, MAX_VARIANT } from "./timeline.js";
 
-const NOON = 6000; // el sol del juego queda justo arriba, escondido detrás de nuestro sol redondo
-const MIDNIGHT = 18000; // salen las estrellas; la luna del juego queda arriba, detrás de la nuestra
-const SKY = "eclipse:sky";
+// ---------------- Ajustes (puedes cambiarlos) ----------------
+const CONFIG = {
+  partialSeconds: 22, // cuánto tarda la luna en tapar el sol
+  moonFrom: { x: 1, z: -1 }, // de dónde viene la luna (x = este, z = sur; -z = norte)
+};
+// --------------------------------------------------------------
+
+// Distancias en bloques. Si las cambias, cambia también tools/build.py (tamaños de las partículas).
+const DIST = { flash: 22.4, moon: 23.2, sun: 24.0, corona: 24.3, glow: 25.0, sky: 30.4 };
+const SUN_DEG = 5.5;
+const MOON_DEG = 5.72;
+const NOON = 6000;
+const MIDNIGHT = 18000;
 const SAVE_KEY = "eclipse:saved";
+const rad = (d) => (d * Math.PI) / 180;
+
+// Manchas que oscurecen el cielo, repartidas en la mitad de arriba (más de 12° sobre el horizonte)
+const SKY_POINTS = (() => {
+  const pts = [];
+  const n = 48;
+  const minZ = Math.sin(rad(12));
+  const ga = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < n; i++) {
+    const y = minZ + ((1 - minZ) * (i + 0.5)) / n;
+    const r = Math.sqrt(1 - y * y);
+    const el = (Math.asin(y) * 180) / Math.PI;
+    pts.push({ x: r * Math.cos(ga * i), y, z: r * Math.sin(ga * i), band: el < 25 ? 0 : el < 50 ? 1 : 2 });
+  }
+  return pts;
+})();
 
 let state = null;
-const warned = new Set();
+let warned = false;
 
-function warnOnce(key, text) {
-  if (warned.has(key)) return;
-  warned.add(key);
-  world.sendMessage(`§cEclipse: ${text}`);
+const lenFrom = Math.hypot(CONFIG.moonFrom.x, CONFIG.moonFrom.z);
+const FROM = { x: CONFIG.moonFrom.x / lenFrom, z: CONFIG.moonFrom.z / lenFrom };
+
+// Punto en el cielo: "angle" grados desde el cenit hacia "FROM" (negativo = lado contrario)
+function skyPoint(head, dist, angleDeg) {
+  const a = rad(angleDeg);
+  return {
+    x: head.x + dist * Math.sin(a) * FROM.x,
+    y: head.y + dist * Math.cos(a),
+    z: head.z + dist * Math.sin(a) * FROM.z,
+  };
 }
-
-const isValid = (e) => !!e && (typeof e.isValid === "function" ? e.isValid() : e.isValid);
-const clamp01 = (v) => Math.max(0, Math.min(1, v));
-const smooth = (v) => v * v * (3 - 2 * v);
 
 // Qué parte del sol tapa la luna (0..1). d = distancia entre centros en radios del sol.
 function covered(d) {
@@ -37,6 +64,17 @@ function covered(d) {
   const a2 = r2 * r2 * Math.acos((d * d + r2 * r2 - r1 * r1) / (2 * d * r2));
   const k = 0.5 * Math.sqrt((-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2));
   return (a1 + a2 - k) / Math.PI;
+}
+
+function spawn(player, id, pos) {
+  try {
+    player.spawnParticle(id, pos);
+  } catch (e) {
+    if (!warned) {
+      warned = true;
+      world.sendMessage(`§cEclipse: no se pudo dibujar ${id}: ${e}`);
+    }
+  }
 }
 
 function cmd(player, text) {
@@ -52,64 +90,7 @@ function setFog(player, fog) {
   if (fog) cmd(player, `fog @s push eclipse:${fog} eclipse`);
 }
 
-// ---------- la entidad montada en el hombro ----------
-function removeSky(sky) {
-  try {
-    if (isValid(sky)) sky.remove();
-  } catch {}
-}
-
-function skyFor(player) {
-  let sky = state.sky.get(player.id);
-  if (!isValid(sky) || sky.dimension.id !== player.dimension.id) {
-    removeSky(sky);
-    try {
-      sky = player.dimension.spawnEntity(SKY, player.getHeadLocation());
-    } catch (e) {
-      warnOnce("spawn", `no se pudo crear el cielo: ${e}`);
-      return undefined;
-    }
-    // Si el eclipse ya iba avanzado (alguien que entró tarde), que empiece en ese segundo
-    const elapsed = Math.min(MAX_VARIANT, Math.floor(state.tick / 20));
-    if (elapsed >= 1) {
-      try {
-        sky.triggerEvent(`eclipse:at_${elapsed}`);
-      } catch (e) {
-        warnOnce("event", `no se pudo adelantar el eclipse: ${e}`);
-      }
-    }
-    state.sky.set(player.id, sky);
-  }
-
-  // Que vaya montada en este jugador; si no se puede, la movemos a mano
-  const ridingOn = sky.getComponent("minecraft:riding")?.entityRidingOn;
-  if (!ridingOn || ridingOn.id !== player.id) {
-    try {
-      ridingOn?.getComponent("minecraft:rideable")?.ejectRider(sky);
-    } catch {}
-    let ok = false;
-    try {
-      ok = !!player.getComponent("minecraft:rideable")?.addRider(sky);
-    } catch {}
-    if (!ok) {
-      warnOnce("ride", "no se pudo montar en el hombro; se moverá a saltos");
-      try {
-        sky.teleport(player.getHeadLocation());
-      } catch {}
-    }
-  }
-  return sky;
-}
-
-function removeAllSkies() {
-  try {
-    for (const e of world.getDimension("overworld").getEntities({ type: SKY })) e.remove();
-  } catch {}
-}
-
-// ---------- empezar / terminar ----------
 function start() {
-  removeAllSkies();
   if (typeof world.getDynamicProperty(SAVE_KEY) !== "string") {
     world.setDynamicProperty(
       SAVE_KEY,
@@ -118,7 +99,7 @@ function start() {
   }
   world.gameRules.doDayLightCycle = false;
   world.setTimeOfDay(NOON);
-  state = { tick: 0, fog: new Map(), sky: new Map() };
+  state = { tick: 0, fog: new Map(), motion: new Map() };
   world.sendMessage("§6☀ Empieza el eclipse... mira hacia arriba");
 }
 
@@ -127,8 +108,6 @@ function stop() {
     cmd(p, "fog @s remove eclipse");
     cmd(p, "camera @s fade time 0.2 0.1 1.2 color 255 255 255");
   }
-  for (const sky of state.sky.values()) removeSky(sky);
-  removeAllSkies();
   restoreTime();
   state = null;
   world.sendMessage("§e☀ Terminó el eclipse.");
@@ -145,25 +124,76 @@ function restoreTime() {
   world.setDynamicProperty(SAVE_KEY, undefined);
 }
 
+// El eclipse se redibuja 20 veces por segundo. Lo ponemos medio paso adelante de hacia donde
+// te mueves, así queda centrado entre una actualización y otra en vez de quedarse atrás.
+function leadHead(player, head) {
+  const prev = state.motion.get(player.id);
+  let step = { x: 0, y: 0, z: 0 };
+  if (prev) {
+    const d = { x: head.x - prev.head.x, y: head.y - prev.head.y, z: head.z - prev.head.z };
+    if (Math.hypot(d.x, d.y, d.z) < 4) {
+      const k = 0.5; // suavizado para que no brinque si un tick llega tarde
+      step = { x: prev.step.x * (1 - k) + d.x * k, y: prev.step.y * (1 - k) + d.y * k, z: prev.step.z * (1 - k) + d.z * k };
+    }
+  }
+  state.motion.set(player.id, { head, step });
+  return { x: head.x + step.x * 0.5, y: head.y + step.y * 0.5, z: head.z + step.z * 0.5 };
+}
+
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
+const smooth = (v) => v * v * (3 - 2 * v);
+
 function update() {
   if (!state) return;
   const t = state.tick++;
-  const P = PARTIAL_SECONDS * 20; // momento en que se hace de noche
+  const P = CONFIG.partialSeconds * 20; // momento en que se hace de noche
 
-  // Lo mismo que calcula el celular, para la niebla del horizonte
-  const off = t < P ? 2.45 - 2.33 * smooth(t / P) : 0;
-  const dark = t < P ? Math.pow(clamp01((covered(off) - 0.05) / 0.9), 1.2) : 1;
+  // Distancia de la luna al centro del sol (en radios del sol)
+  let off;
+  if (t < P) off = 2.45 - 2.33 * smooth(t / P); // llega hasta dejar una rayita de sol
+  else off = 0.12 * (1 - clamp01((t - P) / 40)); // y termina de taparlo
+  const cov = covered(off);
+  const dark = t < P ? Math.pow(clamp01((cov - 0.05) / 0.9), 1.2) : 1; // 0 azul, 0.5 naranja, 1 negro
+
   if (t === P) world.setTimeOfDay(MIDNIGHT);
+
+  const moonLevel = Math.round(dark * 7);
+  const glowIn = Math.round(Math.pow(1 - cov, 0.3) * 6); // el sol brilla fuerte hasta casi taparse
+  const glowOut = Math.round(Math.pow(1 - cov, 0.6) * 6);
+  const skyStage = Math.round(dark * 12);
   const fog =
     t >= P ? "totality" : dark > 0.8 ? "dark4" : dark > 0.55 ? "dark3" : dark > 0.3 ? "dark2" : dark > 0.08 ? "dark1" : null;
 
+  // Destello: sube rápido al hacerse de noche y se apaga en 2.5 s
+  let flash = 0;
+  if (t >= P - 6 && t < P + 50) flash = t < P + 6 ? (t - (P - 6)) / 12 : 1 - (t - (P + 6)) / 44;
+  const flashLevel = Math.round(clamp01(flash) * 4);
+  const coronaLevel = t < P + 15 ? 0 : Math.round(clamp01((t - (P + 15)) / 45) * 4);
+
   for (const p of world.getAllPlayers()) {
-    if (p.dimension.id !== "minecraft:overworld") {
-      removeSky(state.sky.get(p.id));
-      state.sky.delete(p.id);
-      continue;
+    if (p.dimension.id !== "minecraft:overworld") continue;
+    const head = leadHead(p, p.getHeadLocation());
+
+    spawn(p, `eclipse:moon_${moonLevel}`, skyPoint(head, DIST.moon, off * SUN_DEG));
+    if (t < P + 40) spawn(p, "eclipse:sun", skyPoint(head, DIST.sun, 0));
+    if (t < P + 10) {
+      if (glowIn > 0) spawn(p, `eclipse:glowin_${glowIn}`, skyPoint(head, DIST.glow, 0));
+      if (glowOut > 0) spawn(p, `eclipse:glowout_${glowOut}`, skyPoint(head, DIST.glow, 0));
     }
-    skyFor(p);
+    if (coronaLevel > 0) spawn(p, `eclipse:corona_${coronaLevel}`, skyPoint(head, DIST.corona, 0));
+    if (flashLevel > 0) spawn(p, `eclipse:flash_${flashLevel}`, skyPoint(head, DIST.flash, -SUN_DEG * 0.92));
+
+    // Cielo: se pone naranja y luego negro (solo de día; de noche ya está oscuro)
+    if (t < P && skyStage > 0) {
+      for (const s of SKY_POINTS) {
+        spawn(p, `eclipse:sky_${skyStage}_${s.band}`, {
+            x: head.x + s.x * DIST.sky,
+            y: head.y + s.y * DIST.sky,
+            z: head.z + s.z * DIST.sky,
+          });
+      }
+    }
+
     setFog(p, fog);
     if (t === P) cmd(p, "camera @s fade time 0.15 0.1 0.8 color 4 5 10");
   }
@@ -184,9 +214,6 @@ system.beforeEvents.startup.subscribe((init) => {
   );
 });
 
-// Si el mundo se cerró a mitad del eclipse, devuelve la hora normal y quita lo que quedó
-world.afterEvents.worldLoad.subscribe(() => {
-  restoreTime();
-  removeAllSkies();
-});
+// Si el mundo se cerró a mitad del eclipse, devuelve la hora normal al abrirlo
+world.afterEvents.worldLoad.subscribe(() => restoreTime());
 system.runInterval(update, 1);
