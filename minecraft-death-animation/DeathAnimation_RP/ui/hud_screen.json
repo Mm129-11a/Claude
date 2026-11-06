@@ -1,0 +1,24 @@
+{
+  "namespace": "hud",
+
+  "root_panel": {
+    "modifications": [
+      {
+        "array_name": "controls",
+        "operation": "insert_back",
+        "value": [ { "death_anim_root@death_anim.root": {} } ]
+      }
+    ]
+  },
+
+  "hud_title_text": {
+    "bindings": [
+      { "binding_name": "#hud_title_text_string" },
+      {
+        "binding_type": "view",
+        "source_property_name": "((#hud_title_text_string - '_death_:') = #hud_title_text_string)",
+        "target_property_name": "#visible"
+      }
+    ]
+  }
+}

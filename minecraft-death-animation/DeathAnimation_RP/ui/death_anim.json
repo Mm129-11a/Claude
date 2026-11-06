@@ -1,0 +1,169 @@
+{
+  "namespace": "death_anim",
+
+  "flash_alpha": {
+    "anim_type": "alpha",
+    "easing": "in_quad",
+    "duration": 0.3,
+    "from": 0.9,
+    "to": 0,
+    "play_event": "hud_title_text_show",
+    "resettable": true
+  },
+
+  "lightning_uv": {
+    "anim_type": "flip_book",
+    "initial_uv": [0, 0],
+    "frame_count": 8,
+    "frame_step": 90,
+    "fps": 12,
+    "looping": false,
+    "easing": "linear",
+    "play_event": "hud_title_text_show",
+    "resettable": true
+  },
+
+  "emblem_uv": {
+    "anim_type": "flip_book",
+    "initial_uv": [0, 0],
+    "frame_count": 60,
+    "frame_step": 64,
+    "fps": 12,
+    "looping": false,
+    "easing": "linear",
+    "play_event": "hud_title_text_show",
+    "resettable": true
+  },
+
+  "text_in": {
+    "anim_type": "alpha",
+    "easing": "out_quad",
+    "duration": 0.4,
+    "from": 0,
+    "to": 1,
+    "play_event": "hud_title_text_show",
+    "resettable": true,
+    "next": "@death_anim.text_hold"
+  },
+  "text_hold": {
+    "anim_type": "alpha",
+    "easing": "linear",
+    "duration": 3.1,
+    "from": 1,
+    "to": 1,
+    "next": "@death_anim.text_out"
+  },
+  "text_out": {
+    "anim_type": "alpha",
+    "easing": "in_quad",
+    "duration": 0.4,
+    "from": 1,
+    "to": 0
+  },
+
+  "root": {
+    "type": "panel",
+    "size": ["100%", "100%"],
+    "layer": 40,
+    "bindings": [
+      { "binding_name": "#hud_title_text_string" },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#hud_title_text_string - '_death_:') = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      { "flash@death_anim.flash": {} },
+      { "lightning@death_anim.lightning": {} },
+      { "content@death_anim.content": {} }
+    ]
+  },
+
+  "flash": {
+    "type": "image",
+    "texture": "textures/ui/death_anim/white",
+    "color": [0.86, 0.0, 0.0],
+    "size": ["100%", "100%"],
+    "layer": 1,
+    "alpha": "@death_anim.flash_alpha"
+  },
+
+  "lightning": {
+    "type": "image",
+    "texture": "textures/ui/death_anim/lightning",
+    "size": ["100%", "100%"],
+    "layer": 2,
+    "uv_size": [160, 90],
+    "uv": "@death_anim.lightning_uv"
+  },
+
+  "content": {
+    "type": "stack_panel",
+    "orientation": "vertical",
+    "size": ["100%", "100%c"],
+    "anchor_from": "center",
+    "anchor_to": "center",
+    "offset": [0, -30],
+    "layer": 3,
+    "controls": [
+      { "emblem@death_anim.emblem": {} },
+      { "gap": { "type": "panel", "size": ["100%", 4] } },
+      { "player_name@death_anim.player_name": {} },
+      { "gap2": { "type": "panel", "size": ["100%", 3] } },
+      { "reason@death_anim.reason": {} }
+    ]
+  },
+
+  "emblem": {
+    "type": "panel",
+    "size": ["100%", 96],
+    "controls": [
+      {
+        "image": {
+          "type": "image",
+          "texture": "textures/ui/death_anim/emblem",
+          "size": [96, 96],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "uv_size": [64, 64],
+          "uv": "@death_anim.emblem_uv"
+        }
+      }
+    ]
+  },
+
+  "player_name": {
+    "type": "label",
+    "size": ["100%", "default"],
+    "text_alignment": "center",
+    "font_type": "MinecraftTen",
+    "font_scale_factor": 2.0,
+    "color": [1.0, 0.33, 0.33],
+    "shadow": true,
+    "alpha": "@death_anim.text_in",
+    "text": "#text",
+    "bindings": [
+      { "binding_name": "#hud_title_text_string" },
+      {
+        "binding_type": "view",
+        "source_property_name": "(#hud_title_text_string - '_death_:')",
+        "target_property_name": "#text"
+      }
+    ]
+  },
+
+  "reason": {
+    "type": "label",
+    "size": ["100%", "default"],
+    "text_alignment": "center",
+    "font_scale_factor": 1.25,
+    "color": [1.0, 1.0, 1.0],
+    "shadow": true,
+    "alpha": "@death_anim.text_in",
+    "text": "#text",
+    "bindings": [
+      { "binding_name": "#hud_subtitle_text_string", "binding_name_override": "#text" }
+    ]
+  }
+}

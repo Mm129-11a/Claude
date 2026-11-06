@@ -1,0 +1,13 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Animación de muerte (RP)",
+    "description": "Interfaz y texturas de la animación de muerte.",
+    "uuid": "a9a5a223-2d49-4b18-b895-65ac24c62a5c",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    { "type": "resources", "uuid": "15164cce-93ba-4603-8b93-0d874d289c36", "version": [1, 0, 0] }
+  ]
+}

@@ -16,6 +16,10 @@ Todo vive en un solo archivo, **`index.html`**.
 
 En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de Discord: pasea por los canales, habla con los miembros (con Claude) y responde a comandos como `/llamar` o `/bailar`. Está desplegado en Render (`netvi-discord-bot`) y la web muestra debajo del muñeco en qué canal de Discord está Netvi ahora mismo. Las instrucciones están en su README.
 
+## Addon de Minecraft: animación de muerte
+
+En [`minecraft-death-animation/`](minecraft-death-animation/) hay un addon de Minecraft Bedrock que muestra una animación con el nombre del jugador y la causa cada vez que alguien muere.
+
 ## Dónde se guardan los cambios del admin
 
 Los proyectos y contactos van **dentro de la propia página** (bloque `<script id="site-data">`).

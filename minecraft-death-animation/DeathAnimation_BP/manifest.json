@@ -1,0 +1,23 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Animación de muerte (BP)",
+    "description": "Muestra una animación con el jugador y la causa cada vez que alguien muere.",
+    "uuid": "cdeb8802-707e-42c5-8d75-453699c11830",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "d1c049c6-1cbc-4712-923c-d46ee6f87dd3",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    { "module_name": "@minecraft/server", "version": "1.16.0" },
+    { "uuid": "a9a5a223-2d49-4b18-b895-65ac24c62a5c", "version": [1, 0, 0] }
+  ]
+}
