@@ -9,7 +9,7 @@ for d in ("particles", "textures/particle", "textures/environment", "fogs"):
 
 # --- medidas (deben coincidir con main.js) ---
 # 1.6 veces más lejos que antes: cada salto entre actualizaciones se nota menos
-DIST = {"flash": 22.4, "moon": 23.2, "sun": 24.0, "corona": 24.3, "glow": 25.0, "sky": 30.4}
+DIST = {"flash": 22.4, "moon": 23.2, "sun": 24.0, "corona": 24.3, "glow": 25.0, "sky": 30.4, "skylow": 60.0}
 SUN_DEG, MOON_DEG, SKY_DEG = 5.5, 5.72, 28.0
 DISK_FILL, CORONA_HOLE = 0.96, 0.385
 t = lambda deg: math.tan(math.radians(deg))
@@ -21,6 +21,7 @@ SIZE = {
     "glow_out": DIST["glow"] * t(34),
     "flash": DIST["flash"] * t(22),
     "sky": DIST["sky"] * t(SKY_DEG),
+    "skylow": DIST["skylow"] * t(SKY_DEG),
 }
 
 def radial(size, f):
@@ -90,8 +91,10 @@ for k in range(8):
 moon.save(f"{RP}/textures/environment/moon_phases.png")
 
 # --- partículas ---
-# Solo se ve la copia más nueva: la anterior se apaga en cuanto llega la siguiente (sin copias dobles)
-FRESH = "variable.particle_age < 0.075"
+# Las copias se van fundiendo una con otra (una entra mientras la otra sale): sin huecos ni parpadeo
+def fade(life):
+    return f"math.clamp(variable.particle_age / 0.05, 0, 1) * math.clamp(({life} - variable.particle_age) / 0.05, 0, 1)"
+GLOW_LIFE, SKY_LIFE = 0.2, 0.25   # cuánto aguanta cada copia: más = aguanta mejor si el juego se atrasa
 def particle(name, material, tex, size, color, life):
     return {"format_version": "1.10.0", "particle_effect": {
         "description": {"identifier": f"eclipse:{name}",
@@ -108,10 +111,13 @@ def particle(name, material, tex, size, color, life):
 def put(name, *a):
     json.dump(particle(name, *a), open(f"{RP}/particles/eclipse_{name}.json", "w"), indent=1)
 def tent(r, g, b, alpha, additive=False):
-    # misma fuerza que antes (cuando se veían ~4 copias juntas), pero en una sola
+    # misma fuerza que en la versión que te gustó, repartida entre las copias que se funden
     eff = min(1, 2 * alpha) if additive else 1 - (1 - 0.25 * alpha) ** 2 * (1 - 0.75 * alpha) ** 2
-    return [r, g, b, f"{FRESH} ? {eff:.3f} : 0"]
-SOLID = f"{FRESH} ? 1 : 0"
+    n = GLOW_LIFE / 0.05 - 1          # copias que se ven a la vez
+    a = eff / n if additive else 1 - (1 - eff) ** (1 / n)
+    return [r, g, b, f"{a:.3f} * {fade(GLOW_LIFE)}"]
+# Sol y luna: se ve solo la copia nueva (sin dobles), con margen para que no parpadeen
+SOLID = "variable.particle_age < 0.09 ? 1 : 0"
 
 put("sun", "particles_alpha", "disk", SIZE["sun"], [1, 0.985, 0.93, SOLID], 0.1)
 def lerp_colors(stops, x):
@@ -129,17 +135,20 @@ for k in range(8):
     put(f"moon_{k}", "particles_alpha", "disk", SIZE["moon"], lerp_colors(MOON_STOPS, k / 7) + [SOLID], 0.1)
 # Brillo del sol: dos capas que suman luz (aditivas)
 for k in range(1, 7):
-    put(f"glowin_{k}", "particles_add", "glow", SIZE["glow_in"], tent(1, 0.98, 0.9, 0.5 * k / 6, True), 0.1)
-    put(f"glowout_{k}", "particles_add", "glow", SIZE["glow_out"], tent(1, 0.93, 0.8, 0.28 * k / 6, True), 0.1)
+    put(f"glowin_{k}", "particles_add", "glow", SIZE["glow_in"], tent(1, 0.98, 0.9, 0.5 * k / 6, True), GLOW_LIFE)
+    put(f"glowout_{k}", "particles_add", "glow", SIZE["glow_out"], tent(1, 0.93, 0.8, 0.28 * k / 6, True), GLOW_LIFE)
 # Cielo: etapa s (1..12, color y fuerza) x banda de altura w (0 abajo, 2 arriba)
-for st in range(1, 13):
-    d = st / 12
-    a = 0.6 * min(1, d / 0.45) ** 0.8
-    for w, wf in enumerate((0.65, 0.85, 1.0)):
-        put(f"sky_{st}_{w}", "particles_blend", "sky", SIZE["sky"], tent(*lerp_colors(SKY_STOPS, d), a * wf), 0.1)
+SKY_STEPS = 24  # pasos de color del cielo (más pasos = cambio más suave)
+for st in range(1, SKY_STEPS + 1):
+    d = st / SKY_STEPS
+    eff = 0.80 * min(1, d / 0.35) ** 0.7                       # fuerza de cada mancha
+    a = 1 - (1 - eff) ** (1 / (SKY_LIFE / 0.05 - 1))            # repartida entre las copias
+    col = [*lerp_colors(SKY_STOPS, d), f"{a:.3f} * {fade(SKY_LIFE)}"]
+    put(f"sky_{st}", "particles_blend", "sky", SIZE["sky"], col, SKY_LIFE)        # cielo de arriba
+    put(f"skylow_{st}", "particles_blend", "sky", SIZE["skylow"], col, SKY_LIFE)  # cerca del horizonte
 for k in range(1, 5):
-    put(f"corona_{k}", "particles_blend", "corona", SIZE["corona"], tent(1, 1, 1, 0.75 * k / 4), 0.1)
-    put(f"flash_{k}", "particles_blend", "flash", SIZE["flash"], tent(1, 1, 1, 0.85 * k / 4), 0.1)
+    put(f"corona_{k}", "particles_blend", "corona", SIZE["corona"], tent(1, 1, 1, 0.75 * k / 4), GLOW_LIFE)
+    put(f"flash_{k}", "particles_blend", "flash", SIZE["flash"], tent(1, 1, 1, 0.85 * k / 4), GLOW_LIFE)
 
 # --- niebla: oscurece lo lejano y deja el horizonte naranja (empieza lejos para no tapar el eclipse) ---
 fogs = {"dark1": (45, 200, "#e0a070"), "dark2": (45, 170, "#d0682a"), "dark3": (45, 150, "#7a3214"),

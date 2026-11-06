@@ -15,7 +15,8 @@ const CONFIG = {
 // --------------------------------------------------------------
 
 // Distancias en bloques. Si las cambias, cambia también tools/build.py (tamaños de las partículas).
-const DIST = { flash: 22.4, moon: 23.2, sun: 24.0, corona: 24.3, glow: 25.0, sky: 30.4 };
+const DIST = { flash: 22.4, moon: 23.2, sun: 24.0, corona: 24.3, glow: 25.0, sky: 30.4, skylow: 60.0 };
+const SKY_STEPS = 24;
 const SUN_DEG = 5.5;
 const MOON_DEG = 5.72;
 const NOON = 6000;
@@ -23,18 +24,24 @@ const MIDNIGHT = 18000;
 const SAVE_KEY = "eclipse:saved";
 const rad = (d) => (d * Math.PI) / 180;
 
-// Manchas que oscurecen el cielo, repartidas en la mitad de arriba (más de 12° sobre el horizonte)
+// Manchas que pintan el cielo: 40 arriba (más de 15°) y dos anillos de 16 junto al horizonte.
+// Las del horizonte van más lejos (60 bloques) para no pintar el suelo cercano.
 const SKY_POINTS = (() => {
   const pts = [];
-  const n = 48;
-  const minZ = Math.sin(rad(12));
+  const minY = Math.sin(rad(15));
   const ga = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < n; i++) {
-    const y = minZ + ((1 - minZ) * (i + 0.5)) / n;
+  for (let i = 0; i < 40; i++) {
+    const y = minY + ((1 - minY) * (i + 0.5)) / 40;
     const r = Math.sqrt(1 - y * y);
-    const el = (Math.asin(y) * 180) / Math.PI;
-    pts.push({ x: r * Math.cos(ga * i), y, z: r * Math.sin(ga * i), band: el < 25 ? 0 : el < 50 ? 1 : 2 });
+    pts.push({ x: r * Math.cos(ga * i), y, z: r * Math.sin(ga * i), kind: "sky", dist: DIST.sky });
   }
+  [-2, 8].forEach((el, row) => {
+    for (let i = 0; i < 16; i++) {
+      const az = (2 * Math.PI * (i + 0.5 * row)) / 16;
+      const e = rad(el);
+      pts.push({ x: Math.cos(e) * Math.cos(az), y: Math.sin(e), z: Math.cos(e) * Math.sin(az), kind: "skylow", dist: DIST.skylow });
+    }
+  });
   return pts;
 })();
 
@@ -160,7 +167,7 @@ function update() {
   const moonLevel = Math.round(dark * 7);
   const glowIn = Math.round(Math.pow(1 - cov, 0.3) * 6); // el sol brilla fuerte hasta casi taparse
   const glowOut = Math.round(Math.pow(1 - cov, 0.6) * 6);
-  const skyStage = Math.round(dark * 12);
+  const skyStage = Math.round(dark * SKY_STEPS);
   const fog =
     t >= P ? "totality" : dark > 0.8 ? "dark4" : dark > 0.55 ? "dark3" : dark > 0.3 ? "dark2" : dark > 0.08 ? "dark1" : null;
 
@@ -186,10 +193,10 @@ function update() {
     // Cielo: se pone naranja y luego negro (solo de día; de noche ya está oscuro)
     if (t < P && skyStage > 0) {
       for (const s of SKY_POINTS) {
-        spawn(p, `eclipse:sky_${skyStage}_${s.band}`, {
-            x: head.x + s.x * DIST.sky,
-            y: head.y + s.y * DIST.sky,
-            z: head.z + s.z * DIST.sky,
+        spawn(p, `eclipse:${s.kind}_${skyStage}`, {
+            x: head.x + s.x * s.dist,
+            y: head.y + s.y * s.dist,
+            z: head.z + s.z * s.dist,
           });
       }
     }

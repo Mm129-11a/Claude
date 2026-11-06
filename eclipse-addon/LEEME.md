@@ -26,9 +26,12 @@ El eclipse sale **justo arriba de cada jugador**: todo el server lo ve, solo hay
 El sol y la luna normales del juego también quedan redondos.
 
 ## Movimiento
-El eclipse se redibuja 20 veces por segundo arriba de ti. Para que se vea limpio al moverte:
-está lejos (24 bloques), solo se ve una copia a la vez y se pone medio paso adelante de
-hacia donde caminas o vuelas.
+El eclipse se redibuja 20 veces por segundo arriba de ti. Para que se vea limpio:
+- el sol y la luna están lejos (24 bloques), se ve una sola copia a la vez y van medio paso
+  adelante de hacia donde te mueves;
+- el cielo naranja son manchas suaves que se funden una con otra, así no tiembla aunque el
+  juego se atrase; cubre todo el cielo hasta el horizonte (las de abajo van a 60 bloques
+  para no pintar el suelo cercano).
 
 ## Editar
 - `BP/scripts/main.js`: arriba está `CONFIG` (cuánto dura, de dónde viene la luna).
