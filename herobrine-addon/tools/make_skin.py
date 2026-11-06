@@ -7,14 +7,15 @@ px = img.load()
 def h(c):
     c = c.lstrip("#"); return tuple(int(c[i:i+2], 16) for i in (0, 2, 4)) + (255,)
 
-HAIR = [h("2b1a0e"), h("3a2413"), h("33200f")]
-SKIN = [h("b98a70"), h("ad7d62"), h("b38166")]
+HAIR = [h("37270d"), h("2f210b"), h("3d2b11")]
+SKIN = [h("b48a6e"), h("a88369"), h("af866b")]
 SKIN_D = h("9a6a52")
 BEARD = [h("5a3720"), h("4e2f1a")]
 NOSE = h("8a5a42")
 EYE = h("ffffff")
-SHIRT = [h("00aaaa"), h("009c9c"), h("06b3b3")]
-PANTS = [h("463aa8"), h("3d3297"), h("4a40b0")]
+SHIRT = [h("0ba9ac"), h("0a9fa2"), h("0cb4b7")]
+PANTS = [h("4e3fb4"), h("473aa8"), h("5243bb")]
+PANTS_D = h("3e3699")
 SHOE = [h("5e5e5e"), h("515151")]
 
 def fill(x, y, w, hgt, pal):
@@ -35,7 +36,8 @@ fill(fx, fy, 8, 2, HAIR)          # hair rows 0-1
 put(fx+0, fy+2, HAIR[0]); put(fx+7, fy+2, HAIR[1])
 for x in (1, 2, 5, 6): put(fx+x, fy+4, EYE)   # white eyes
 put(fx+3, fy+5, NOSE); put(fx+4, fy+5, NOSE)  # nose
-for x in range(2, 6): put(fx+x, fy+6, BEARD[0])  # mouth / beard
+put(fx+3, fy+6, h("7b4237")); put(fx+4, fy+6, h("7b4237"))  # mouth
+for x in (2, 5): put(fx+x, fy+6, BEARD[0])  # beard
 for x in (1, 6): put(fx+x, fy+6, SKIN_D)
 for x in range(2, 6): put(fx+x, fy+7, BEARD[1])
 # sides: right (0,8) front edge = col 7 ; left (16,8) front edge = col 0
@@ -60,6 +62,7 @@ fill(28, 20, 4, 12, SHIRT)  # left
 fill(32, 20, 8, 12, SHIRT)  # back
 for x in range(2, 6): put(20 + x, 20, SKIN[1])   # neck under the beard
 put(23, 21, SKIN[0]); put(24, 21, SKIN[0])
+put(25, 31, PANTS[0]); put(26, 31, PANTS[0]); put(27, 31, PANTS[0])  # shirt tucked
 
 # ---------- ARM / LEG helper (4x12x4) ----------
 def limb(u, v, kind):
@@ -78,6 +81,7 @@ def limb(u, v, kind):
             elif f == "bottom": fill(x, y, w, hh, SHOE)
             else:
                 fill(x, y, w, 10, PANTS)
+                put(x+1, y+6, PANTS_D); put(x+2, y+6, PANTS_D)  # knee patch
                 fill(x, y+10, w, 2, SHOE)     # gray shoes
 
 limb(40, 16, "arm")   # right arm
