@@ -1,12 +1,12 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Eclipse",
+    "name": "Eclipse 2",
     "description": "Eclipse solar. Usa /eclipse (solo OP).",
-    "uuid": "f5bd7cdc-632b-42ba-86ec-e79fbc925b5e",
+    "uuid": "ac2021cf-5153-4b87-952f-f630a27d07c7",
     "version": [
-      1,
-      5,
+      2,
+      0,
       0
     ],
     "min_engine_version": [
@@ -18,20 +18,20 @@
   "modules": [
     {
       "type": "data",
-      "uuid": "81e1a726-3422-4765-91fe-7eddc2bb0f08",
+      "uuid": "cf6945d1-1be1-4b7a-9f28-e4c1041ca592",
       "version": [
-        1,
-        5,
+        2,
+        0,
         0
       ]
     },
     {
       "type": "script",
       "language": "javascript",
-      "uuid": "ffff5071-8c0f-46b5-86a6-17aecd7268f7",
+      "uuid": "870857b0-725b-43ab-991d-421e8029cc26",
       "version": [
-        1,
-        5,
+        2,
+        0,
         0
       ],
       "entry": "scripts/main.js"
@@ -43,10 +43,10 @@
       "version": "2.1.0"
     },
     {
-      "uuid": "91d38082-d6cf-46e3-8809-834c8c21d595",
+      "uuid": "035e70d6-74f9-4c29-b88f-89b3a6970fb1",
       "version": [
-        1,
-        5,
+        2,
+        0,
         0
       ]
     }

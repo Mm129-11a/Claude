@@ -108,6 +108,7 @@ function start() {
   world.setTimeOfDay(NOON);
   state = { tick: 0, fog: new Map(), motion: new Map() };
   world.sendMessage("§6☀ Empieza el eclipse... mira hacia arriba");
+  world.sendMessage("§7(Si el sol se ve cuadrado, activa §fEclipse 2 (texturas)§7 en los paquetes de recursos y ponlo hasta arriba)");
 }
 
 function stop() {

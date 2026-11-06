@@ -1,12 +1,12 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Eclipse (texturas)",
-    "description": "Eclipse solar. Usa /eclipse (solo OP).",
-    "uuid": "91d38082-d6cf-46e3-8809-834c8c21d595",
+    "name": "Eclipse 2 (texturas)",
+    "description": "Sol, luna y cielo del eclipse. Ponlo hasta arriba.",
+    "uuid": "035e70d6-74f9-4c29-b88f-89b3a6970fb1",
     "version": [
-      1,
-      5,
+      2,
+      0,
       0
     ],
     "min_engine_version": [
@@ -18,10 +18,10 @@
   "modules": [
     {
       "type": "resources",
-      "uuid": "11ac5e25-7ae4-4db8-8f72-e277aa64be45",
+      "uuid": "2c9ed7e1-c14c-4872-8da8-282e1fca123c",
       "version": [
-        1,
-        5,
+        2,
+        0,
         0
       ]
     }

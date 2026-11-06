@@ -1,10 +1,10 @@
 # Eclipse para Minecraft Bedrock
 
 ## Instalar
-1. Abre `Eclipse.mcaddon` (se importa solo en Minecraft).
-   Si ya tenías la versión anterior, bórrala primero (Configuración → Almacenamiento).
-2. En tu mundo: Paquetes de comportamiento → activa **Eclipse**.
-   En Paquetes de recursos pon **Eclipse (texturas)** hasta arriba de la lista.
+1. Borra todos los Eclipse viejos (Configuración → Almacenamiento) y quítalos de tu mundo.
+2. Abre `Eclipse.mcaddon` (se importa solo en Minecraft).
+3. En tu mundo: Paquetes de comportamiento → activa **Eclipse 2**. Cuando pregunte si también
+   activas **Eclipse 2 (texturas)**, di que sí. Ponlo hasta arriba en Paquetes de recursos.
 3. Usa gráficos normales (no "Vibrant Visuals").
 
 Necesita Minecraft Bedrock 1.21.100 o más nuevo.
