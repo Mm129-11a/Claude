@@ -1,0 +1,16 @@
+{
+  "format_version": "1.16.100",
+  "minecraft:fog_settings": {
+    "description": {
+      "identifier": "eclipse:dark3"
+    },
+    "distance": {
+      "air": {
+        "fog_start": 0.3,
+        "fog_end": 1.0,
+        "fog_color": "#3a4462",
+        "render_distance_type": "render"
+      }
+    }
+  }
+}
