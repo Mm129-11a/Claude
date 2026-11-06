@@ -48,8 +48,6 @@ for sx, front in ((0, 7), (16, 0)):
         dist = abs(c - front)          # 0 = next to face
         if dist >= 4:                  # back half is hair
             fill(sx + c, 10, 1, 6, HAIR)
-    for r in range(2, 6):              # sideburn next to face
-        put(sx + (6 if front == 7 else 1), 8 + r, HAIR[1])
     for r in (6, 7):
         put(sx + front, 8 + r, BEARD[0])
 
