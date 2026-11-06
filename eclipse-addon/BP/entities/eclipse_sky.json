@@ -1,0 +1,144 @@
+{
+ "format_version": "1.20.80",
+ "minecraft:entity": {
+  "description": {
+   "identifier": "eclipse:sky",
+   "is_spawnable": false,
+   "is_summonable": true,
+   "is_experimental": false,
+   "properties": {
+    "eclipse:mx": {
+     "type": "float",
+     "range": [
+      -400,
+      400
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:mz": {
+     "type": "float",
+     "range": [
+      -400,
+      400
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:fx": {
+     "type": "float",
+     "range": [
+      -400,
+      400
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:fz": {
+     "type": "float",
+     "range": [
+      -400,
+      400
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:glow": {
+     "type": "float",
+     "range": [
+      0,
+      2
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:corona": {
+     "type": "float",
+     "range": [
+      0,
+      2
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:flash": {
+     "type": "float",
+     "range": [
+      0,
+      2
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:stage": {
+     "type": "int",
+     "range": [
+      0,
+      12
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:moon": {
+     "type": "int",
+     "range": [
+      0,
+      7
+     ],
+     "default": 0,
+     "client_sync": true
+    },
+    "eclipse:sun": {
+     "type": "bool",
+     "default": true,
+     "client_sync": true
+    },
+    "eclipse:hide": {
+     "type": "bool",
+     "default": false,
+     "client_sync": true
+    }
+   }
+  },
+  "components": {
+   "minecraft:type_family": {
+    "family": [
+     "eclipse_sky",
+     "parrot_tame",
+     "inanimate"
+    ]
+   },
+   "minecraft:collision_box": {
+    "width": 0.1,
+    "height": 0.1
+   },
+   "minecraft:physics": {
+    "has_gravity": false,
+    "has_collision": false
+   },
+   "minecraft:pushable": {
+    "is_pushable": false,
+    "is_pushable_by_piston": false
+   },
+   "minecraft:damage_sensor": {
+    "triggers": {
+     "cause": "all",
+     "deals_damage": false
+    }
+   },
+   "minecraft:health": {
+    "value": 1,
+    "max": 1
+   },
+   "minecraft:knockback_resistance": {
+    "value": 1
+   },
+   "minecraft:fire_immune": {},
+   "minecraft:breathable": {
+    "breathes_air": true,
+    "breathes_water": true,
+    "suffocate_time": 0
+   }
+  }
+ }
+}

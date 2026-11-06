@@ -1,0 +1,38 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.eclipse_sky.follow": {
+   "loop": true,
+   "bones": {
+    "root": {
+     "rotation": [
+      0,
+      "-query.body_y_rotation",
+      0
+     ]
+    },
+    "moon": {
+     "position": [
+      "query.property('eclipse:mx')",
+      0,
+      "query.property('eclipse:mz')"
+     ]
+    },
+    "flash": {
+     "position": [
+      "query.property('eclipse:fx')",
+      0,
+      "query.property('eclipse:fz')"
+     ],
+     "scale": "math.max(0.001, query.property('eclipse:flash'))"
+    },
+    "glow": {
+     "scale": "math.max(0.001, query.property('eclipse:glow'))"
+    },
+    "corona": {
+     "scale": "math.max(0.001, query.property('eclipse:corona'))"
+    }
+   }
+  }
+ }
+}

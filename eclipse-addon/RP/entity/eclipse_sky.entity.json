@@ -1,0 +1,35 @@
+{
+ "format_version": "1.10.0",
+ "minecraft:client_entity": {
+  "description": {
+   "identifier": "eclipse:sky",
+   "materials": {
+    "blend": "entity_alphablend",
+    "solid": "entity_alphatest"
+   },
+   "textures": {
+    "default": "textures/entity/eclipse_sky"
+   },
+   "geometry": {
+    "default": "geometry.eclipse_sky"
+   },
+   "animations": {
+    "follow": "animation.eclipse_sky.follow"
+   },
+   "scripts": {
+    "pre_animation": [
+     "variable.show = query.property('eclipse:hide') == 0 && query.distance_from_camera < 7;"
+    ],
+    "animate": [
+     "follow"
+    ]
+   },
+   "render_controllers": [
+    "controller.render.eclipse_sky_dome",
+    "controller.render.eclipse_sky_solid",
+    "controller.render.eclipse_sky_glow"
+   ],
+   "enable_attachables": false
+  }
+ }
+}

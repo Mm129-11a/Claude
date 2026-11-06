@@ -25,9 +25,15 @@ El eclipse sale **justo arriba de cada jugador**: todo el server lo ve, solo hay
 
 El sol y la luna normales del juego también quedan redondos.
 
+## Cómo funciona
+A cada jugador se le monta en el hombro una entidad invisible (como un loro) que dibuja
+el sol, la luna y el cielo oscuro arriba de él. Como va montada, el juego la mueve contigo
+en cada cuadro: se ve suave aunque camines, corras o vueles. Cada quien ve solo el suyo.
+
 ## Editar
 - `BP/scripts/main.js`: arriba está `CONFIG` (cuánto dura, de dónde viene la luna).
-- `tools/build.py`: dibuja todas las texturas y partículas. Cámbialo y córrelo con
-  `python3 tools/build.py RP BP` para regenerarlas.
-- `RP/textures/`: las imágenes (PNG) por si las quieres pintar a mano.
+- `tools/build.py`: dibuja la textura, el modelo y los colores del cielo. Cámbialo y córrelo con
+  `python3 tools/build.py RP BP` para regenerar todo.
+- `RP/textures/entity/eclipse_sky.png`: todas las imágenes del eclipse juntas.
+- `RP/models/entity/eclipse_sky.geo.json`: el modelo (se puede abrir en Blockbench).
 - `RP/fogs/`: colores del horizonte.

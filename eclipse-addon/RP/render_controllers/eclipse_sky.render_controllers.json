@@ -1,0 +1,140 @@
+{
+ "format_version": "1.8.0",
+ "render_controllers": {
+  "controller.render.eclipse_sky_dome": {
+   "geometry": "Geometry.default",
+   "materials": [
+    {
+     "*": "Material.blend"
+    }
+   ],
+   "textures": [
+    "Texture.default"
+   ],
+   "ignore_lighting": true,
+   "part_visibility": [
+    {
+     "*": false
+    },
+    {
+     "root": true
+    },
+    {
+     "dome_1": "variable.show && query.property('eclipse:stage') == 1"
+    },
+    {
+     "dome_2": "variable.show && query.property('eclipse:stage') == 2"
+    },
+    {
+     "dome_3": "variable.show && query.property('eclipse:stage') == 3"
+    },
+    {
+     "dome_4": "variable.show && query.property('eclipse:stage') == 4"
+    },
+    {
+     "dome_5": "variable.show && query.property('eclipse:stage') == 5"
+    },
+    {
+     "dome_6": "variable.show && query.property('eclipse:stage') == 6"
+    },
+    {
+     "dome_7": "variable.show && query.property('eclipse:stage') == 7"
+    },
+    {
+     "dome_8": "variable.show && query.property('eclipse:stage') == 8"
+    },
+    {
+     "dome_9": "variable.show && query.property('eclipse:stage') == 9"
+    },
+    {
+     "dome_10": "variable.show && query.property('eclipse:stage') == 10"
+    },
+    {
+     "dome_11": "variable.show && query.property('eclipse:stage') == 11"
+    },
+    {
+     "dome_12": "variable.show && query.property('eclipse:stage') == 12"
+    }
+   ]
+  },
+  "controller.render.eclipse_sky_solid": {
+   "geometry": "Geometry.default",
+   "materials": [
+    {
+     "*": "Material.solid"
+    }
+   ],
+   "textures": [
+    "Texture.default"
+   ],
+   "ignore_lighting": true,
+   "part_visibility": [
+    {
+     "*": false
+    },
+    {
+     "root": true
+    },
+    {
+     "sun": "variable.show && query.property('eclipse:sun')"
+    },
+    {
+     "moon": "1"
+    },
+    {
+     "moon_0": "variable.show && query.property('eclipse:moon') == 0"
+    },
+    {
+     "moon_1": "variable.show && query.property('eclipse:moon') == 1"
+    },
+    {
+     "moon_2": "variable.show && query.property('eclipse:moon') == 2"
+    },
+    {
+     "moon_3": "variable.show && query.property('eclipse:moon') == 3"
+    },
+    {
+     "moon_4": "variable.show && query.property('eclipse:moon') == 4"
+    },
+    {
+     "moon_5": "variable.show && query.property('eclipse:moon') == 5"
+    },
+    {
+     "moon_6": "variable.show && query.property('eclipse:moon') == 6"
+    },
+    {
+     "moon_7": "variable.show && query.property('eclipse:moon') == 7"
+    }
+   ]
+  },
+  "controller.render.eclipse_sky_glow": {
+   "geometry": "Geometry.default",
+   "materials": [
+    {
+     "*": "Material.blend"
+    }
+   ],
+   "textures": [
+    "Texture.default"
+   ],
+   "ignore_lighting": true,
+   "part_visibility": [
+    {
+     "*": false
+    },
+    {
+     "root": true
+    },
+    {
+     "glow": "variable.show && query.property('eclipse:glow') > 0.01"
+    },
+    {
+     "corona": "variable.show && query.property('eclipse:corona') > 0.01"
+    },
+    {
+     "flash": "variable.show && query.property('eclipse:flash') > 0.01"
+    }
+   ]
+  }
+ }
+}
