@@ -3,8 +3,8 @@
   "minecraft:fog_settings": {
     "description": { "identifier": "supernova:explosion" },
     "distance": {
-      "air": { "fog_start": 20, "fog_end": 120, "fog_color": "#6b3a6e", "render_distance_type": "fixed" },
-      "weather": { "fog_start": 20, "fog_end": 120, "fog_color": "#6b3a6e", "render_distance_type": "fixed" }
+      "air": { "fog_start": 60, "fog_end": 200, "fog_color": "#6b3a6e", "render_distance_type": "fixed" },
+      "weather": { "fog_start": 60, "fog_end": 200, "fog_color": "#6b3a6e", "render_distance_type": "fixed" }
     }
   }
 }

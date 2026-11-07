@@ -1,21 +1,14 @@
-"""Saca las texturas de la supernova directamente de las imágenes de referencia.
+"""Saca la textura del destello directamente de la captura de referencia.
 
-Uso:
-  python3 tools/extract_from_photos.py bola.jpg explosion.jpg destello.jpg
-
-  bola.jpg       la bola de lava en Blockbench (2027x957)
-  explosion.jpg  la captura de la explosión (2576x1171)
-  destello.jpg   la captura del destello (2576x1171)
-
+Uso:  python3 tools/extract_from_photos.py destello.jpg     (captura de 2576x1171)
 Necesita: numpy, pillow, opencv-python-headless
 
-No se dibuja nada a mano: todo se recorta de las imágenes.
-  estrella.png   la bola de lava, recortada en redondo y sin el fondo
-  explosion.png  la explosión, separada del cielo
-  destello.png   el destello de pantalla completa (blanco, bordes rosas y rayas de luz)
+  destello.png   el destello de pantalla completa (blanco, bordes rosas y rayas de luz), sin el
+                 personaje ni los botones (se rellenan con el resplandor de alrededor)
 
-Lo que tapan el personaje y los botones se rellena con la misma imagen: en la explosión,
-reflejando la parte que sí se ve (es redonda); en el destello, con el resplandor de alrededor.
+(La estrella y la explosión ya no son recortes de foto: las hace tools/make_vfx.py, animadas y
+con los colores medidos en las referencias. Las funciones estrella() y explosion() se quedan
+por si se quieren volver a usar los recortes.)
 """
 import sys
 from pathlib import Path
@@ -227,17 +220,13 @@ def destello(path, width=1024):
     return Image.fromarray(np.clip(rgba, 0, 255).astype(np.uint8), "RGBA")
 
 
-def main(ball, exp, flash):
+def main(flash):
     OUT.mkdir(parents=True, exist_ok=True)
-    for old in OUT.glob("*.png"):
-        old.unlink()
-    estrella(ball).save(OUT / "estrella.png")
-    explosion(exp).save(OUT / "explosion.png")
     destello(flash).save(OUT / "destello.png")
-    print("ok:", OUT)
+    print("ok:", OUT / "destello.png")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        sys.exit("Uso: python3 tools/extract_from_photos.py bola.jpg explosion.jpg destello.jpg")
-    main(*sys.argv[1:])
+    if len(sys.argv) != 2:
+        sys.exit("Uso: python3 tools/extract_from_photos.py destello.jpg")
+    main(sys.argv[1])

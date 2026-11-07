@@ -42,7 +42,7 @@
         "facing_camera_mode": "rotate_xyz",
         "uv": {
           "texture_width": 1024,
-          "texture_height": 507,
+          "texture_height": 453,
           "uv": [
             "variable.pu",
             "variable.pv"
