@@ -20,6 +20,10 @@ En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de
 
 En [`minecraft-death-animation/`](minecraft-death-animation/) hay un addon de Minecraft Bedrock que muestra una animación con el nombre del jugador y la causa cada vez que alguien muere.
 
+## Addon de Minecraft: supernova
+
+En [`supernova/`](supernova/) hay un addon de Minecraft Bedrock: con `/function supernova` nace una estrella en el cielo, todo se oscurece, explota y llega un destello.
+
 ## Dónde se guardan los cambios del admin
 
 Los proyectos y contactos van **dentro de la propia página** (bloque `<script id="site-data">`).

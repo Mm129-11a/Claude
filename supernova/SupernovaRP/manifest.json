@@ -1,0 +1,13 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Supernova (RP)",
+    "description": "Partículas y niebla de la supernova.",
+    "uuid": "b2134abf-194a-4086-a0e2-7f07294e51f9",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 50]
+  },
+  "modules": [
+    { "type": "resources", "uuid": "8a589ad3-a183-4fe5-bf60-3c370a17f56a", "version": [1, 0, 0] }
+  ]
+}
