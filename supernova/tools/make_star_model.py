@@ -40,6 +40,7 @@ R = 80.0                     # radio en píxeles de modelo (16 = 1 bloque): 5 bl
 D_ROCK = 3                   # texeles de textura por píxel de modelo en la roca
 D_LAVA = 1                   # y en la lava
 LAYERS = [0.0, 1.5, 3.0, 4.5]  # profundidad de cada lámina bajo la superficie (grosor 4,5 px)
+LAYER_THICK = 0.6            # grosor de cada lámina (separa la cara de roca de la de lava)
 ATLAS_W = 2048
 PAD = 1
 
@@ -196,7 +197,10 @@ def geometry(pieces, tex_w, tex_h):
         for k, dz in enumerate(LAYERS):
             south = pc["uv_rock"] if k == 0 else pc["uv_lava"]
             north = pc["uv_lava_m"]
-            cubes.append({"origin": [-x1, y0, R - dz], "size": [x1 - x0, y1 - y0, 0],
+            # cada lámina tiene un poco de grosor: la cara de fuera y la de dentro NO están en el
+            # mismo plano (el juego dibuja las caras por los dos lados y si coinciden se pelean)
+            th = LAYER_THICK
+            cubes.append({"origin": [-x1, y0, R - dz - th], "size": [x1 - x0, y1 - y0, th],
                           "uv": {"south": {"uv": list(south[:2]), "uv_size": list(south[2:])},
                                  "north": {"uv": list(north[:2]), "uv_size": list(north[2:])}}})
         bones.append({"name": f"p{i}", "parent": f"x{i}",

@@ -11,7 +11,7 @@ window.init = async (geo, animFile, texUrl, W, H) => {
   const img = new Image(); img.src = texUrl; await img.decode();
   const tex = new THREE.Texture(img); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.LinearFilter;
   tex.colorSpace = THREE.SRGBColorSpace; tex.flipY = false; tex.needsUpdate = true;
-  const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.5 });
+  const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide });   // como el juego: las dos caras
   const G = geo['minecraft:geometry'][0]; const TW = G.description.texture_width, TH = G.description.texture_height;
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setSize(W, H); renderer.setClearColor(0x000000, 0); document.body.appendChild(renderer.domElement);
