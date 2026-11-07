@@ -30,8 +30,8 @@ Los textos se cambian en `DeathAnimation_BP/scripts/main.js` (`CAUSES` y `MOBS`)
 
 ## De dónde sale la animación
 
-Las texturas y el sonido se sacan **directamente del video** (efecto de pantalla verde de
-TikTok de @simplenovelero) con `tools/extract_from_video.py`: no hay nada redibujado. El
+Las texturas y el sonido se sacan **directamente del video** (efecto de pantalla verde propio,
+publicado en TikTok como @simplenovelero) con `tools/extract_from_video.py`: no hay nada redibujado. El
 script quita el fondo verde y la marca de agua de TikTok, y guarda:
 
 - `textures/ui/death_anim/intro.png`: rayos y destellos (franja completa).
@@ -39,7 +39,6 @@ script quita el fondo verde y la marca de agua de TikTok, y guarda:
 - `sounds/death_anim/death.ogg`: el audio del efecto.
 
 El efecto original va a ~15 fps (el video de 30 fps repite cada fotograma), así que se usa a 15 fps.
-Si vas a publicar el addon, da crédito al creador del efecto.
 
 Para regenerarlo (necesita Python con Pillow y NumPy, y ffmpeg):
 
