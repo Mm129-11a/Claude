@@ -11,8 +11,6 @@ Pasos:
  3. Luz: las dos caras visibles del cubo grande tienen la misma textura; con eso se separa
     la textura de la luz de la cueva (luz suave de Minecraft = bilineal por cara).
  4. Limpieza: manchas azules de 2x2 exactas y colores reducidos a los tonos de la foto.
- 5. Patas: ajusta cajas a los píxeles rojizos de la foto, con reglas físicas (salen de
-    debajo de un cubo, bajan a un suelo común y hacen un quiebre hacia afuera).
 Guarda: fuente/camara_foto.json, fuente/textura_grande.png, fuente/textura_chica.png
 """
 import json
@@ -289,100 +287,6 @@ def clean(textures):
     return out
 
 
-# ---------------------------------------------------------------- 5. patas
-def fit_legs(scene, photo):
-    H, W = photo.shape[:2]
-    r, g, b = photo[..., 0], photo[..., 1], photo[..., 2]
-    mask = (r / np.maximum(g, 1) > 1.45) & (r > 35) & (r > b * 1.8)
-    Y0 = 225
-    target = mask[Y0:].ravel()
-    d = scene.rays(H, W, Y0)
-    with np.errstate(divide="ignore"):
-        inv = 1 / d
-    C = scene.C
-
-    def hit(a, b):
-        t1 = (np.array(a, float) - C) * inv
-        t2 = (np.array(b, float) - C) * inv
-        tn = np.max(np.minimum(t1, t2), axis=1)
-        tf = np.min(np.maximum(t1, t2), axis=1)
-        return np.where((tf >= tn) & (tn > 0), tn, np.inf)
-
-    tcubes = np.minimum(*[hit(a, b) for a, b in scene.boxes.values()])
-    foot = {k: (a[0], b[0], a[2], b[2]) for k, (a, b) in scene.boxes.items()}
-
-    def boxes_of(P, h):
-        out = []
-        for cube, x, z, dx, dz, w in P:
-            mid = -(h // 2)
-            out.append(((x, mid, z), (x + w, 0, z + w)))                          # muslo
-            out.append(((x + dx, -h, z + dz), (x + dx + w - 1, mid, z + dz + w - 1)))  # pie
-        return out
-
-    def ok(P):
-        for cube, x, z, dx, dz, w in P:
-            x0, x1, z0, z1 = foot[cube]
-            if x + w <= x0 + 1 or x >= x1 - 1 or z + w <= z0 + 1 or z >= z1 - 1:
-                return False
-            if abs(dx) > 3 or abs(dz) > 3 or not 2 <= w <= 4:
-                return False
-        return True
-
-    def score(boxes):
-        tl = np.full(len(d), np.inf)
-        for a, b in boxes:
-            tl = np.minimum(tl, hit(a, b))
-        sil = tl < tcubes
-        return (sil & target).sum() / max(1, (sil | target).sum())
-
-    sx = scene.boxes["small"][0][0]
-    start = [["big", 0, 13, -1, 1, 3], ["big", 8, 13, 0, 1, 2],
-             ["small", sx + 8, 8, 1, 1, 3], ["small", sx + 8, 1, 2, 0, 3]]
-    best = (-1, None, None)
-    for h in range(5, 13):
-        Q = [list(p) for p in start]
-        sc = score(boxes_of(Q, h))
-        for _ in range(20):
-            improved = False
-            for k in range(len(Q)):
-                for idx in (1, 2, 3, 4, 5):
-                    for delta in (-1, 1):
-                        cand = [list(p) for p in Q]
-                        cand[k][idx] += delta
-                        if not ok(cand):
-                            continue
-                        c = score(boxes_of(cand, h))
-                        if c > sc + 1e-5:
-                            sc, Q, improved = c, cand, True
-            if not improved:
-                break
-        if sc > best[0]:
-            best = (sc, h, Q)
-    sc, h, Q = best
-    boxes = [[list(a), list(b)] for a, b in boxes_of(Q, h)]
-    # raíz que sale por la derecha del cubo chico
-    root = [[sx + 11, 0, -3], [sx + 19, 2, 1]]
-    rs = score([tuple(map(tuple, bx)) for bx in boxes] + [root])
-    for _ in range(30):
-        improved = False
-        for c in (0, 1):
-            for ax in range(3):
-                for delta in (-1, 1):
-                    cand = [list(root[0]), list(root[1])]
-                    cand[c][ax] += delta
-                    a, b = cand
-                    if any(b[i] - a[i] < 2 for i in range(3)) or not sx + 9 <= a[0] <= sx + 11 \
-                            or b[1] - a[1] > 4 or b[2] - a[2] > 5:
-                        continue
-                    v = score([tuple(map(tuple, bx)) for bx in boxes] + [cand])
-                    if v > rs + 1e-5:
-                        rs, root, improved = v, cand, True
-        if not improved:
-            break
-    print(f"patas: suelo a {h} px bajo los cubos, coincidencia con la foto {rs:.2f}")
-    return {"floor": h, "legs": Q, "boxes": boxes, "root": root}
-
-
 def main(photo_path):
     photo = np.array(Image.open(photo_path).convert("RGB")).astype(float)
     cam = fit_camera()
@@ -391,7 +295,6 @@ def main(photo_path):
     big = solve_texture([obs[("big", "up")], obs[("big", "south")]])
     small = solve_texture([obs[("small", "up")], obs[("small", "south")]])
     tex = clean({"big": (big, 4), "small": (small, 2)})
-    cam["legs"] = fit_legs(scene, photo)
     SRC.mkdir(exist_ok=True)
     Image.fromarray(tex["big"]).save(SRC / "textura_grande.png")
     Image.fromarray(tex["small"]).save(SRC / "textura_chica.png")

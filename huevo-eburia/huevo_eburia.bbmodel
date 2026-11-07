@@ -28,21 +28,21 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    -16,
-    10,
-    -6
+    -18,
+    0,
+    -8
    ],
    "to": [
-    0,
-    26,
-    10
+    -2,
+    16,
+    8
    ],
    "autouv": 0,
    "color": 0,
    "origin": [
-    -8.0,
-    18.0,
-    2.0
+    -10.0,
+    8.0,
+    0.0
    ],
    "rotation": [
     0,
@@ -116,21 +116,21 @@
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    -1,
-    10,
-    -6
+    -3,
+    0,
+    -8
    ],
    "to": [
-    10,
-    21,
-    5
+    8,
+    11,
+    3
    ],
    "autouv": 0,
    "color": 0,
    "origin": [
-    4.5,
-    15.5,
-    -0.5
+    2.5,
+    5.5,
+    -2.5
    ],
    "rotation": [
     0,
@@ -197,556 +197,28 @@
    "uuid": "9a0e24e8-c166-5f2f-9811-785d7f680584"
   },
   {
-   "name": "pata_1",
+   "name": "rabito",
    "box_uv": false,
    "rescale": false,
    "locked": false,
    "render_order": "default",
    "allow_mirror_modeling": true,
    "from": [
-    -17,
-    5,
-    8
-   ],
-   "to": [
-    -13,
-    10,
-    12
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    -15.0,
-    7.5,
-    10.0
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "2aa56562-7d17-5595-ae2e-22155c797f72"
-  },
-  {
-   "name": "pata_1_pie",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    -17,
-    0,
-    7
-   ],
-   "to": [
-    -14,
-    5,
-    10
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    -15.5,
-    2.5,
-    8.5
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "0ddb2bd3-7234-5b67-a9ed-33203f39f4d2"
-  },
-  {
-   "name": "pata_2",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    -9,
-    5,
-    5
-   ],
-   "to": [
-    -7,
-    10,
-    7
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    -8.0,
-    7.5,
-    6.0
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "ad2a4e5b-59af-5711-ae71-6dc0a86d2cf9"
-  },
-  {
-   "name": "pata_2_pie",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    -10,
-    0,
-    5
-   ],
-   "to": [
-    -9,
-    5,
-    6
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    -9.5,
-    2.5,
-    5.5
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "0e4123a4-fb4e-5007-a65f-87ed82d01886"
-  },
-  {
-   "name": "pata_3",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    2,
-    5,
-    -3
-   ],
-   "to": [
-    4,
-    10,
-    -1
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    3.0,
-    7.5,
-    -2.0
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "4aca5cd4-8d42-5d80-a992-37697b6d56c2"
-  },
-  {
-   "name": "pata_3_pie",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
+    7,
     1,
-    0,
     -6
    ],
    "to": [
-    2,
-    5,
-    -5
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    1.5,
-    2.5,
-    -5.5
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "a24b9ce3-88e4-572e-888b-b2f50406708f"
-  },
-  {
-   "name": "pata_4",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    8,
-    5,
-    -8
-   ],
-   "to": [
     12,
-    10,
-    -4
+    4,
+    -3
    ],
    "autouv": 0,
    "color": 0,
    "origin": [
-    10.0,
-    7.5,
-    -6.0
+    9.5,
+    2.5,
+    -4.5
    ],
    "rotation": [
     0,
@@ -810,10 +282,10 @@
     }
    },
    "type": "cube",
-   "uuid": "062314b0-90ce-5b28-b8ff-27121cebba2a"
+   "uuid": "9e8d8006-5df9-521d-bfbf-54d3de397baa"
   },
   {
-   "name": "pata_4_pie",
+   "name": "ramita_1",
    "box_uv": false,
    "rescale": false,
    "locked": false,
@@ -821,107 +293,19 @@
    "allow_mirror_modeling": true,
    "from": [
     11,
-    0,
-    -11
+    1,
+    -9
    ],
    "to": [
-    14,
-    5,
-    -8
+    13,
+    3,
+    -6
    ],
    "autouv": 0,
    "color": 0,
    "origin": [
-    12.5,
-    2.5,
-    -9.5
-   ],
-   "rotation": [
-    0,
-    0,
-    0
-   ],
-   "faces": {
-    "north": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "south": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "east": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "west": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "up": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    },
-    "down": {
-     "uv": [
-      27,
-      0,
-      29,
-      2
-     ],
-     "texture": 0
-    }
-   },
-   "type": "cube",
-   "uuid": "255eb529-38e5-5bcb-b3b7-a4bfe0e093ec"
-  },
-  {
-   "name": "raiz",
-   "box_uv": false,
-   "rescale": false,
-   "locked": false,
-   "render_order": "default",
-   "allow_mirror_modeling": true,
-   "from": [
-    10,
-    10,
-    -10
-   ],
-   "to": [
-    18,
-    12,
-    -5
-   ],
-   "autouv": 0,
-   "color": 0,
-   "origin": [
-    14.0,
-    11.0,
+    12.0,
+    2.0,
     -7.5
    ],
    "rotation": [
@@ -986,7 +370,447 @@
     }
    },
    "type": "cube",
-   "uuid": "d384deae-83bb-5427-ba7a-ea78aa601ee3"
+   "uuid": "ec0f590e-136b-5533-8dfa-d4f335f446a8"
+  },
+  {
+   "name": "ramita_1_punta",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    12,
+    0,
+    -12
+   ],
+   "to": [
+    14,
+    2,
+    -9
+   ],
+   "autouv": 0,
+   "color": 0,
+   "origin": [
+    13.0,
+    1.0,
+    -10.5
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "216deae5-2456-59ed-b0c5-452d2988cfab"
+  },
+  {
+   "name": "ramita_2",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    12,
+    2,
+    -6
+   ],
+   "to": [
+    16,
+    4,
+    -4
+   ],
+   "autouv": 0,
+   "color": 0,
+   "origin": [
+    14.0,
+    3.0,
+    -5.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "5cededdd-02ce-5459-8d5f-b13f92375632"
+  },
+  {
+   "name": "ramita_2_punta",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    15,
+    3,
+    -7
+   ],
+   "to": [
+    17,
+    6,
+    -5
+   ],
+   "autouv": 0,
+   "color": 0,
+   "origin": [
+    16.0,
+    4.5,
+    -6.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "44186f31-7912-54c1-8891-a39f0bbb055a"
+  },
+  {
+   "name": "ramita_3",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    10,
+    0,
+    -3
+   ],
+   "to": [
+    12,
+    2,
+    0
+   ],
+   "autouv": 0,
+   "color": 0,
+   "origin": [
+    11.0,
+    1.0,
+    -1.5
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "e5c6afcc-f1ab-5965-9832-27cd9d78ae0e"
+  },
+  {
+   "name": "ramita_3_punta",
+   "box_uv": false,
+   "rescale": false,
+   "locked": false,
+   "render_order": "default",
+   "allow_mirror_modeling": true,
+   "from": [
+    11,
+    0,
+    0
+   ],
+   "to": [
+    14,
+    1,
+    1
+   ],
+   "autouv": 0,
+   "color": 0,
+   "origin": [
+    12.5,
+    0.5,
+    0.5
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "south": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "east": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "west": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "up": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    },
+    "down": {
+     "uv": [
+      27,
+      0,
+      29,
+      2
+     ],
+     "texture": 0
+    }
+   },
+   "type": "cube",
+   "uuid": "c7ba45cb-fdc3-5cb7-8063-9abdb9db0cb0"
   }
  ],
  "outliner": [
@@ -1008,15 +832,13 @@
    "children": [
     "2d06c60b-ac6f-51d5-aaa0-3d290b771298",
     "9a0e24e8-c166-5f2f-9811-785d7f680584",
-    "2aa56562-7d17-5595-ae2e-22155c797f72",
-    "0ddb2bd3-7234-5b67-a9ed-33203f39f4d2",
-    "ad2a4e5b-59af-5711-ae71-6dc0a86d2cf9",
-    "0e4123a4-fb4e-5007-a65f-87ed82d01886",
-    "4aca5cd4-8d42-5d80-a992-37697b6d56c2",
-    "a24b9ce3-88e4-572e-888b-b2f50406708f",
-    "062314b0-90ce-5b28-b8ff-27121cebba2a",
-    "255eb529-38e5-5bcb-b3b7-a4bfe0e093ec",
-    "d384deae-83bb-5427-ba7a-ea78aa601ee3"
+    "9e8d8006-5df9-521d-bfbf-54d3de397baa",
+    "ec0f590e-136b-5533-8dfa-d4f335f446a8",
+    "216deae5-2456-59ed-b0c5-452d2988cfab",
+    "5cededdd-02ce-5459-8d5f-b13f92375632",
+    "44186f31-7912-54c1-8891-a39f0bbb055a",
+    "e5c6afcc-f1ab-5965-9832-27cd9d78ae0e",
+    "c7ba45cb-fdc3-5cb7-8063-9abdb9db0cb0"
    ]
   }
  ],

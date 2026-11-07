@@ -24,33 +24,37 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "fuente"
 TEX = 32
 
-# Colores de las patas (los de la foto, con la luz corregida)
-LEG = [(122, 50, 26), (134, 58, 30), (108, 44, 22), (146, 64, 34)]
+# Colores de las ramitas (los de la foto, con la luz corregida)
+TWIG = [(122, 50, 26), (134, 58, 30), (108, 44, 22), (146, 64, 34)]
 
 UV_BIG = [0, 0, 16, 16]
 UV_SMALL = [16, 0, 27, 11]
-UV_LEG = [27, 0, 29, 2]
+UV_TWIG = [27, 0, 29, 2]
 
 # Medidas en el sistema de la foto: cubo grande [0,16]^3, la base de los cubos en y=0.
 cam = json.loads((SRC / "camara_foto.json").read_text())
 SX, SY, SZ, SS = cam["small"]          # cubo chico: esquina mínima y lado (11)
 
-# Patas y raíz, ajustadas a la foto por tools/extract_from_photo.py
-LEGS_DATA = cam["legs"]
-LEG_H = LEGS_DATA["floor"]             # el suelo queda a esta distancia bajo los cubos
-LEGS = []
-for k, (a, b) in enumerate(LEGS_DATA["boxes"]):
-    LEGS.append((f"pata_{k // 2 + 1}" + ("_pie" if k % 2 else ""), tuple(a), tuple(b)))
-LEGS.append(("raiz", tuple(LEGS_DATA["root"][0]), tuple(LEGS_DATA["root"][1])))
+# Ramitas del rabito: como en la foto, salen de la parte de abajo del extremo chico y quedan
+# sobre el suelo, hacia afuera y hacia atrás (cajas desde-hasta, sistema de la foto)
+X_END = SX + SS                         # cara del extremo chico
+TWIGS = [
+    ("rabito", (X_END - 1, 1, 2), (X_END + 4, 4, 5)),
+    ("ramita_1", (X_END + 3, 1, -1), (X_END + 5, 3, 2)),
+    ("ramita_1_punta", (X_END + 4, 0, -4), (X_END + 6, 2, -1)),
+    ("ramita_2", (X_END + 4, 2, 2), (X_END + 8, 4, 4)),
+    ("ramita_2_punta", (X_END + 7, 3, 1), (X_END + 9, 6, 3)),
+    ("ramita_3", (X_END + 2, 0, 5), (X_END + 4, 2, 8)),
+    ("ramita_3_punta", (X_END + 3, 0, 8), (X_END + 6, 1, 9)),
+]
 
-# Del sistema de la foto al de Blockbench: centrado en X/Z y con las patas apoyadas en y=0
-_xs = [p[0] for _, a, b in LEGS for p in (a, b)] + [0, SX + SS]
-_zs = [p[2] for _, a, b in LEGS for p in (a, b)] + [0, 16]
-OFFSET = (-round((min(_xs) + max(_xs)) / 2), LEG_H, -round((min(_zs) + max(_zs)) / 2))
+# Del sistema de la foto al de Blockbench: centrado en X/Z y apoyado en el suelo (y=0)
+_xs = [p[0] for _, a, b in TWIGS for p in (a, b)] + [0, X_END]
+OFFSET = (-round((min(_xs) + max(_xs)) / 2), 0, -8)
 
 PIECES = [("huevo_grande", (0, 0, 0), (16, 16, 16), UV_BIG),
           ("huevo_chico", (SX, SY, SZ), (SX + SS, SY + SS, SZ + SS), UV_SMALL)]
-PIECES += [(n, a, b, UV_LEG) for n, a, b in LEGS]
+PIECES += [(n, a, b, UV_TWIG) for n, a, b in TWIGS]
 
 
 def to_bb(p):
@@ -62,8 +66,8 @@ def build_texture():
     img.paste(Image.open(SRC / "textura_grande.png").convert("RGBA"), tuple(UV_BIG[:2]))
     img.paste(Image.open(SRC / "textura_chica.png").convert("RGBA"), tuple(UV_SMALL[:2]))
     px = img.load()
-    x0, y0 = UV_LEG[:2]
-    for k, c in enumerate(LEG):
+    x0, y0 = UV_TWIG[:2]
+    for k, c in enumerate(TWIG):
         px[x0 + k % 2, y0 + k // 2] = c + (255,)
     return img
 
