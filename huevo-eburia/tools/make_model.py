@@ -1,144 +1,130 @@
-"""Genera el modelo del Huevo Eburia para Blockbench.
+"""Genera el Huevo Eburia para Blockbench, copiado de la foto de referencia.
 
 Uso:  python3 tools/make_model.py
+
+La textura está leída de la foto píxel por píxel: cada cara se enderezó, se le quitó el
+degradado de luz de la cueva y se le puso encima una cuadrícula de 8x8 (cubo grande) y
+5x5 (cubo chico) para ver dónde cae cada mancha azul y cada zona tostada.
+Las dos caras visibles del cubo grande tienen exactamente el mismo dibujo, así que todas
+sus caras usan esa textura; lo mismo con el cubo chico.
+
 Crea:
   huevo_eburia.bbmodel     proyecto de Blockbench (Bedrock, con la textura incluida)
-  huevo_eburia.png         textura 64x64
+  huevo_eburia.png         textura 16x16 (1 píxel = 1 unidad, como en Minecraft)
   huevo_eburia.geo.json    geometría de Bedrock lista para un addon
 """
 import base64
 import io
 import json
-import math
-import random
 import uuid
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-TEX = 64
+TEX = 16
 
-# Colores
-CREAM = [(222, 210, 190), (214, 200, 178), (230, 220, 202), (205, 190, 166)]
-TAN = (196, 170, 136)
-SPOT = (88, 178, 222)
-SPOT_D = (60, 146, 196)
-SPOT_L = (130, 206, 236)
-ROOT_C = [(122, 46, 34), (140, 58, 40), (104, 38, 30), (158, 72, 48)]
+# Colores (los de la foto, con la luz de la cueva corregida)
+PALETTE = {
+    "L": (232, 224, 210),   # crema claro
+    "C": (222, 208, 188),   # crema
+    "T": (204, 178, 146),   # tostado
+    "D": (186, 156, 122),   # tostado oscuro
+    "B": (80, 180, 225),    # mancha azul
+    "R": (122, 50, 32),     # raíz
+    "r": (100, 38, 26),     # raíz oscura
+}
 
-# Piezas: nombre, tamaño (w,h,d), posición mínima (x,y,z), rotación (x,y,z), uv, tipo
-# Coordenadas de Blockbench (Bedrock): el bloque va de -8 a 8 en X/Z y de 0 a 16 en Y.
+# Cubo grande, 8x8 (fila 0 = arriba de la cara)
+BIG = [
+    "TTCCCCLL",
+    "TCCCCCBL",
+    "CCBCCTCL",
+    "TTTTDDTC",
+    "CCCCCCLL",
+    "CCCLCBLL",
+    "CBCCLLLL",
+    "CTCCLLLL",
+]
+# Cubo chico, 5x5
+SMALL = [
+    "CCCDT",
+    "CBCTT",
+    "CTTTT",
+    "LLCCC",
+    "LLCBC",
+]
+ROOTS = ["Rr", "rR"]
+
+# Zonas de la textura (x0, y0, x1, y1)
+UV_BIG = [0, 0, 8, 8]
+UV_SMALL = [8, 0, 13, 5]
+UV_ROOT = [13, 0, 15, 2]
+
+# Piezas: nombre, desde, hasta, UV de arriba/abajo, UV de los lados
 PIECES = [
-    ("huevo_grande", (9, 9, 9), (-7, 5, -5), (0, 15, 8), (0, 0), "egg"),
-    ("huevo_chico", (7, 7, 7), (0, 3, -1), (0, -20, -6), (0, 18), "egg"),
-    ("raiz_1", (2, 7, 2), (-7, 0, -4), (-15, 0, 30), (36, 0), "root"),
-    ("raiz_2", (2, 7, 2), (-3, 0, -6), (-30, 0, -10), (36, 0), "root"),
-    ("raiz_3", (2, 6, 2), (-2, 0, 3), (30, 0, 15), (36, 0), "root"),
-    ("raiz_4", (2, 5, 2), (6, 0, 4), (20, 0, -30), (36, 0), "root"),
+    ("huevo_grande", (-7, 3, -6), (1, 11, 2), UV_BIG, UV_BIG),
+    ("huevo_chico", (-1, 2, 1), (4, 7, 6), UV_SMALL, UV_SMALL),
+    ("raiz_1", (-7, 0, 0), (-6, 3, 1), UV_ROOT, UV_ROOT),
+    ("raiz_1_pie", (-8, 0, 0), (-7, 1, 1), UV_ROOT, UV_ROOT),
+    ("raiz_2", (-5, 0, 1), (-4, 3, 2), UV_ROOT, UV_ROOT),
+    ("raiz_2_pie", (-5, 0, 2), (-4, 1, 3), UV_ROOT, UV_ROOT),
+    ("raiz_3", (-1, 0, 5), (0, 2, 6), UV_ROOT, UV_ROOT),
+    ("raiz_3_pie", (-2, 0, 5), (-1, 1, 6), UV_ROOT, UV_ROOT),
+    ("raiz_4", (3, 0, 5), (4, 2, 6), UV_ROOT, UV_ROOT),
+    ("raiz_4_pie", (3, 0, 6), (4, 1, 7), UV_ROOT, UV_ROOT),
+    ("raiz_5", (-7, 0, -6), (-6, 3, -5), UV_ROOT, UV_ROOT),
+    ("raiz_5_pie", (-8, 0, -6), (-7, 1, -5), UV_ROOT, UV_ROOT),
 ]
 
 
-def box_faces(u, v, w, h, d):
-    """Rectángulos UV (x0,y0,x1,y1) de cada cara con Box UV de Blockbench."""
-    return {
-        # arriba y abajo van invertidos, igual que los calcula Blockbench
-        "up": (u + d + w, v + d, u + d, v),
-        "down": (u + d + 2 * w, v, u + d + w, v + d),
-        "east": (u, v + d, u + d, v + d + h),
-        "north": (u + d, v + d, u + d + w, v + d + h),
-        "west": (u + d + w, v + d, u + 2 * d + w, v + d + h),
-        "south": (u + 2 * d + w, v + d, u + 2 * d + 2 * w, v + d + h),
-    }
-
-
-def paint_texture():
-    rng = random.Random(11)
+def build_texture():
     img = Image.new("RGBA", (TEX, TEX), (0, 0, 0, 0))
     px = img.load()
-    done = set()
-    for name, (w, h, d), _, _, (u, v), kind in PIECES:
-        if (u, v) in done:
-            continue
-        done.add((u, v))
-        for face, (ax, ay, bx, by) in box_faces(u, v, w, h, d).items():
-            x0, x1 = sorted((ax, bx))
-            y0, y1 = sorted((ay, by))
-            fw, fh = x1 - x0, y1 - y0
-            for y in range(y0, y1):
-                for x in range(x0, x1):
-                    pal = CREAM if kind == "egg" else ROOT_C
-                    px[x, y] = rng.choice(pal) + (255,)
-            if kind == "egg":
-                # vetas color tostado, como la textura de la imagen
-                for _ in range(max(1, fw * fh // 30)):
-                    sx, sy = rng.randrange(x0, x1), rng.randrange(y0, y1)
-                    for k in range(rng.randint(2, 4)):
-                        if x0 <= sx + k < x1:
-                            px[sx + k, sy] = TAN + (255,)
-                # manchas azules de 2x2 separadas entre sí
-                spots = []
-                tries = 0
-                want = max(2, fw * fh // 22)
-                while len(spots) < want and tries < 200:
-                    tries += 1
-                    sx = rng.randrange(x0, x1 - 1)
-                    sy = rng.randrange(y0, y1 - 1)
-                    if any(abs(sx - a) < 3 and abs(sy - b) < 3 for a, b in spots):
-                        continue
-                    spots.append((sx, sy))
-                    px[sx, sy] = SPOT_L + (255,)
-                    px[sx + 1, sy] = SPOT + (255,)
-                    px[sx, sy + 1] = SPOT + (255,)
-                    px[sx + 1, sy + 1] = SPOT_D + (255,)
-            else:
-                # punta un poco más oscura en las raíces
-                for x in range(x0, x1):
-                    px[x, y1 - 1] = ROOT_C[2] + (255,)
+    for rows, (x0, y0, _, _) in ((BIG, UV_BIG), (SMALL, UV_SMALL), (ROOTS, UV_ROOT)):
+        for j, row in enumerate(rows):
+            for i, ch in enumerate(row):
+                px[x0 + i, y0 + j] = PALETTE[ch] + (255,)
     return img
 
 
+def faces_uv(top, side):
+    return {"north": side, "south": side, "east": side, "west": side, "up": top, "down": top}
+
+
 def bbmodel(tex_png):
-    elements, outliner = [], []
-    for name, (w, h, d), (x, y, z), rot, (u, v), _ in PIECES:
+    elements, ids = [], []
+    for name, a, b, top, side in PIECES:
         eid = str(uuid.uuid5(uuid.NAMESPACE_DNS, "eburia." + name))
-        center = [x + w / 2, y + h / 2, z + d / 2]
-        faces = {f: {"uv": list(r), "texture": 0}
-                 for f, r in box_faces(u, v, w, h, d).items()}
         elements.append({
-            "name": name, "box_uv": True, "rescale": False, "locked": False,
+            "name": name, "box_uv": False, "rescale": False, "locked": False,
             "render_order": "default", "allow_mirror_modeling": True,
-            "from": [x, y, z], "to": [x + w, y + h, z + d],
-            "autouv": 0, "color": 0, "origin": center, "rotation": list(rot),
-            "uv_offset": [u, v], "faces": faces, "type": "cube", "uuid": eid,
+            "from": list(a), "to": list(b), "autouv": 0, "color": 0,
+            "origin": [(a[i] + b[i]) / 2 for i in range(3)], "rotation": [0, 0, 0],
+            "faces": {f: {"uv": list(uv), "texture": 0} for f, uv in faces_uv(top, side).items()},
+            "type": "cube", "uuid": eid,
         })
-        outliner.append(eid)
-    group = {
-        "name": "huevo_eburia", "origin": [0, 0, 0], "color": 0, "uuid":
-        str(uuid.uuid5(uuid.NAMESPACE_DNS, "eburia.group")), "export": True,
-        "mirror_uv": False, "isOpen": True, "locked": False, "visibility": True,
-        "autouv": 0, "children": outliner,
-    }
+        ids.append(eid)
     return {
-        "meta": {"format_version": "4.10", "model_format": "bedrock_block", "box_uv": True},
-        "name": "huevo_eburia",
-        "model_identifier": "huevo_eburia",
-        "visible_box": [1, 1, 0],
-        "variable_placeholders": "",
-        "variable_placeholder_buttons": [],
-        "timeline_setups": [],
-        "unhandled_root_fields": {},
+        "meta": {"format_version": "4.10", "model_format": "bedrock_block", "box_uv": False},
+        "name": "huevo_eburia", "model_identifier": "huevo_eburia",
+        "visible_box": [1, 1, 0], "variable_placeholders": "", "variable_placeholder_buttons": [],
+        "timeline_setups": [], "unhandled_root_fields": {},
         "resolution": {"width": TEX, "height": TEX},
         "elements": elements,
-        "outliner": [group],
+        "outliner": [{
+            "name": "huevo_eburia", "origin": [0, 0, 0], "color": 0,
+            "uuid": str(uuid.uuid5(uuid.NAMESPACE_DNS, "eburia.group")), "export": True,
+            "mirror_uv": False, "isOpen": True, "locked": False, "visibility": True,
+            "autouv": 0, "children": ids,
+        }],
         "textures": [{
-            "path": "", "name": "huevo_eburia.png", "folder": "block",
-            "namespace": "", "id": "0", "group": "", "width": TEX, "height": TEX,
-            "uv_width": TEX, "uv_height": TEX, "particle": False, "use_as_default": False,
-            "layers_enabled": False, "sync_to_project": "", "render_mode": "default",
-            "render_sides": "auto", "frame_time": 1, "frame_order_type": "loop",
-            "frame_order": "", "frame_interpolate": False, "visible": True,
-            "internal": True, "saved": True,
+            "path": "", "name": "huevo_eburia.png", "folder": "block", "namespace": "",
+            "id": "0", "group": "", "width": TEX, "height": TEX, "uv_width": TEX, "uv_height": TEX,
+            "particle": False, "use_as_default": False, "layers_enabled": False,
+            "sync_to_project": "", "render_mode": "default", "render_sides": "auto",
+            "frame_time": 1, "frame_order_type": "loop", "frame_order": "",
+            "frame_interpolate": False, "visible": True, "internal": True, "saved": True,
             "uuid": str(uuid.uuid5(uuid.NAMESPACE_DNS, "eburia.texture")),
             "relative_path": "huevo_eburia.png",
             "source": "data:image/png;base64," + base64.b64encode(tex_png).decode(),
@@ -147,16 +133,14 @@ def bbmodel(tex_png):
 
 
 def geo_json():
-    """Geometría Bedrock (Blockbench la exporta así: X invertida y origen = esquina)."""
     cubes = []
-    for name, (w, h, d), (x, y, z), rot, (u, v), _ in PIECES:
-        cubes.append({
-            "origin": [-(x + w), y, z], "size": [w, h, d],
-            "pivot": [-(x + w / 2), y + h / 2, z + d / 2],
-            "rotation": [-rot[0], -rot[1], rot[2]], "uv": [u, v],
-        })
+    for name, a, b, top, side in PIECES:
+        size = [b[i] - a[i] for i in range(3)]
+        uv = {f: {"uv": [r[0], r[1]], "uv_size": [r[2] - r[0], r[3] - r[1]]}
+              for f, r in faces_uv(top, side).items()}
+        cubes.append({"origin": [-b[0], a[1], a[2]], "size": size, "uv": uv})
     return {
-        "format_version": "1.12.0",
+        "format_version": "1.16.0",
         "minecraft:geometry": [{
             "description": {"identifier": "geometry.huevo_eburia",
                             "texture_width": TEX, "texture_height": TEX,
@@ -168,9 +152,8 @@ def geo_json():
 
 
 if __name__ == "__main__":
-    tex = paint_texture()
-    buf = io.BytesIO()
-    tex.save(buf, "PNG")
+    tex = build_texture()
+    buf = io.BytesIO(); tex.save(buf, "PNG")
     tex.save(ROOT / "huevo_eburia.png")
     (ROOT / "huevo_eburia.bbmodel").write_text(json.dumps(bbmodel(buf.getvalue()), indent=1))
     (ROOT / "huevo_eburia.geo.json").write_text(json.dumps(geo_json(), indent=2) + "\n")
