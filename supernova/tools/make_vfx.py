@@ -9,9 +9,9 @@ Los colores salen de las imágenes de referencia:
     vetas celestes (224,253,253), borde rosa (251,115,161) y rosa claro (253,172,240)
 
 Crea en SupernovaRP/textures/particle/supernova/:
-  estrella_giro.png   64 fotogramas de 256x256 (8x8): la bola de lava en 3D dando una vuelta, con
-                      las grietas latiendo
-  estrella.png        el primer fotograma a 512x512 (de aquí se cortan las piezas)
+  nucleo.png          el brillo del centro mientras se forma la estrella
+(la superficie de la estrella -placas, grietas y colores- también sale de aquí: la usa
+ tools/make_star_model.py para el modelo 3D; render_star/make_star dibujan una vista plana)
   halo.png            resplandor de calor alrededor de la estrella
   brasa.png           chispa / brasa
   exp_cuerpo.png      4 fotogramas de 512x512 (2x2): el cuerpo de la explosión, con el borde ondulando
@@ -194,6 +194,10 @@ def make_glows():
     r, col, a = radial(256, [(0, WHITE), (0.5, LAVENDER), (1, PINK_LIGHT)],
                        lambda r: np.clip(1 - r, 0, 1) ** 1.5)
     to_img(col, a).save(OUT / "exp_nucleo.png")
+    # núcleo que brilla mientras se forma la estrella (colores de las grietas)
+    r, col, a = radial(256, [(0, tuple(CRACK_CORE)), (0.45, tuple(CRACK)), (1, tuple(CRACK_GLOW))],
+                       lambda r: np.clip(1 - r, 0, 1) ** 1.6)
+    to_img(col, a).save(OUT / "nucleo.png")
 
 
 # ------------------------------------------------------------------ explosión
@@ -302,7 +306,6 @@ def make_ring():
 
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
-    make_star()
     make_glows()
     make_body()
     make_rays()

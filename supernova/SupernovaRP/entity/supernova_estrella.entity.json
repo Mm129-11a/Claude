@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "supernova:estrella",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/supernova/estrella"
+      },
+      "geometry": {
+        "default": "geometry.supernova_estrella"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "animations": {
+        "formacion": "animation.supernova.formacion",
+        "giro": "animation.supernova.giro",
+        "hinchar": "animation.supernova.hinchar"
+      },
+      "scripts": {
+        "animate": [
+          "formacion",
+          "giro",
+          "hinchar"
+        ]
+      }
+    }
+  }
+}

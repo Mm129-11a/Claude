@@ -2,8 +2,8 @@
 
 Uso:  python3 tools/make_preview.py
 Crea preview.mp4 (1288x586, apaisado como las capturas) y preview.png.
-Usa las mismas texturas, piezas, tamaños, giros, mezclas (normal o aditiva) y tiempos que las
-partículas y el script.
+Usa las mismas texturas, tamaños, mezclas (normal o aditiva) y tiempos que las partículas y el
+script; el modelo 3D de la estrella se dibuja con three.js (tools/preview3d, necesita node).
 """
 import json
 import math
@@ -35,19 +35,12 @@ def load(name):
     return Image.open(TEX / f"{name}.png").convert("RGBA")
 
 
-star_atlas, halo, brasa, nuc = load("estrella_giro"), load("halo"), load("brasa"), load("nucleo")
+halo, brasa, nuc = load("halo"), load("brasa"), load("nucleo")
 body_atlas, rays, bolts, ring, core = (load("exp_cuerpo"), load("exp_rayos"), load("exp_morados"),
                                       load("exp_anillo"), load("exp_nucleo"))
-fla, atlas = load("destello"), load("piezas")
-js = (ROOT / "SupernovaBP" / "scripts" / "piezas.js").read_text()
-PIEZAS = json.loads(re.search(r"PIEZAS = (\[.*\]);", js).group(1))
-STAR_TEX = int(re.search(r"STAR_TEXTURE = (\d+)", js).group(1))
-PX = 2 * STAR_R / STAR_TEX
-NFRAMES = int(re.search(r"FRAMES = (\d+)", js).group(1))
-COLS = int(re.search(r"COLS = (\d+)", js).group(1))
-PIECE_IMG = [[atlas.crop((p["u"] + (k % COLS) * p["c"], p["v"] + (k // COLS) * p["c"],
-                          p["u"] + (k % COLS + 1) * p["c"], p["v"] + (k // COLS + 1) * p["c"]))
-              for k in range(NFRAMES)] for p in PIEZAS]
+fla = load("destello")
+STAR_LAYER = {}          # tick -> imagen RGBA del modelo 3D de la estrella (la llena render_star_model)
+T_SPAWN, BURST = 14, 46  # cuándo aparece la entidad de la estrella y cuánto dura la rota (ticks)
 
 clamp = lambda v, a, b: max(a, min(b, v))
 ease = lambda a, t, p=3: 1 - (1 - clamp(a / t, 0, 1)) ** p
@@ -58,26 +51,6 @@ def cell(img, frame, cols, size):
 
 
 rng = random.Random(11)
-
-
-def radial_offsets(p, spread, dmin, dmax, zmin, zmax):
-    ax, ay = p["x"], -p["y"]
-    if math.hypot(ax, ay) < 1:
-        a = rng.uniform(0, 2 * math.pi)
-        ax, ay = math.cos(a), math.sin(a)
-    ang = math.atan2(ay, ax) + (rng.random() - 0.5) * spread
-    dist = rng.uniform(dmin, dmax)
-    return math.cos(ang) * dist, math.sin(ang) * dist, rng.uniform(zmin, zmax)
-
-
-FLY, BLAST = [], []
-for i, p in enumerate(PIEZAS):
-    tick = T_P0 + round(i / max(1, len(PIEZAS) - 1) * (T_P1 - T_P0))
-    ox, oy, oz = radial_offsets(p, 0.9, 14, 24, -6, 8)
-    FLY.append({"tick": tick, "ox": ox, "oy": oy, "oz": oz, "turns": 1 + rng.randrange(2),
-                "life": (T_STAR - tick) / 20 + 0.3})
-    ox, oy, oz = radial_offsets(p, 0.5, 22, 44, -12, 8)
-    BLAST.append({"ox": ox, "oy": oy, "oz": oz, "spin": rng.uniform(14, 36), "r": rng.random()})
 
 # brasas y chispas: posiciones al azar fijas para que el video sea estable
 EMBERS = []
@@ -163,26 +136,25 @@ def render(tick):
     if 0 <= a <= life:
         s = STAR_R * 1.2 * (0.45 + 0.55 * clamp(a / (life - 0.3), 0, 1)) * (1 + 0.08 * math.sin(math.radians(a * 720)))
         f.put(nuc, s, s, clamp(a / 0.4, 0, 1) * (1 - clamp((a - life + 0.3) / 0.3, 0, 1)), DIST + 0.6, add=True)
-    live = []
-    for p, img, fl in zip(PIEZAS, PIECE_IMG, FLY):
-        a = (tick - fl["tick"]) / FPS
-        if 0 <= a <= fl["life"]:
-            k = (1 - clamp(a / FLIGHT, 0, 1)) ** 3
-            live.append((DIST + fl["oz"] * k, p, img, fl, a, k))
-    for depth, p, img, fl, a, k in sorted(live, key=lambda e: -e[0]):
-        alpha = clamp(a / 0.12, 0, 1) * (1 - clamp((a - fl["life"] + 0.15) / 0.15, 0, 1))
-        fr = int(math.floor(k * fl["turns"] * NFRAMES + 0.5)) % NFRAMES
-        f.put(img[fr], p["s"] / 2 * PX, p["s"] / 2 * PX, alpha, max(2, depth), p["x"] * PX + fl["ox"] * k,
-              -p["y"] * PX + fl["oy"] * k, 0, (0.55 + 0.45 * (1 - k), 0.5 + 0.5 * (1 - k), 0.45 + 0.55 * (1 - k)))
-    # ---- la estrella completa: halo, bola en 3D girando y brasas
+    # ---- la estrella completa: resplandor detrás
     a = (tick - T_STAR) / FPS
     if 0 <= a <= STAR_LIFE:
         swell = 1 + clamp((a - 2.2) / 1.0, 0, 1) * 0.3
         end = 1 - clamp((a - 3.2) / 0.12, 0, 1)
         s = STAR_R * 1.9 * swell * (1 + math.sin(math.radians(a * 250)) * 0.05)
         f.put(halo, s, s, (0.5 + 0.15 * math.sin(math.radians(a * 400))) * clamp(a / 0.4, 0, 1) * end, DIST + 0.4, add=True)
-        s = STAR_R * swell * (1 + math.sin(math.radians(a * 300)) * 0.02)
-        f.put(cell(star_atlas, int(a * 8) % 64, 8, 256), s, s, clamp(a / 0.12, 0, 1) * end, DIST)
+    # ---- el modelo 3D de la estrella (formándose, girando o rota)
+    if tick in STAR_LAYER:
+        layer = np.array(STAR_LAYER[tick]).astype(np.float32) / 255
+        if f.shake != (0, 0):
+            layer = np.roll(layer, f.shake, axis=(1, 0))
+        al = layer[..., 3:4]
+        f.img = f.img * (1 - al) + layer[..., :3] * 255 * al
+    # ---- brasas
+    a = (tick - T_STAR) / FPS
+    if 0 <= a <= STAR_LIFE:
+        swell = 1 + clamp((a - 2.2) / 1.0, 0, 1) * 0.3
+        end = 1 - clamp((a - 3.2) / 0.12, 0, 1)
         for t0, v, sp, lf, rnd in EMBERS:
             e = a - t0
             if 0 <= e <= lf and t0 <= STAR_LIFE - 0.2:
@@ -221,14 +193,6 @@ def render(tick):
                 sz = (0.25 + 0.3 * rnd) * (1 - tt)
                 f.put(brasa, sz, sz, 1 - tt * tt, DIST - pz, v[0] * dist, v[1] * dist,
                       tint=tuple(c / 255 for c in col), add=True)
-        if a <= 2.2:
-            for p, img, b in zip(PIEZAS, PIECE_IMG, BLAST):
-                e = ease(a, 1.4, 2)
-                k = clamp(a / 1.2, 0, 1)
-                fr = int(math.floor(a * b["spin"] + b["r"] * NFRAMES)) % NFRAMES
-                f.put(img[fr], p["s"] / 2 * PX * 1.3, p["s"] / 2 * PX * 1.3, 1 - clamp((a - 1.4) / 0.8, 0, 1),
-                      max(2, DIST + b["oz"] * e), p["x"] * PX * 1.3 + b["ox"] * e, -p["y"] * PX * 1.3 + b["oy"] * e,
-                      0, (1, 1 - 0.45 * k, 1 - 0.65 * k))
     # ---- destello
     a = (tick - T_FLASH) / FPS
     if 0 <= a <= 4.0:
@@ -249,11 +213,36 @@ def render(tick):
     return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
 
-KEYS = [(40, "1. Las piezas llegan girando en 3D"), (78, "2. Encajan las ultimas"), (120, "3. La estrella en 3D girando"),
-        (163, "4. Explota"), (172, "5. La explosion y la onda"), (186, "6. El destello")]
+KEYS = [(40, "1. Las piezas 3D llegan volando"), (70, "2. Encajan en la esfera"), (120, "3. La estrella 3D girando"),
+        (163, "4. Explota: las piezas salen disparadas"), (172, "5. La explosion y la onda"), (186, "6. El destello")]
+
+
+def render_star_model(tmp):
+    """Dibuja el modelo 3D de la estrella en cada tick con three.js (tools/preview3d)."""
+    import json as _json
+    tool = ROOT / "tools" / "preview3d"
+    if not (tool / "node_modules" / "three").exists():
+        subprocess.run(["npm", "install", "--silent"], cwd=tool, check=True)
+    cam = {"pos": [0, -(HEIGHT - EYE), DIST], "look": [0, -(HEIGHT - EYE), 0], "fov": 60}
+    F = ["animation.supernova.formacion", "animation.supernova.giro", "animation.supernova.hinchar"]
+    jobs = []
+    for t in range(T_SPAWN, T_EXP + BURST):
+        anims, at = (F, (t - T_SPAWN) / FPS) if t < T_EXP else (["animation.supernova.estalla"], (t - T_EXP) / FPS)
+        jobs.append({"anims": anims, "t": at, "cam": cam, "out": f"{tmp}/star{t:04d}.png"})
+    cfg = {"geo": str(ROOT / "SupernovaRP/models/entity/supernova_estrella.geo.json"),
+           "anim": str(ROOT / "SupernovaRP/animations/supernova_estrella.animation.json"),
+           "tex": str(ROOT / "SupernovaRP/textures/entity/supernova/estrella.png"),
+           "width": W, "height": H, "jobs": jobs}
+    Path(f"{tmp}/jobs.json").write_text(_json.dumps(cfg))
+    subprocess.run(["node", str(tool / "shot.js"), f"{tmp}/jobs.json"], check=True)
+    for j in jobs:
+        t = int(Path(j["out"]).stem[4:])
+        STAR_LAYER[t] = Image.open(j["out"]).convert("RGBA").copy()
 
 
 def main():
+    with tempfile.TemporaryDirectory() as stars:
+        render_star_model(stars)
     with tempfile.TemporaryDirectory() as tmp:
         for t in range(T_END + 30):
             render(t).save(f"{tmp}/f{t:04d}.png")

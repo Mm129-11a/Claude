@@ -2,8 +2,9 @@
 
 Uso:  python3 tools/make_particles.py
 
+La estrella y sus piezas no son partículas: son un modelo 3D (tools/make_star_model.py).
 Los tamaños salen de las capturas de referencia (pantalla de 2576x1171, campo de visión de 60°):
-  - estrella: en la foto mide 158 px de radio -> 5,0 bloques a 32 bloques (y sus piezas igual)
+  - estrella: en la foto mide 158 px de radio -> 5,0 bloques a 32 bloques
   - explosión: el borde rosa a ~490 px        -> unos 15 bloques a 31 bloques
   - destello: llena la pantalla hasta el suelo -> 68 x 24 bloques a 35 bloques
 (en las partículas de Bedrock el tamaño es la mitad del ancho y del alto)
@@ -75,17 +76,6 @@ def simple(ident, tex, material, lifetime, size, alpha, tex_size, spin=0.0, aspe
     return particle(ident, tex, material, c)
 
 
-K = "math.pow(1 - math.clamp(variable.particle_age / variable.flight, 0, 1), 3)"   # 1 lejos -> 0 encajada
-
-
-def piece_billboard(frame, scale=1.0):
-    """Una pieza en 3D: su fotograma 'frame' de la vuelta, dentro de su bloque de piezas.png.
-    El script pone pu, pv (esquina del bloque), pc (tamaño del fotograma) y sw (mitad del ancho)."""
-    f = f"({frame})"
-    return billboard(f"variable.sw * {scale}", f"variable.sw * {scale}", "ATLAS_W", "ATLAS_H",
-                     (f"variable.pu + math.mod({f}, COLS) * variable.pc",
-                      f"variable.pv + math.floor({f} / COLS) * variable.pc"),
-                     ("variable.pc", "variable.pc"))
 SWELL = f"(1 + math.clamp(({A} - 2.2) / 1.0, 0, 1) * 0.3)"                        # se hincha antes de explotar
 TT = f"({A} / {LIFE})"
 
@@ -97,25 +87,7 @@ EFFECTS = {
                      f" * (1 + 0.08 * math.sin({A} * 720))",
                      f"math.clamp({A} / 0.4, 0, 1) * (1 - math.clamp(({A} - variable.life + 0.3) / 0.3, 0, 1))",
                      (256, 256)),
-    # Una pieza de la bola: vuela desde (ox, oy, oz) girando y se enciende al encajar.
-    # El script pone su trozo de textura (pu, pv, pw, ph), su tamaño (sw, sh), el vuelo y la vida.
-    "pieza": particle("supernova:pieza", "piezas", "particles_blend", {
-        **single("variable.life"),
-        "minecraft:particle_motion_parametric": {
-            "relative_position": [f"variable.ox * {K}", f"variable.oy * {K}", f"variable.oz * {K}"]},
-        "minecraft:particle_appearance_billboard": piece_billboard(
-            f"math.mod(math.floor({K} * variable.turns * FRAMES + 0.5), FRAMES)"),
-        "minecraft:particle_appearance_tinting": {"color": [
-            f"0.55 + 0.45 * (1 - {K})", f"0.5 + 0.5 * (1 - {K})", f"0.45 + 0.55 * (1 - {K})",
-            f"math.clamp({A} / 0.12, 0, 1) * (1 - math.clamp(({A} - variable.life + 0.15) / 0.15, 0, 1))"]},
-    }),
-
     # ---------------------------------------------------------------- la estrella
-    # La bola de lava en 3D: 64 fotogramas dando una vuelta, con las grietas latiendo
-    "estrella": simple("supernova:estrella", "estrella_giro", "particles_blend", STAR_LIFE,
-                       f"{STAR_R} * {SWELL} * (1 + math.sin({A} * 300) * 0.02)",
-                       f"math.clamp({A} / 0.12, 0, 1) * (1 - math.clamp(({A} - 3.2) / 0.12, 0, 1))",
-                       (2048, 2048), uv=grid_uv(STAR_FPS, 8, 64, 256), uv_size=(256, 256)),
     # Resplandor de calor alrededor de la estrella
     "halo": simple("supernova:halo", "halo", "particles_add", STAR_LIFE,
                    f"{STAR_R} * 1.9 * {SWELL} * (1 + math.sin({A} * 250) * 0.05)",
@@ -176,21 +148,6 @@ EFFECTS = {
             "variable.particle_random_1 < 0.25 ? 1 : (variable.particle_random_1 < 0.5 ? 0.75 : 1)",
             f"1 - {TT} * {TT}"]},
     }),
-    # Las piezas de la estrella saliendo disparadas al explotar, al rojo vivo y enfriándose
-    "pieza_estalla": particle("supernova:pieza_estalla", "piezas", "particles_blend", {
-        **single(2.2),
-        "minecraft:particle_motion_parametric": {
-            "relative_position": [f"variable.ox * {ease_out('variable.flight', 2)}",
-                                  f"variable.oy * {ease_out('variable.flight', 2)}",
-                                  f"variable.oz * {ease_out('variable.flight', 2)}"]},
-        "minecraft:particle_appearance_billboard": piece_billboard(
-            f"math.mod(math.floor({A} * variable.spin + variable.particle_random_1 * FRAMES), FRAMES)",
-            scale=1.3),
-        "minecraft:particle_appearance_tinting": {"color": [
-            1, f"1 - 0.45 * math.clamp({A} / 1.2, 0, 1)", f"1 - 0.65 * math.clamp({A} / 1.2, 0, 1)",
-            f"1 - math.clamp(({A} - 1.4) / 0.8, 0, 1)"]},
-    }),
-
     # ---------------------------------------------------------------- el destello (captura 3)
     "destello": simple("supernova:destello", "destello", "particles_blend", 4.0,
                        f"{FLASH_H} * (0.3 + 0.7 * {ease_out(0.35, 2)})",
@@ -199,26 +156,11 @@ EFFECTS = {
 }
 
 
-def atlas_size():
-    from PIL import Image
-    return Image.open(ROOT / "SupernovaRP" / "textures" / "particle" / "supernova" / "piezas.png").size
-
-
-def piece_frames():
-    import re
-    js = (ROOT / "SupernovaBP" / "scripts" / "piezas.js").read_text()
-    return int(re.search(r"FRAMES = (\d+)", js).group(1)), int(re.search(r"COLS = (\d+)", js).group(1))
-
-
 if __name__ == "__main__":
     P.mkdir(parents=True, exist_ok=True)
     for old in P.glob("*.json"):
         old.unlink()
-    aw, ah = atlas_size()
-    frames, cols = piece_frames()
     for name, data in EFFECTS.items():
         text = json.dumps(data, indent=2, ensure_ascii=False)
-        text = text.replace('"ATLAS_W"', str(aw)).replace('"ATLAS_H"', str(ah))
-        text = text.replace("FRAMES", str(frames)).replace("COLS", str(cols))
         (P / f"{name}.json").write_text(text + "\n")
     print("ok:", sorted(p.name for p in P.iterdir()))

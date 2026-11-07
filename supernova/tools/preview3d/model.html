@@ -1,0 +1,84 @@
+<!doctype html><html><body style="margin:0;background:transparent">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js"}}</script>
+<script type="module">
+// Dibuja una geometría de Bedrock (bones con cubos planos y caras norte/sur) con sus animaciones,
+// leyéndola como lo hace Blockbench: x cambiada de signo y giros [-x, -y, z] en orden ZYX.
+import * as THREE from 'three';
+const D = Math.PI / 180;
+let renderer, scene, root, bones = {}, bind = {}, anims = {};
+window.init = async (geo, animFile, texUrl, W, H) => {
+  anims = animFile.animations;
+  const img = new Image(); img.src = texUrl; await img.decode();
+  const tex = new THREE.Texture(img); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.LinearFilter;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.flipY = false; tex.needsUpdate = true;
+  const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.5 });
+  const G = geo['minecraft:geometry'][0]; const TW = G.description.texture_width, TH = G.description.texture_height;
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(W, H); renderer.setClearColor(0x000000, 0); document.body.appendChild(renderer.domElement);
+  scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, 1.9));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(0.3, 1, 0.6); scene.add(dl);
+  root = new THREE.Group(); root.scale.setScalar(1 / 16); scene.add(root);
+  const face = (x0, y0, x1, y1, z, uv, north) => {
+    const [u, v] = uv.uv, [w, h] = uv.uv_size;
+    const g = new THREE.BufferGeometry();
+    const P = north ? [x1, y1, z, x0, y1, z, x0, y0, z, x1, y0, z] : [x0, y1, z, x1, y1, z, x1, y0, z, x0, y0, z];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute([u / TW, v / TH, (u + w) / TW, v / TH, (u + w) / TW, (v + h) / TH, u / TW, (v + h) / TH], 2));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 0, north ? -1 : 1].concat([0, 0, north ? -1 : 1], [0, 0, north ? -1 : 1], [0, 0, north ? -1 : 1]), 3));
+    g.setIndex([0, 2, 1, 0, 3, 2]);
+    return new THREE.Mesh(g, mat);
+  };
+  for (const b of G.bones) {
+    const grp = new THREE.Group(); grp.rotation.order = 'ZYX';
+    const pv = [-b.pivot[0], b.pivot[1], b.pivot[2]];
+    const r = b.rotation || [0, 0, 0];
+    bones[b.name] = grp; bind[b.name] = { pv, rb: [-r[0] * D, -r[1] * D, r[2] * D] };
+    for (const c of (b.cubes || [])) {
+      const x0 = -(c.origin[0] + c.size[0]), y0 = c.origin[1], z0 = c.origin[2];
+      const x1 = x0 + c.size[0], y1 = y0 + c.size[1], z1 = z0 + c.size[2];
+      if (c.uv.south) grp.add(face(x0 - pv[0], y0 - pv[1], x1 - pv[0], y1 - pv[1], z1 - pv[2], c.uv.south, false));
+      if (c.uv.north) grp.add(face(x0 - pv[0], y0 - pv[1], x1 - pv[0], y1 - pv[1], z0 - pv[2], c.uv.north, true));
+    }
+  }
+  for (const b of G.bones) {
+    const ppv = b.parent ? bind[b.parent].pv : [0, 0, 0], pv = bind[b.name].pv;
+    bones[b.name].userData.base = [pv[0] - ppv[0], pv[1] - ppv[1], pv[2] - ppv[2]];
+    (b.parent ? bones[b.parent] : root).add(bones[b.name]);
+  }
+};
+function sample(kf, t) {
+  if (Array.isArray(kf)) return kf;
+  const ks = Object.keys(kf).sort((a, b) => Number(a) - Number(b));
+  const g = (k, w) => { const v = kf[k]; return Array.isArray(v) ? v : (w === 'pre' ? (v.pre || v.post) : (v.post || v.pre)); };
+  if (t <= Number(ks[0])) return g(ks[0], 'pre');
+  for (let i = 1; i < ks.length; i++) {
+    const t0 = Number(ks[i - 1]), t1 = Number(ks[i]);
+    if (t < t1) { const a = g(ks[i - 1], 'post'), b = g(ks[i], 'pre'), f = (t - t0) / (t1 - t0); return a.map((x, j) => x + (b[j] - x) * f); }
+  }
+  return g(ks[ks.length - 1], 'post');
+}
+const molang = (x, t) => typeof x === 'string' ? Function('query', 'return ' + x)({ anim_time: t }) : x;
+window.renderAt = (names, t, cam) => {
+  for (const [n, grp] of Object.entries(bones)) {
+    const b = grp.userData.base, rb = bind[n].rb;
+    grp.position.set(...b); grp.rotation.set(...rb); grp.scale.set(1, 1, 1);
+  }
+  for (const name of names) {
+    const a = anims[name];
+    const tt = a.loop === true ? t % a.animation_length : Math.min(t, a.animation_length);
+    for (const [bn, ch] of Object.entries(a.bones)) {
+      const grp = bones[bn];
+      if (ch.position) { const v = sample(ch.position, tt).map(x => molang(x, tt)); grp.position.x += -v[0]; grp.position.y += v[1]; grp.position.z += v[2]; }
+      if (ch.rotation) { const v = sample(ch.rotation, tt).map(x => molang(x, tt)); grp.rotation.x += -v[0] * D; grp.rotation.y += -v[1] * D; grp.rotation.z += v[2] * D; }
+      if (ch.scale) { const v = sample(ch.scale, tt); grp.scale.set(v[0], v[1], v[2]); }
+    }
+  }
+  const s = renderer.getSize(new THREE.Vector2());
+  const camera = new THREE.PerspectiveCamera(cam.fov || 60, s.x / s.y, 0.1, 500);
+  camera.position.set(...cam.pos); camera.lookAt(...(cam.look || [0, 0, 0]));
+  renderer.render(scene, camera);
+  return renderer.domElement.toDataURL('image/png');
+};
+window.ready = true;
+</script></body></html>

@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "supernova:estrella_rota",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/supernova/estrella"
+      },
+      "geometry": {
+        "default": "geometry.supernova_estrella"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "animations": {
+        "estalla": "animation.supernova.estalla"
+      },
+      "scripts": {
+        "animate": [
+          "estalla"
+        ]
+      }
+    }
+  }
+}

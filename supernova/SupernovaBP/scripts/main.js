@@ -1,5 +1,5 @@
 import { world, system, MolangVariableMap, EntityDamageCause } from "@minecraft/server";
-import { PIEZAS, STAR_TEXTURE, STAR_HALF } from "./piezas.js";
+import { LLEGADAS } from "./estrella_modelo.js";
 
 // Se lanza con /function supernova (que ejecuta: scriptevent supernova:iniciar)
 const EVENT_ID = "supernova:iniciar";
@@ -72,77 +72,54 @@ function norm(v) {
   return { x: v.x / l, y: v.y / l, z: v.z / l };
 }
 
-// La estrella se forma pieza por pieza: cada pieza sale de lejos, vuela girando y encaja en su sitio
-function formStar(dimension, center, eye) {
-  const d = norm({ x: center.x - eye.x, y: center.y - eye.y, z: center.z - eye.z });   // hacia la estrella
-  let right = cross(d, { x: 0, y: 1, z: 0 });
-  if (Math.hypot(right.x, right.y, right.z) < 0.05) right = { x: 1, y: 0, z: 0 };
-  right = norm(right);
-  const up = norm(cross(right, d));
-  const px = (2 * STAR_HALF) / STAR_TEXTURE;          // bloques por píxel de la textura de la estrella
-
-  const total = PIEZAS.length;
-  PIEZAS.forEach((p, i) => {
-    const tick = T.piezasInicio + Math.round((i / Math.max(1, total - 1)) * (T.piezasFin - T.piezasInicio));
-    at(tick - T.oscurecer, () => {   // formStar se llama en T.oscurecer
-      // sitio final de la pieza, en el plano que mira al jugador
-      const target = add(add(center, right, p.x * px), up, -p.y * px);
-      // de dónde viene: hacia afuera de la bola, lejos, un poco al azar y a distinta profundidad
-      let ax = p.x;
-      let ay = -p.y;
-      if (Math.hypot(ax, ay) < 1) {
-        const a = Math.random() * Math.PI * 2;
-        ax = Math.cos(a);
-        ay = Math.sin(a);
-      }
-      const ang = Math.atan2(ay, ax) + (Math.random() - 0.5) * 0.9;
-      const dist = 14 + Math.random() * 10;
-      const off = add(add(add({ x: 0, y: 0, z: 0 }, right, Math.cos(ang) * dist), up, Math.sin(ang) * dist),
-        d, -6 + Math.random() * 14);
-      const life = (T.estrella - tick) / 20 + 0.3;
-      spawn(dimension, "supernova:pieza", target, molang({
-        ox: off.x, oy: off.y, oz: off.z,
-        turns: 1 + Math.floor(Math.random() * 2),     // vueltas en 3D mientras llega (1 o 2)
-        flight: FLIGHT, life,
-        sw: (p.s / 2) * px,
-        pu: p.u, pv: p.v, pc: p.c,
-      }));
-      // al encajar, un golpe de piedra
-      if (i % 2 === 0) {
-        at(Math.round(FLIGHT * 20), () =>
-          soundTo(playersNear(dimension, center, RADIO_EFECTOS), "dig.stone", 0.6, 0.6 + Math.random() * 0.4));
-      }
-    });
-  });
-  // el núcleo brilla detrás mientras se forma
-  spawn(dimension, "supernova:nucleo", add(center, d, 0.6), molang({ life: (T.estrella - T.oscurecer) / 20 + 0.3 }));
-  return { d, right, up, px };
+// La estrella es un modelo 3D (entidad): sus piezas llegan volando, giran y encajan solas
+// (animación "formacion"); luego gira entera, se hincha y, al explotar, se cambia por la
+// estrella rota, cuyas piezas salen disparadas (animación "estalla").
+function spawnEntity(dimension, id, pos) {
+  try {
+    return dimension.spawnEntity(id, pos);
+  } catch (e) {
+    console.warn(`[supernova] entidad ${id}: ${e}`);
+    return undefined;
+  }
 }
 
-// Al explotar, las piezas de la estrella salen disparadas hacia afuera, al rojo vivo
-function blastPieces(dimension, center, frame) {
-  const { d, right, up, px } = frame;
-  const swell = 1.3;                                   // la estrella está hinchada al explotar
-  for (const p of PIEZAS) {
-    const start = add(add(center, right, p.x * px * swell), up, -p.y * px * swell);
-    let ax = p.x;
-    let ay = -p.y;
-    if (Math.hypot(ax, ay) < 1) {
-      const a = Math.random() * Math.PI * 2;
-      ax = Math.cos(a);
-      ay = Math.sin(a);
+function removeEntity(e) {
+  try {
+    if (e && e.isValid()) e.remove();
+  } catch {
+    // ya no existe
+  }
+}
+
+// Un bloque de luz invisible en el centro: el modelo se ve con toda su luz aunque sea de noche
+function placeLight(dimension, pos) {
+  const p = { x: Math.floor(pos.x), y: Math.floor(pos.y), z: Math.floor(pos.z) };
+  try {
+    const block = dimension.getBlock(p);
+    if (!block || !block.isAir) return undefined;
+  } catch {
+    return undefined;
+  }
+  for (const c of [`setblock ${p.x} ${p.y} ${p.z} light_block_15`,
+                   `setblock ${p.x} ${p.y} ${p.z} light_block ["block_light_level"=15]`]) {
+    try {
+      dimension.runCommand(c);
+      return p;
+    } catch {
+      // otra versión del juego: probar la otra forma
     }
-    const ang = Math.atan2(ay, ax) + (Math.random() - 0.5) * 0.5;
-    const dist = 22 + Math.random() * 22;
-    const off = add(add(add({ x: 0, y: 0, z: 0 }, right, Math.cos(ang) * dist), up, Math.sin(ang) * dist),
-      d, -12 + Math.random() * 20);
-    spawn(dimension, "supernova:pieza_estalla", start, molang({
-      ox: off.x, oy: off.y, oz: off.z,
-      spin: 14 + Math.random() * 22,                  // fotogramas por segundo de su vuelta en 3D
-      flight: 1.4,
-      sw: (p.s / 2) * px,
-      pu: p.u, pv: p.v, pc: p.c,
-    }));
+  }
+  return undefined;
+}
+
+function removeLight(dimension, p) {
+  if (!p) return;
+  try {
+    const block = dimension.getBlock(p);
+    if (block && block.typeId.includes("light_block")) dimension.runCommand(`setblock ${p.x} ${p.y} ${p.z} air`);
+  } catch {
+    // el chunk ya no está cargado
   }
 }
 
@@ -195,7 +172,7 @@ function shockwave(dimension, center) {
     }
     for (const e of entities) {
       try {
-        if (hit.has(e.id)) continue;
+        if (hit.has(e.id) || e.typeId.startsWith("supernova:")) continue;
         const health = e.getComponent("minecraft:health");
         if (!health) continue;
         if (e.typeId === "minecraft:player") {
@@ -282,13 +259,15 @@ function startSupernova(dimension, origin, viewDir) {
     z: origin.z + dz * DISTANCE,
   };
   const eye = { x: origin.x, y: origin.y + EYE, z: origin.z };
+  const d = norm({ x: center.x - eye.x, y: center.y - eye.y, z: center.z - eye.z });   // hacia la estrella
   // la explosión un poco más cerca y el destello un poco más lejos, para que no se mezclen
   const near = { x: center.x - dx, y: center.y, z: center.z - dz };
   const front = { x: center.x - dx * 1.8, y: center.y, z: center.z - dz * 1.8 };   // relámpagos delante
   const far = { x: center.x + dx * 3, y: center.y, z: center.z + dz * 3 };
 
   const previousTime = world.getTimeOfDay();
-  let frame = null;
+  let star = null;
+  let light = null;
   const near300 = () => playersNear(dimension, center, RADIO_EFECTOS);
   const near200 = () => playersNear(dimension, center, RADIO_DESTELLO);
   let darkened = near300();          // a quienes se les pone la niebla (para quitársela al final)
@@ -300,13 +279,22 @@ function startSupernova(dimension, origin, viewDir) {
     world.setTimeOfDay(18000);
     darkened = near300();
     forPlayers(darkened, "fog @s push supernova:oscuro supernova_oscuro");
-    frame = formStar(dimension, center, eye);
+    // el núcleo brilla en el centro mientras se forma la estrella
+    spawn(dimension, "supernova:nucleo", add(center, d, 0.6),
+      molang({ life: (T.estrella - T.oscurecer) / 20 + 0.3 }));
     soundTo(darkened, "beacon.ambient", 1, 0.5);
   });
+  at(T.piezasInicio, () => {
+    light = placeLight(dimension, center);
+    star = spawnEntity(dimension, "supernova:estrella", center);
+    // golpe de piedra cuando encajan las piezas (una de cada tres)
+    LLEGADAS.forEach((t, i) => {
+      if (i % 3 === 0) at(t, () => soundTo(near300(), "dig.stone", 0.6, 0.6 + Math.random() * 0.4));
+    });
+  });
   at(T.estrella, () => {
-    // la estrella completa: la bola de lava en 3D girando, su resplandor y las brasas
-    spawn(dimension, "supernova:estrella", center);
-    if (frame) spawn(dimension, "supernova:halo", add(center, frame.d, 0.4));
+    // la estrella completa: su resplandor y las brasas
+    spawn(dimension, "supernova:halo", add(center, d, 0.4));
     spawn(dimension, "supernova:brasas", center);
     soundTo(near300(), "beacon.activate", 1, 0.6);
   });
@@ -323,7 +311,13 @@ function startSupernova(dimension, origin, viewDir) {
     spawn(dimension, "supernova:exp_morados", front);
     spawn(dimension, "supernova:exp_anillo", near);
     spawn(dimension, "supernova:chispas", center);
-    if (frame) blastPieces(dimension, center, frame);
+    // la estrella se rompe: sus piezas salen disparadas en 3D
+    removeEntity(star);
+    const broken = spawnEntity(dimension, "supernova:estrella_rota", center);
+    at(46, () => {
+      removeEntity(broken);
+      removeLight(dimension, light);
+    });
     shockwave(dimension, center);
     const all = near300();
     soundTo(all, "random.explode", 4, 0.6);

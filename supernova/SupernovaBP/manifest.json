@@ -2,22 +2,53 @@
   "format_version": 2,
   "header": {
     "name": "Supernova (BP)",
-    "description": "Explosión de una supernova con el comando /function supernova.",
+    "description": "Explosi\u00f3n de una supernova con el comando /function supernova.",
     "uuid": "fb718521-b18d-4453-9cc3-f721ae215a99",
-    "version": [1, 0, 0],
-    "min_engine_version": [1, 21, 50]
+    "version": [
+      1,
+      1,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      50
+    ]
   },
   "modules": [
+    {
+      "type": "data",
+      "uuid": "6d3f1c52-8a3e-4c9b-9f61-2b7e5a0d4c18",
+      "version": [
+        1,
+        1,
+        0
+      ]
+    },
     {
       "type": "script",
       "language": "javascript",
       "uuid": "04944533-7974-41ee-b063-e76dcc5637bb",
       "entry": "scripts/main.js",
-      "version": [1, 0, 0]
+      "version": [
+        1,
+        1,
+        0
+      ]
     }
   ],
   "dependencies": [
-    { "module_name": "@minecraft/server", "version": "1.16.0" },
-    { "uuid": "b2134abf-194a-4086-a0e2-7f07294e51f9", "version": [1, 0, 0] }
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.16.0"
+    },
+    {
+      "uuid": "b2134abf-194a-4086-a0e2-7f07294e51f9",
+      "version": [
+        1,
+        1,
+        0
+      ]
+    }
   ]
 }

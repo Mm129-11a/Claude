@@ -1,0 +1,6 @@
+{
+  "name": "supernova-preview3d",
+  "private": true,
+  "description": "Dibuja el modelo 3D de la estrella (geometría y animaciones de Bedrock) para la vista previa",
+  "dependencies": { "three": "0.160.0" }
+}
