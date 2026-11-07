@@ -1,13 +1,13 @@
 # Huevo Eburia
 
-Fruto con forma de pera que sale al romper un tronco. Modelo para Blockbench (Bedrock),
-copiado de la foto de referencia: la pera está **acostada** en el suelo, con el cuerpo
-(16×16×16) y el cuello (11×11×11) uno al lado del otro, color crema tostado con manchas
-azules, y un rabito con ramitas rojizas en la punta.
+Fruto inventado que sale al romper un tronco. Modelo para Blockbench (Bedrock), copiado de
+la foto de referencia: está **acostado** en el suelo, con el cuerpo (16×16×16) y el cuello
+(11×11×11) uno al lado del otro, color crema tostado con manchas azules, y un rabito con
+ramitas rojizas en la punta.
 
 ![Comparación](preview.png)
 
-*Izquierda y centro: la pera acostada desde dos ángulos. Derecha: el modelo puesto en la foto
+*Izquierda y centro: el fruto acostado desde dos ángulos. Derecha: el modelo puesto en la foto
 con la misma cámara (sustituye al fruto original).*
 
 ## Archivos
