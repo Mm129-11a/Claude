@@ -1,15 +1,23 @@
-"""Genera el modelo del Embestidor (el mob del cubo con el caparazón) para Blockbench y Bedrock.
+"""Genera el modelo del Embestidor copiando la imagen de referencia, para Blockbench y Bedrock.
 
 Uso:  python3 tools/make_mob.py
 
-Crea:
-  embestidor.bbmodel                                       proyecto de Blockbench (con textura y animaciones)
-  EmbestidorRP/models/entity/embestidor.geo.json           geometría de Bedrock
-  EmbestidorRP/textures/entity/embestidor.png              textura
-  EmbestidorRP/animations/embestidor.animation.json        animaciones (quieto, andar, embestir)
+Lee (en fuente/):
+  referencia.png    la imagen del mob
+  camara.json       la cámara de esa imagen (sacada de las esquinas del cubo y del aro)
+  caparazon.json    las cajas del caparazón (ajustadas a la silueta de la imagen)
 
-Todo se diseña en el espacio de Blockbench (16 = 1 bloque, la cara de delante mira a -z) y se
-convierte a Bedrock como lo hace Blockbench: x cambiada de signo y giros [-x, -y, z].
+Las texturas NO se dibujan a mano: cada píxel de textura de cada cara se coloca en 3D, se mira
+dónde cae en la imagen con la cámara de la imagen y, si esa cara se ve ahí, toma ese color
+(como un proyector). Así, desde el ángulo de la imagen el modelo se ve igual que la imagen.
+Se compensa la luz que pone el juego para que no oscurezca dos veces. Las caras que no se ven
+en la imagen copian la cara de enfrente.
+
+Crea:
+  embestidor.bbmodel                                   proyecto de Blockbench
+  EmbestidorRP/models/entity/embestidor.geo.json       geometría de Bedrock
+  EmbestidorRP/textures/entity/embestidor.png          textura
+  EmbestidorRP/animations/embestidor.animation.json    animaciones (quieto, andar, embestir)
 """
 import base64
 import io
@@ -17,195 +25,177 @@ import json
 import uuid
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image
+from scipy.spatial.transform import Rotation as Rot
 
 ROOT = Path(__file__).resolve().parent.parent
+SRC = ROOT / "fuente"
 RP = ROOT / "EmbestidorRP"
-TEX_W = TEX_H = 128
+DENS = 6                      # píxeles de textura por píxel de modelo (la imagen tiene unos 13)
+ATLAS_W = 512
 
-# ---------------------------------------------------------------- colores (medidos en la imagen)
-BLACK = (14, 14, 14)
-BLACK_EDGE = (22, 22, 22)
-GREY = (42, 42, 42)
-GREY_EDGE = (54, 50, 48)
-GREY_DARK = (33, 32, 31)
-RING = (170, 163, 155)
-RING_LIGHT = (184, 178, 170)
-RING_DARK = (142, 136, 130)
-RING_SIDE = (128, 123, 117)
-PUPIL = (30, 30, 30)
-TEAL = (14, 50, 43)
-TEAL_LIGHT = (22, 66, 56)
-TEAL_DARK = (9, 34, 30)
-TEAL_SIDE = (11, 40, 35)
-CHANNEL = (6, 6, 6)
-PANEL = (20, 20, 20)
-PANEL_LIGHT = (28, 28, 28)
-RED = (139, 27, 27)
-RED_LIGHT = (179, 29, 29)
+# ---------------------------------------------------------------- medidas
+cam = json.loads((SRC / "camara.json").read_text())
+CAM_R = Rot.from_rotvec(cam["rv"]).as_matrix()
+CAM_S, CAM_T = cam["s"], cam["t"]
+HX, HZ, RING_H, RING_Y = cam["box"]
+BODY = (2 * HX, 12.0, 2 * HZ)
+shell_x = json.loads((SRC / "caparazon.json").read_text())
+SHELL = [(tuple(shell_x[9 * k:9 * k + 3]), tuple(shell_x[9 * k + 3:9 * k + 6]), tuple(shell_x[9 * k + 6:9 * k + 9]))
+         for k in range(len(shell_x) // 9)]
 
 
-# ---------------------------------------------------------------- texturas de cada cara
-def fill(w, h, c):
-    a = np.zeros((h, w, 4), np.uint8)
-    a[..., :3] = c
-    a[..., 3] = 255
-    return a
-
-
-def rect(a, x0, y0, x1, y1, c):
-    a[y0:y1, x0:x1, :3] = c
-
-
-def body_side(w, h):
-    a = fill(w, h, BLACK)
-    a[0, :, :3] = BLACK_EDGE
-    a[:, 0, :3] = BLACK_EDGE
-    return a
-
-
-def body_top(w, h):
-    a = fill(w, h, GREY)
-    a[0, :, :3] = GREY_EDGE
-    a[:, 0, :3] = GREY_EDGE
-    a[-1, :, :3] = GREY_DARK
-    a[:, -1, :3] = GREY_DARK
-    return a
-
-
-def body_front(w, h):
-    a = fill(w, h, GREY_DARK)
-    rect(a, 0, 0, w, 1, GREY_EDGE)
-    rect(a, 0, 0, 1, h, GREY_EDGE)
-    rect(a, 1, 1, w - 1, h - 1, GREY)
-    rect(a, 2, 2, w - 2, h - 2, (36, 34, 33))
-    # el hueco del ojo (detrás del aro) y la pupila
-    c = w // 2
-    rect(a, c - 3, c - 3, c + 3, c + 3, BLACK)
-    rect(a, c - 1, c - 1, c + 2, c + 2, PUPIL)
-    rect(a, c, c, c + 1, c + 1, (40, 40, 40))
-    return a
-
-
-def ring_face(w, h, light=True):
-    a = fill(w, h, RING)
-    if light:
-        a[0, :, :3] = RING_LIGHT
-        a[:, 0, :3] = RING_LIGHT
-        a[-1, :, :3] = RING_DARK
-        a[:, -1, :3] = RING_DARK
-    return a
-
-
-def shell_top(w, h, open_side="left", slot=None):
-    """Cara de fuera del caparazón: borde verde, canal negro en U y panel gris dentro.
-    El canal queda abierto por 'open_side' (por donde sigue en la otra parte de la banda)."""
-    a = fill(w, h, TEAL)
-    rect(a, 0, 0, w, 1, TEAL_LIGHT)
-    rect(a, 0, h - 1, w, h, TEAL_DARK)
-    rim = 3
-    x0 = 0 if open_side == "left" else rim
-    x1 = w if open_side == "right" else w - rim
-    rect(a, x0, rim, x1, h - rim, CHANNEL)
-    p0 = x0 if open_side == "left" else x0 + 2
-    p1 = x1 if open_side == "right" else x1 - 2
-    rect(a, p0, rim + 2, p1, h - rim - 2, PANEL)
-    rect(a, p0, rim + 2, p1, rim + 3, PANEL_LIGHT)
-    # escalón de dentro del panel
-    q0 = p0 + (0 if open_side == "left" else 2)
-    q1 = p1 - (0 if open_side == "right" else 2)
-    if q1 - q0 > 2 and h - 2 * rim - 8 > 2:
-        rect(a, q0, rim + 4, q1, h - rim - 4, (17, 17, 17))
-        rect(a, q0, rim + 4, q1, rim + 5, PANEL_LIGHT)
-    if slot:
-        u, v = slot
-        rect(a, u, v, u + 2, v + 3, RED_LIGHT)
-        rect(a, u + 1, v, u + 2, v + 3, RED)
-    return a
-
-
-def shell_side(w, h):
-    a = fill(w, h, TEAL_SIDE)
-    rect(a, 0, 0, w, 1, TEAL)
-    rect(a, 0, h - 1, w, h, TEAL_DARK)
-    return a
-
-
-def shell_under(w, h):
-    a = fill(w, h, RED)
-    rect(a, 0, 0, w, 1, RED_LIGHT)
-    return a
-
-
-# ---------------------------------------------------------------- piezas (espacio de Blockbench)
-# (nombre, hueso, desde, hasta, pivote, giro, caras: {cara: función(w, h)})
-FACE_DIMS = {"north": (0, 1), "south": (0, 1), "east": (2, 1), "west": (2, 1), "up": (0, 2), "down": (0, 2)}
-
-
-# Medidas sacadas de la imagen (cámara calculada con las esquinas del cubo y el aro)
-BODY = (12, 12, 15)          # ancho (x), alto (y), fondo (z)
-RING_SIZE, RING_Y = 8, 6.5   # lado del aro y altura de su centro
-# Caparazón: una banda gruesa doblada (medida en la imagen)
-SHELL_CENTER = (-2.0, 15.5, 2.0)      # centro de la placa
-SHELL_ROT = (-5.0, -17.5, 7.0)        # giro del caparazón (orden ZYX como Blockbench)
-PLATE = (16.0, 4.0, 13.0)             # placa: largo (x), grosor (y), ancho (z)
-ARM_LEN, BEND = 14.5, 68.5            # el brazo sigue por el lado -x y se dobla hacia abajo
+def round_box(c, size, rot):
+    r = lambda v, q: round(float(v) / q) * q
+    return tuple(r(v, 0.25) for v in c), tuple(max(1.0, r(v, 0.25)) for v in size), tuple(r(v, 0.5) for v in rot)
 
 
 def parts():
-    P = []
-    side, top = body_side, body_top
+    """(nombre, hueso, desde, hasta, pivote, giro): en el espacio de Blockbench."""
     bx, by, bz = BODY
-    P.append(("cuerpo", "cuerpo", (-bx / 2, 0, -bz / 2), (bx / 2, by, bz / 2), (0, 0, 0), (0, 0, 0),
-              {"north": body_front, "south": side, "east": side, "west": side, "up": top, "down": side}))
-    # el aro del ojo: un marco que sobresale 1 de la cara de delante
-    ring = {"north": ring_face, "east": lambda w, h: fill(w, h, RING_SIDE), "west": lambda w, h: fill(w, h, RING_SIDE),
-            "up": lambda w, h: fill(w, h, RING_LIGHT), "down": lambda w, h: fill(w, h, RING_SIDE),
-            "south": lambda w, h: fill(w, h, RING_SIDE)}
-    h = RING_SIZE / 2
-    z0, z1 = -bz / 2 - 1, -bz / 2
+    P = [("cuerpo", "cuerpo", (-bx / 2, 0, -bz / 2), (bx / 2, by, bz / 2), (0, 0, 0), (0, 0, 0))]
+    h = round(RING_H * 2) / 2
     y0, y1 = RING_Y - h, RING_Y + h
-    P.append(("aro_arriba", "cuerpo", (-h, y1 - 2, z0), (h, y1, z1), (0, 0, 0), (0, 0, 0), ring))
-    P.append(("aro_abajo", "cuerpo", (-h, y0, z0), (h, y0 + 2, z1), (0, 0, 0), (0, 0, 0), ring))
-    P.append(("aro_izq", "cuerpo", (-h, y0 + 2, z0), (-h + 2, y1 - 2, z1), (0, 0, 0), (0, 0, 0), ring))
-    P.append(("aro_der", "cuerpo", (h - 2, y0 + 2, z0), (h, y1 - 2, z1), (0, 0, 0), (0, 0, 0), ring))
-    cx, cy, cz = SHELL_CENTER
-    sx, sy, sz = PLATE
-    side_faces = {"north": shell_side, "south": shell_side, "east": shell_side, "west": shell_side,
-                  "down": shell_under}
-    plate = dict(side_faces, up=lambda w, h: shell_top(w, h, "left", slot=(w // 2, h - 6)))
-    P.append(("caparazon_placa", "caparazon", (cx - sx / 2, cy - sy / 2, cz - sz / 2),
-              (cx + sx / 2, cy + sy / 2, cz + sz / 2), (0, 0, 0), (0, 0, 0), plate))
-    arm = dict(side_faces, up=lambda w, h: shell_top(w, h, "right"))
-    P.append(("caparazon_brazo", "caparazon", (cx - sx / 2 - ARM_LEN, cy - sy / 2, cz - sz / 2),
-              (cx - sx / 2, cy + sy / 2, cz + sz / 2), (cx - sx / 2, cy + sy / 2, cz), (0, 0, BEND), arm))
+    z0, z1 = -bz / 2 - 1, -bz / 2
+    P += [("aro_arriba", "cuerpo", (-h, y1 - 2, z0), (h, y1, z1), (0, 0, 0), (0, 0, 0)),
+          ("aro_abajo", "cuerpo", (-h, y0, z0), (h, y0 + 2, z1), (0, 0, 0), (0, 0, 0)),
+          ("aro_izq", "cuerpo", (-h, y0 + 2, z0), (-h + 2, y1 - 2, z1), (0, 0, 0), (0, 0, 0)),
+          ("aro_der", "cuerpo", (h - 2, y0 + 2, z0), (h, y1 - 2, z1), (0, 0, 0), (0, 0, 0))]
+    for k, (c, size, rot) in enumerate(SHELL):
+        c, size, rot = round_box(c, size, rot)
+        a = tuple(c[i] - size[i] / 2 for i in range(3))
+        b = tuple(c[i] + size[i] / 2 for i in range(3))
+        P.append((f"caparazon_{k + 1}", "caparazon", a, b, c, rot))
     return P
 
 
-def build():
-    P = parts()
-    tiles = []
-    for name, bone, a, b, pv, rot, faces in P:
-        size = [b[i] - a[i] for i in range(3)]
-        for f, fn in faces.items():
-            i, j = FACE_DIMS[f]
-            w, h = max(1, round(size[i])), max(1, round(size[j]))
-            tiles.append((name, f, fn(w, h)))
-    # empaquetar
+# ---------------------------------------------------------------- caras (convenio de Blockbench)
+FACES = ("north", "south", "east", "west", "up", "down")
+NORMALS = {"north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0), "up": (0, 1, 0), "down": (0, -1, 0)}
+OPPOSITE = {"north": "south", "south": "north", "east": "west", "west": "east", "up": "down", "down": "up"}
+# caras que no se ven en la imagen y de qué cara copian (si no, la de enfrente)
+FILL_FROM = {("cuerpo", "south"): "east", ("cuerpo", "down"): "east", ("cuerpo", "west"): "east"}
+
+
+def face_frame(face, a, b):
+    """Para una cara: origen (esquina de arriba-izquierda de su textura), vector u, vector v, ancho, alto."""
+    x0, y0, z0 = a
+    x1, y1, z1 = b
+    if face == "north":
+        return np.array([x1, y1, z0]), np.array([-1, 0, 0.]), np.array([0, -1, 0.]), x1 - x0, y1 - y0
+    if face == "south":
+        return np.array([x0, y1, z1]), np.array([1, 0, 0.]), np.array([0, -1, 0.]), x1 - x0, y1 - y0
+    if face == "east":
+        return np.array([x1, y1, z1]), np.array([0, 0, -1.]), np.array([0, -1, 0.]), z1 - z0, y1 - y0
+    if face == "west":
+        return np.array([x0, y1, z0]), np.array([0, 0, 1.]), np.array([0, -1, 0.]), z1 - z0, y1 - y0
+    if face == "up":
+        return np.array([x0, y1, z0]), np.array([1, 0, 0.]), np.array([0, 0, 1.]), x1 - x0, z1 - z0
+    return np.array([x0, y0, z1]), np.array([1, 0, 0.]), np.array([0, 0, -1.]), x1 - x0, z1 - z0   # down
+
+
+def rot_matrix(rot):
+    return Rot.from_euler("xyz", rot, degrees=True).as_matrix()      # orden ZYX de Blockbench
+
+
+def world(points, pivot, rot):
+    return (rot_matrix(rot) @ (np.asarray(points, float) - pivot).T).T + np.asarray(pivot, float)
+
+
+def project(P):
+    q = (CAM_R @ np.asarray(P, float).T).T
+    return np.stack([CAM_S * q[:, 0] + CAM_T[0], -CAM_S * q[:, 1] + CAM_T[1]], 1), q[:, 2]
+
+
+# luz del juego (aproximada): para no oscurecer dos veces las caras de lado
+L1 = np.array([0.2, 1.0, -0.7]); L1 /= np.linalg.norm(L1)
+L2 = np.array([-0.2, 1.0, 0.7]); L2 /= np.linalg.norm(L2)
+
+
+def game_shade(n):
+    return min(1.0, 0.4 + 0.6 * (max(0, n @ L1) + max(0, n @ L2)))
+
+
+def textures(P, compensate=True):
+    ref = np.array(Image.open(SRC / "referencia.png").convert("RGBA")).astype(np.float32)
+    H, W = ref.shape[:2]
+    # profundidad de lo más cercano en cada píxel de la imagen
+    zbuf = np.full((H, W), -1e9)
+    for name, bone, a, b, pv, rot in P:
+        for f in FACES:
+            o, u, v, w, h = face_frame(f, a, b)
+            C = np.array([o, o + u * w, o + u * w + v * h, o + v * h])
+            p2, z = project(world(C, pv, rot))
+            m = np.zeros((H, W), np.uint8)
+            cv2.fillConvexPoly(m, np.round(p2).astype(np.int32), 1)
+            ys, xs = np.nonzero(m)
+            if len(xs) == 0:
+                continue
+            coef = np.linalg.lstsq(np.c_[p2, np.ones(4)], z, rcond=None)[0]
+            zbuf[ys, xs] = np.maximum(zbuf[ys, xs], coef[0] * xs + coef[1] * ys + coef[2])
+    cam_dir = CAM_R.T @ np.array([0, 0, 1.0])
+    tex = {}
+    for name, bone, a, b, pv, rot in P:
+        for f in FACES:
+            n_world = rot_matrix(rot) @ np.array(NORMALS[f], float)
+            o, u, v, w, h = face_frame(f, a, b)
+            tw, th = max(1, int(round(w * DENS))), max(1, int(round(h * DENS)))
+            ii, jj = np.meshgrid((np.arange(tw) + 0.5) / tw * w, (np.arange(th) + 0.5) / th * h)
+            pts = o + ii[..., None] * u + jj[..., None] * v
+            p2, z = project(world(pts.reshape(-1, 3), pv, rot))
+            xs, ys = p2[:, 0], p2[:, 1]
+            inside = (xs >= 0) & (xs < W - 1) & (ys >= 0) & (ys < H - 1)
+            xi = np.clip(np.round(xs).astype(int), 0, W - 1)
+            yi = np.clip(np.round(ys).astype(int), 0, H - 1)
+            vis = inside & (n_world @ cam_dir > 0.02) & (z >= zbuf[yi, xi] - 0.3)
+            col = np.zeros((len(xs), 4), np.float32)
+            if vis.any():
+                x0_ = np.floor(xs[vis]).astype(int); y0_ = np.floor(ys[vis]).astype(int)
+                fx = (xs[vis] - x0_)[:, None]; fy = (ys[vis] - y0_)[:, None]
+                col[vis] = (ref[y0_, x0_] * (1 - fx) * (1 - fy) + ref[y0_, x0_ + 1] * fx * (1 - fy)
+                            + ref[y0_ + 1, x0_] * (1 - fx) * fy + ref[y0_ + 1, x0_ + 1] * fx * fy)
+            ok = (vis & (col[:, 3] > 128)).reshape(th, tw)
+            img = col[:, :3].reshape(th, tw, 3)
+            if compensate:
+                img = np.clip(img / max(0.55, game_shade(n_world)), 0, 255)
+            tex[(name, f)] = {"img": img, "ok": ok, "frac": ok.mean()}
+    # rellenar: lo tapado con lo de alrededor; las caras que no se ven, con la de enfrente
+    for t in tex.values():
+        if t["frac"] >= 0.15 and not t["ok"].all():
+            t["img"] = cv2.inpaint(np.clip(t["img"], 0, 255).astype(np.uint8), (~t["ok"]).astype(np.uint8), 3,
+                                   cv2.INPAINT_TELEA).astype(np.float32)
+    for (name, f), t in tex.items():
+        if t["frac"] < 0.15:
+            opp = tex[(name, FILL_FROM.get((name, f), OPPOSITE[f]))]
+            if opp["frac"] >= 0.15:
+                t["img"] = cv2.resize(opp["img"], (t["img"].shape[1], t["img"].shape[0]), interpolation=cv2.INTER_NEAREST)
+            else:
+                vis = [x["img"][x["ok"]] for (n2, f2), x in tex.items() if n2 == name and x["frac"] >= 0.15]
+                c = np.median(np.concatenate(vis), axis=0) if vis else np.array([20, 20, 20.])
+                t["img"] = np.tile(c * 0.8, (t["img"].shape[0], t["img"].shape[1], 1))
+    return tex
+
+
+def pack(tex):
     x = y = row = 0
     place = {}
-    atlas = np.zeros((TEX_H, TEX_W, 4), np.uint8)
-    for name, f, img in sorted(tiles, key=lambda t: -t[2].shape[0]):
-        h, w = img.shape[:2]
-        if x + w > TEX_W:
+    for key, t in sorted(tex.items(), key=lambda kv: -kv[1]["img"].shape[0]):
+        h, w = t["img"].shape[:2]
+        if x + w > ATLAS_W:
             x, y, row = 0, y + row, 0
-        atlas[y:y + h, x:x + w] = img
-        place[(name, f)] = (x, y, w, h)
+        place[key] = (x, y, w, h)
         x += w
         row = max(row, h)
-    assert y + row <= TEX_H, "la textura no cabe"
-    return P, place, Image.fromarray(atlas, "RGBA")
+    H = y + row
+    H += (-H) % 16
+    atlas = np.zeros((H, ATLAS_W, 4), np.uint8)
+    for key, t in tex.items():
+        x, y, w, h = place[key]
+        atlas[y:y + h, x:x + w, :3] = np.clip(t["img"], 0, 255)
+        atlas[y:y + h, x:x + w, 3] = 255
+    return place, Image.fromarray(atlas, "RGBA")
 
 
 # ---------------------------------------------------------------- animaciones
@@ -224,52 +214,40 @@ ANIMS = {
                    "position": {"0.0": [0, 0, 0], "0.35": [0, -1, 1.5], "0.5": [0, 0.5, -2], "0.9": [0, 0, 0]}},
         "caparazon": {"rotation": {"0.0": [0, 0, 0], "0.35": [-25, 0, 0], "0.5": [10, 0, 0], "0.9": [0, 0, 0]}}}},
 }
+SHELL_PIVOT = (0, 12, 0)
 
 
 # ---------------------------------------------------------------- exportar
-BONES = {"cuerpo": {"pivot": (0, 0, 0), "rotation": (0, 0, 0)},
-         "caparazon": {"pivot": SHELL_CENTER, "rotation": SHELL_ROT, "parent": "cuerpo"}}
-
-
-def to_bedrock(P, place):
-    bones = {}
-    order = []
-    for name, bone, a, b, pv, rot, faces in P:
-        if bone not in bones:
-            B = BONES[bone]
-            bones[bone] = {"name": bone, "pivot": [-B["pivot"][0], B["pivot"][1], B["pivot"][2]], "cubes": []}
-            if any(B["rotation"]):
-                r = B["rotation"]
-                bones[bone]["rotation"] = [-r[0], -r[1], r[2]]
-            if "parent" in B:
-                bones[bone]["parent"] = B["parent"]
-            order.append(bone)
-        size = [b[i] - a[i] for i in range(3)]
-        cube = {"origin": [-b[0], a[1], a[2]], "size": size,
-                "uv": {f: {"uv": [place[(name, f)][0], place[(name, f)][1]],
-                           "uv_size": [place[(name, f)][2], place[(name, f)][3]]} for f in faces}}
+def to_bedrock(P, place, tw, th):
+    bones = {"cuerpo": {"name": "cuerpo", "pivot": [0, 0, 0], "cubes": []},
+             "caparazon": {"name": "caparazon", "parent": "cuerpo",
+                           "pivot": [-SHELL_PIVOT[0], SHELL_PIVOT[1], SHELL_PIVOT[2]], "cubes": []}}
+    for name, bone, a, b, pv, rot in P:
+        size = [round(b[i] - a[i], 4) for i in range(3)]
+        cube = {"origin": [round(-b[0], 4), round(a[1], 4), round(a[2], 4)], "size": size,
+                "uv": {f: {"uv": list(place[(name, f)][:2]), "uv_size": list(place[(name, f)][2:])} for f in FACES}}
         if any(rot):
-            cube["pivot"] = [-pv[0], pv[1], pv[2]]
+            cube["pivot"] = [round(-pv[0], 4), round(pv[1], 4), round(pv[2], 4)]
             cube["rotation"] = [-rot[0], -rot[1], rot[2]]
         bones[bone]["cubes"].append(cube)
     return {"format_version": "1.12.0", "minecraft:geometry": [{
-        "description": {"identifier": "geometry.embestidor", "texture_width": TEX_W, "texture_height": TEX_H,
-                        "visible_bounds_width": 3, "visible_bounds_height": 2.5, "visible_bounds_offset": [0, 1, 0]},
-        "bones": [bones[b] for b in order]}]}
+        "description": {"identifier": "geometry.embestidor", "texture_width": tw, "texture_height": th,
+                        "visible_bounds_width": 3, "visible_bounds_height": 3, "visible_bounds_offset": [0, 1, 0]},
+        "bones": [bones["cuerpo"], bones["caparazon"]]}]}
 
 
-def to_bbmodel(P, place, png):
+def to_bbmodel(P, place, png, tw, th):
     elements, groups = [], {}
-    for name, bone, a, b, pv, rot, faces in P:
+    for name, bone, a, b, pv, rot in P:
         eid = str(uuid.uuid5(uuid.NAMESPACE_DNS, "emb." + name))
         fx = {}
-        for f in faces:
+        for f in FACES:
             x, y, w, h = place[(name, f)]
             fx[f] = {"uv": [x, y, x + w, y + h], "texture": 0}
         elements.append({"name": name, "box_uv": False, "from": list(a), "to": list(b), "origin": list(pv),
                          "rotation": list(rot), "faces": fx, "type": "cube", "uuid": eid})
         if bone not in groups:
-            groups[bone] = {"name": bone, "origin": list(BONES[bone]["pivot"]), "rotation": list(BONES[bone]["rotation"]),
+            groups[bone] = {"name": bone, "origin": [0, 0, 0] if bone == "cuerpo" else list(SHELL_PIVOT),
                             "uuid": str(uuid.uuid5(uuid.NAMESPACE_DNS, "emb.g." + bone)), "export": True,
                             "isOpen": True, "visibility": True, "children": []}
         groups[bone]["children"].append(eid)
@@ -289,26 +267,38 @@ def to_bbmodel(P, place, png):
             anim["animators"][groups[bone]["uuid"]] = {"name": bone, "type": "bone", "keyframes": kfs}
         anims.append(anim)
     return {"meta": {"format_version": "4.10", "model_format": "bedrock", "box_uv": False},
-            "name": "embestidor", "model_identifier": "embestidor", "visible_box": [3, 2.5, 1],
-            "resolution": {"width": TEX_W, "height": TEX_H}, "elements": elements, "outliner": [groups["cuerpo"]],
-            "textures": [{"name": "embestidor.png", "id": "0", "width": TEX_W, "height": TEX_H, "uv_width": TEX_W,
-                          "uv_height": TEX_H, "internal": True, "saved": True, "uuid": str(uuid.uuid4()),
+            "name": "embestidor", "model_identifier": "embestidor", "visible_box": [3, 3, 1],
+            "resolution": {"width": tw, "height": th}, "elements": elements, "outliner": [groups["cuerpo"]],
+            "textures": [{"name": "embestidor.png", "id": "0", "width": tw, "height": th, "uv_width": tw,
+                          "uv_height": th, "internal": True, "saved": True, "uuid": str(uuid.uuid4()),
                           "source": "data:image/png;base64," + base64.b64encode(png).decode()}],
             "animations": anims}
 
 
+def build(compensate=True):
+    P = parts()
+    place, atlas = pack(textures(P, compensate))
+    return P, place, atlas
+
+
 def main():
     P, place, atlas = build()
+    tw, th = atlas.size
     for d in ("models/entity", "textures/entity", "animations"):
         (RP / d).mkdir(parents=True, exist_ok=True)
     atlas.save(RP / "textures" / "entity" / "embestidor.png")
-    (RP / "models" / "entity" / "embestidor.geo.json").write_text(json.dumps(to_bedrock(P, place), indent=1) + "\n")
+    (RP / "models" / "entity" / "embestidor.geo.json").write_text(json.dumps(to_bedrock(P, place, tw, th), indent=1) + "\n")
     (RP / "animations" / "embestidor.animation.json").write_text(
         json.dumps({"format_version": "1.8.0", "animations": ANIMS}, indent=1) + "\n")
     buf = io.BytesIO()
     atlas.save(buf, "PNG")
-    (ROOT / "embestidor.bbmodel").write_text(json.dumps(to_bbmodel(P, place, buf.getvalue())))
-    print(f"{len(P)} cubos, textura {TEX_W}x{TEX_H}")
+    (ROOT / "embestidor.bbmodel").write_text(json.dumps(to_bbmodel(P, place, buf.getvalue(), tw, th)))
+    # versión sin compensar la luz, para comparar con la imagen (dibujada sin luz)
+    P2, place2, atlas2 = build(compensate=False)
+    buf2 = io.BytesIO()
+    atlas2.save(buf2, "PNG")
+    (ROOT / "tools" / "comparar_sin_luz.bbmodel").write_text(json.dumps(to_bbmodel(P2, place2, buf2.getvalue(), *atlas2.size)))
+    print(f"{len(P)} cubos, textura {tw}x{th}")
 
 
 if __name__ == "__main__":
