@@ -1,13 +1,15 @@
 # Animación de muerte (addon de Minecraft Bedrock)
 
-Cada vez que un jugador muere, **todos** los jugadores ven en pantalla:
+Cada vez que un jugador muere, **todos** los jugadores ven en pantalla la misma animación
+del video de referencia, fotograma a fotograma y con su sonido original:
 
-1. un destello rojo con rayos blancos que salen del centro,
-2. una criatura carnosa pixelada que flota, con una esfera arcoíris en el centro, ojos rojos brillantes y tentáculos que se mueven,
-3. el **nombre del jugador** y la **causa de la muerte** (en español),
-4. la criatura se rompe con un glitch y se desintegra en píxeles blancos.
+1. la mini-criatura, el destello rojo con la silueta y el destello negro,
+2. los rayos blancos,
+3. la criatura flotando,
+4. el glitch final que la deshace en píxeles blancos,
 
-Dura unos 5 segundos y suena un trueno. Vista previa: [`preview.gif`](preview.gif).
+y debajo de la criatura el **nombre del jugador** y la **causa de la muerte** (en español).
+Dura 8,9 s, igual que el efecto del video. Vista previa: [`preview.gif`](preview.gif).
 
 ## Instalar
 
@@ -26,19 +28,29 @@ Dura unos 5 segundos y suena un trueno. Vista previa: [`preview.gif`](preview.gi
 
 Los textos se cambian en `DeathAnimation_BP/scripts/main.js` (`CAUSES` y `MOBS`).
 
-## Cómo funciona
+## De dónde sale la animación
 
-- **BP** (`scripts/main.js`): escucha `world.afterEvents.entityDie` para jugadores, calcula la causa
-  y manda a todos un título `"_death_:<nombre>"` con la causa como subtítulo.
-- **RP** (`ui/`): el HUD detecta el prefijo `_death_:` en el título, oculta el título normal y
-  muestra la animación (`ui/death_anim.json`): destello, rayos y criatura son *flipbooks* de
-  `textures/ui/death_anim/`. Los títulos normales (`/title`) siguen funcionando igual.
+Las texturas y el sonido se sacan **directamente del video** (efecto de pantalla verde de
+TikTok de @simplenovelero) con `tools/extract_from_video.py`: no hay nada redibujado. El
+script quita el fondo verde y la marca de agua de TikTok, y guarda:
 
-## Cambiar el dibujo
+- `textures/ui/death_anim/intro.png`: rayos y destellos (franja completa).
+- `textures/ui/death_anim/creature_0..6.png`: la criatura a resolución original.
+- `sounds/death_anim/death.ogg`: el audio del efecto.
 
-Las texturas se generan con `tools/generate_textures.py` (Python + Pillow). Edita la función
-`creature()` (formas) o la paleta de colores y ejecuta:
+El efecto original va a ~15 fps (el video de 30 fps repite cada fotograma), así que se usa a 15 fps.
+Si vas a publicar el addon, da crédito al creador del efecto.
+
+Para regenerarlo (necesita Python con Pillow y NumPy, y ffmpeg):
 
 ```bash
-./tools/build.sh   # regenera texturas, preview.gif y DeathAnimation.mcaddon
+./tools/build.sh ruta/al/video.mp4   # texturas, sonido, ui, preview.gif y DeathAnimation.mcaddon
 ```
+
+## Cómo funciona
+
+- **BP** (`scripts/main.js`): escucha `world.afterEvents.entityDie` para jugadores, calcula la causa,
+  manda a todos un título `"_death_:<nombre>"` con la causa como subtítulo y reproduce el sonido.
+- **RP** (`ui/`): el HUD detecta el prefijo `_death_:` en el título, oculta el título normal y
+  muestra la animación (`ui/death_anim.json`, generado con `tools/make_ui.py`). Los títulos
+  normales (`/title`) siguen funcionando igual.

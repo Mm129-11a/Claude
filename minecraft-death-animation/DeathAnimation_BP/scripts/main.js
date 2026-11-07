@@ -4,8 +4,8 @@ import { world, system, Player } from "@minecraft/server";
 // en lugar del título normal. Debe coincidir con el de ui/death_anim.json.
 const MARKER = "_death_:";
 
-// Duración de la animación (5 s) en ticks.
-const SHOW_TICKS = 100;
+// Duración de la animación (8,9 s, igual que el video) en ticks.
+const SHOW_TICKS = 178;
 
 const CAUSES = {
   anvil: "aplastado por un yunque",
@@ -131,7 +131,7 @@ function playDeathAnimation(victimName, reason) {
         stayDuration: SHOW_TICKS,
         fadeOutDuration: 0,
       });
-      player.playSound("ambient.weather.lightning.impact", { volume: 0.6, pitch: 1.4 });
+      player.playSound("death_anim.sound");
     } catch {
       // jugador saliendo del mundo, se ignora
     }
