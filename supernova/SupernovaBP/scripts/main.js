@@ -4,7 +4,7 @@ import { world, system } from "@minecraft/server";
 const EVENT_ID = "supernova:iniciar";
 
 const DISTANCE = 32;   // bloques delante de quien ejecuta el comando
-const HEIGHT = 16;     // bloques por encima
+const HEIGHT = 9;      // bloques por encima de los pies (como en la foto: unos 14° por encima de la vista)
 
 // Momentos de la secuencia, en ticks (20 ticks = 1 segundo)
 const T = {

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Regenera texturas y partículas y empaqueta Supernova.mcaddon
-# (la vista previa se hace aparte: python3 tools/make_preview.py)
+# Saca las texturas de las imágenes de referencia, escribe las partículas y empaqueta Supernova.mcaddon
+# Uso: ./tools/build.sh [bola.jpg explosion.jpg destello.jpg]
+# (sin imágenes usa las texturas que ya hay; la vista previa: python3 tools/make_preview.py)
 set -euo pipefail
 cd "$(dirname "$0")/.."
-python3 tools/make_textures.py
+if [ $# -eq 3 ]; then python3 tools/extract_from_photos.py "$1" "$2" "$3"; fi
 python3 tools/make_particles.py
 rm -f Supernova.mcaddon
 zip -qr Supernova.mcaddon SupernovaBP SupernovaRP

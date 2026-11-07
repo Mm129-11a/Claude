@@ -2,8 +2,11 @@
 
 Uso:  python3 tools/make_particles.py
 
-Los tamaños son el radio en bloques. La estrella sale a 32 bloques; con ese radio se ve en
-pantalla del mismo tamaño que en las fotos de referencia.
+Los tamaños salen de las fotos de referencia (pantalla de 2576x1171, campo de visión de 60°):
+  - estrella: en la foto mide 158 px de radio  -> 5,0 bloques a 32 bloques
+  - explosión: la textura abarca 560 px de radio -> 17,1 bloques a 31 bloques
+  - destello: llena la pantalla hasta el suelo    -> 68 x 24 bloques a 35 bloques
+(en las partículas de Bedrock el tamaño es la mitad del ancho y del alto)
 """
 import json
 from pathlib import Path
@@ -18,13 +21,8 @@ def ease_out(t_end, power=3):
     return f"(1 - math.pow(1 - math.clamp({A} / {t_end}, 0, 1), {power}))"
 
 
-def effect(ident, tex, lifetime, size, alpha, height, fps=None):
-    uv = {"texture_width": 256, "texture_height": height}
-    if fps:
-        uv["flipbook"] = {"base_UV": [0, 0], "size_UV": [256, 256], "step_UV": [0, 256],
-                          "frames_per_second": fps, "max_frame": height // 256, "loop": True}
-    else:
-        uv.update({"uv": [0, 0], "uv_size": [256, 256]})
+def effect(ident, tex, tex_size, lifetime, size, alpha, spin=0.0, aspect=1.0):
+    w, h = tex_size
     return {
         "format_version": "1.10.0",
         "particle_effect": {
@@ -36,30 +34,38 @@ def effect(ident, tex, lifetime, size, alpha, height, fps=None):
                 "minecraft:emitter_shape_point": {"offset": [0, 0, 0]},
                 "minecraft:particle_lifetime_expression": {"max_lifetime": lifetime},
                 "minecraft:particle_initial_speed": 0,
+                "minecraft:particle_initial_spin": {"rotation": 0, "rotation_rate": spin},
                 "minecraft:particle_motion_dynamic": {},
                 "minecraft:particle_initialization": {"per_render_expression": f"variable.s = {size};"},
                 "minecraft:particle_appearance_billboard": {
-                    "size": ["variable.s", "variable.s"], "facing_camera_mode": "rotate_xyz", "uv": uv},
+                    "size": [f"variable.s * {aspect}", "variable.s"],
+                    "facing_camera_mode": "rotate_xyz",
+                    "uv": {"texture_width": w, "texture_height": h, "uv": [0, 0], "uv_size": [w, h]}},
                 "minecraft:particle_appearance_tinting": {"color": [1, 1, 1, alpha]},
             },
         },
     }
 
 
+STAR_R = 5.15        # 5,0 bloques de bola / 0,97 que ocupa en la textura
+EXPLOSION_R = 17.1
+FLASH_H = 24.0       # mitad del alto (llega hasta el suelo); el ancho es 2,85 veces (proporción de la foto)
+
 EFFECTS = {
-    # 1. La estrella: crece en 2 s, late, se hincha antes de explotar y se apaga al explotar
-    "estrella": effect("supernova:estrella", "estrella", 6.6,
-                       f"3.2 * ({ease_out(2.0)} + math.clamp(({A} - 5.0) / 1.0, 0, 1) * 0.3"
-                       f" + math.sin({A} * 300) * 0.03)",
-                       f"1 - math.clamp(({A} - 6.1) / 0.5, 0, 1)", 1536, fps=6),
-    # 2. La explosión: se abre rápido y luego sigue creciendo despacio
-    "explosion": effect("supernova:explosion", "explosion", 3.2,
-                        f"4.0 + 6.0 * {ease_out(1.0)} + {A} * 0.6",
-                        f"1 - math.clamp(({A} - 2.0) / 1.2, 0, 1)", 1536, fps=12),
-    # 3. El destello: llena el cielo, blanco en el centro y rosa en los bordes de la pantalla
-    "destello": effect("supernova:destello", "destello", 4.5,
-                       f"10 + 24 * {ease_out(1.2, 2)}",
-                       f"math.clamp({A} / 0.2, 0, 1) * (1 - math.clamp(({A} - 1.8) / 2.5, 0, 1))", 256),
+    # 1. La estrella (la bola de lava): crece en 2 s, gira despacio, late, se hincha y se apaga al explotar
+    "estrella": effect("supernova:estrella", "estrella", (512, 512), 6.6,
+                       f"{STAR_R} * ({ease_out(2.0)} + math.clamp(({A} - 5.0) / 1.0, 0, 1) * 0.3"
+                       f" + math.sin({A} * 300) * 0.02)",
+                       f"1 - math.clamp(({A} - 6.1) / 0.5, 0, 1)", spin=5),
+    # 2. La explosión (foto 2): se abre en 0,6 s y sigue creciendo un poco
+    "explosion": effect("supernova:explosion", "explosion", (512, 512), 3.2,
+                        f"{EXPLOSION_R} * (0.3 + 0.7 * {ease_out(0.6)}) + {A} * 0.4",
+                        f"1 - math.clamp(({A} - 2.0) / 1.2, 0, 1)", spin=4),
+    # 3. El destello (foto 3): llena la pantalla y se desvanece
+    "destello": effect("supernova:destello", "destello", (1024, 359), 4.0,
+                       f"{FLASH_H} * (0.3 + 0.7 * {ease_out(0.35, 2)})",
+                       f"math.clamp({A} / 0.15, 0, 1) * (1 - math.clamp(({A} - 1.6) / 2.4, 0, 1))",
+                       aspect=2.85),
 }
 
 if __name__ == "__main__":
