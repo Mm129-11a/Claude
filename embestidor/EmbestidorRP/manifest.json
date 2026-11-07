@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Embestidor (RP)",
+    "description": "Modelo, textura y animaciones del Embestidor.",
+    "uuid": "a622809c-f69c-4d14-beb7-affa47283321",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "1a3e5297-b77c-4011-b9c0-11c9c46d14e3",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

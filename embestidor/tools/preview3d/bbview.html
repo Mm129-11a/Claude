@@ -1,0 +1,68 @@
+<!doctype html><html><body style="margin:0;background:transparent">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js"}}</script>
+<script type="module">
+// Dibuja un .bbmodel (cubos con giro y caras con uv) con una cámara dada.
+import * as THREE from 'three';
+const D = Math.PI / 180;
+window.draw = async (bb, view) => {
+  const W = view.width, H = view.height;
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setSize(W, H); r.setClearColor(view.bg ?? 0x000000, view.bg === undefined ? 0 : 1); document.body.appendChild(r.domElement);
+  const scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, view.ambient ?? 1.6));
+  const dl = new THREE.DirectionalLight(0xffffff, view.dir ?? 0.9); dl.position.set(...(view.light || [0.3, 1, -0.6])); scene.add(dl);
+  const img = new Image(); img.src = bb.textures[0].source; await img.decode();
+  const tex = new THREE.Texture(img); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true;
+  const TW = bb.resolution.width, TH = bb.resolution.height;
+  const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.1, side: THREE.DoubleSide });
+  const order = ['east', 'west', 'up', 'down', 'south', 'north'];
+  const bones = {};
+  const mkGroup = (g, parent) => {
+    const grp = new THREE.Group(); grp.rotation.order = 'ZYX';
+    const pr = parent ? parent.userData.origin : [0, 0, 0];
+    grp.position.set(g.origin[0] - pr[0], g.origin[1] - pr[1], g.origin[2] - pr[2]);
+    grp.rotation.set(...(g.rotation || [0, 0, 0]).map(v => v * D));
+    grp.userData.origin = g.origin; bones[g.name] = grp;
+    (parent || scene).add(grp);
+    for (const c of g.children) {
+      if (typeof c === 'string') {
+        const e = bb.elements.find(x => x.uuid === c);
+        const s = [0, 1, 2].map(i => e.to[i] - e.from[i]);
+        const geo = new THREE.BoxGeometry(Math.max(s[0], 0.001), Math.max(s[1], 0.001), Math.max(s[2], 0.001));
+        const uv = geo.attributes.uv;
+        order.forEach((f, fi) => {
+          const fc = e.faces[f];
+          for (let k = 0; k < 4; k++) {
+            const i = fi * 4 + k; const a = uv.getX(i), b = uv.getY(i);
+            if (!fc) { uv.setXY(i, 0, 0); continue; }
+            const [x1, y1, x2, y2] = fc.uv;
+            uv.setXY(i, (x1 + (x2 - x1) * a) / TW, 1 - (y1 + (y2 - y1) * (1 - b)) / TH);
+          }
+        });
+        const m = new THREE.Mesh(geo, mat);
+        const piv = new THREE.Group(); piv.rotation.order = 'ZYX';
+        piv.position.set(e.origin[0] - g.origin[0], e.origin[1] - g.origin[1], e.origin[2] - g.origin[2]);
+        piv.rotation.set(...(e.rotation || [0, 0, 0]).map(v => v * D));
+        m.position.set(...[0, 1, 2].map(i => (e.from[i] + e.to[i]) / 2 - e.origin[i]));
+        piv.add(m); grp.add(piv);
+      } else mkGroup(c, grp);
+    }
+  };
+  for (const g of bb.outliner) mkGroup(g, null);
+  let cam;
+  if (view.ortho) {
+    const [l, rr, t, b] = view.ortho;
+    cam = new THREE.OrthographicCamera(l, rr, t, b, -500, 500);
+    cam.matrixAutoUpdate = false;
+    const M = new THREE.Matrix4().fromArray(view.viewMatrix).transpose();
+    cam.matrixWorldInverse.copy(M); cam.matrixWorld.copy(M.clone().invert());
+  } else {
+    cam = new THREE.PerspectiveCamera(view.fov || 30, W / H, 0.1, 500);
+    cam.position.set(...view.pos); cam.lookAt(...(view.look || [0, 8, 0]));
+  }
+  r.render(scene, cam);
+  return r.domElement.toDataURL('image/png');
+};
+window.ready = true;
+</script></body></html>

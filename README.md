@@ -24,6 +24,10 @@ En [`minecraft-death-animation/`](minecraft-death-animation/) hay un addon de Mi
 
 En [`supernova/`](supernova/) hay un addon de Minecraft Bedrock: con `/function supernova` nace una estrella en el cielo, todo se oscurece, explota y llega un destello.
 
+## Mob de Minecraft: Embestidor
+
+En [`embestidor/`](embestidor/) hay un mob para Minecraft Bedrock: tiene 10 corazones, embiste quitando 2,5 corazones y al morir explota quitando 2.
+
 ## Dónde se guardan los cambios del admin
 
 Los proyectos y contactos van **dentro de la propia página** (bloque `<script id="site-data">`).

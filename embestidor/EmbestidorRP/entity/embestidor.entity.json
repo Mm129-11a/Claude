@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "embestidor:embestidor",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/embestidor"
+      },
+      "geometry": {
+        "default": "geometry.embestidor"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "animations": {
+        "quieto": "animation.embestidor.quieto",
+        "andar": "animation.embestidor.andar",
+        "embestir": "animation.embestidor.embestir",
+        "mover": "controller.animation.embestidor.mover"
+      },
+      "scripts": {
+        "animate": [
+          "mover"
+        ]
+      },
+      "spawn_egg": {
+        "base_color": "#0e322b",
+        "overlay_color": "#aaa39b"
+      }
+    }
+  }
+}

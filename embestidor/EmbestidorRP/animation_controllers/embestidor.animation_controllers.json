@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.embestidor.mover": {
+      "initial_state": "quieto",
+      "states": {
+        "quieto": {
+          "animations": [
+            "quieto"
+          ],
+          "transitions": [
+            {
+              "andar": "query.modified_move_speed > 0.1"
+            }
+          ],
+          "blend_transition": 0.2
+        },
+        "andar": {
+          "animations": [
+            "andar"
+          ],
+          "transitions": [
+            {
+              "quieto": "query.modified_move_speed < 0.1"
+            }
+          ],
+          "blend_transition": 0.2
+        }
+      }
+    }
+  }
+}

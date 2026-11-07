@@ -1,0 +1,54 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Embestidor (BP)",
+    "description": "Un mob que embiste y explota al morir.",
+    "uuid": "4cdbe38d-e469-45b1-8ed0-912aff788aca",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      50
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "cce0bf66-867c-4fa0-afc9-cc5621dbcb71",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "32e8b9f8-40ed-4a65-9572-9c9cc4c3bba8",
+      "entry": "scripts/main.js",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.16.0"
+    },
+    {
+      "uuid": "a622809c-f69c-4d14-beb7-affa47283321",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}
