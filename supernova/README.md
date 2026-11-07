@@ -18,6 +18,7 @@ Nada es una foto quieta:
   resplandor de calor y suelta brasas. Lleva un bloque de luz invisible en el centro para verse
   con toda su luz de noche (se quita al terminar). El modelo también está en
   [`estrella_3d.bbmodel`](estrella_3d.bbmodel) para abrirlo en Blockbench.
+  En [`vistas_3d.png`](vistas_3d.png) se ve formándose desde delante, de lado, desde detrás y desde arriba.
 - **La explosión** (como la captura 2) va por capas que se mueven cada una a su ritmo: el cuerpo
   blanco con el centro lavanda y el borde rosa ondulando, **relámpagos morados que chisporrotean**,
   rayos de luz celestes y lavanda girando, un golpe de luz en el centro, dos **anillos rosas de onda
