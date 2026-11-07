@@ -31,25 +31,24 @@
           "variable.ox * (1 - math.pow(1 - math.clamp(variable.particle_age / variable.flight, 0, 1), 2))",
           "variable.oy * (1 - math.pow(1 - math.clamp(variable.particle_age / variable.flight, 0, 1), 2))",
           "variable.oz * (1 - math.pow(1 - math.clamp(variable.particle_age / variable.flight, 0, 1), 2))"
-        ],
-        "rotation": "variable.rot * variable.particle_age"
+        ]
       },
       "minecraft:particle_appearance_billboard": {
         "size": [
-          "variable.sw",
-          "variable.sh"
+          "variable.sw * 1.3",
+          "variable.sw * 1.3"
         ],
         "facing_camera_mode": "rotate_xyz",
         "uv": {
-          "texture_width": 1024,
-          "texture_height": 453,
+          "texture_width": 2048,
+          "texture_height": 2422,
           "uv": [
-            "variable.pu",
-            "variable.pv"
+            "variable.pu + math.mod((math.mod(math.floor(variable.particle_age * variable.spin + variable.particle_random_1 * 24), 24)), 12) * variable.pc",
+            "variable.pv + math.floor((math.mod(math.floor(variable.particle_age * variable.spin + variable.particle_random_1 * 24), 24)) / 12) * variable.pc"
           ],
           "uv_size": [
-            "variable.pw",
-            "variable.ph"
+            "variable.pc",
+            "variable.pc"
           ]
         }
       },

@@ -76,6 +76,16 @@ def simple(ident, tex, material, lifetime, size, alpha, tex_size, spin=0.0, aspe
 
 
 K = "math.pow(1 - math.clamp(variable.particle_age / variable.flight, 0, 1), 3)"   # 1 lejos -> 0 encajada
+
+
+def piece_billboard(frame, scale=1.0):
+    """Una pieza en 3D: su fotograma 'frame' de la vuelta, dentro de su bloque de piezas.png.
+    El script pone pu, pv (esquina del bloque), pc (tamaño del fotograma) y sw (mitad del ancho)."""
+    f = f"({frame})"
+    return billboard(f"variable.sw * {scale}", f"variable.sw * {scale}", "ATLAS_W", "ATLAS_H",
+                     (f"variable.pu + math.mod({f}, COLS) * variable.pc",
+                      f"variable.pv + math.floor({f} / COLS) * variable.pc"),
+                     ("variable.pc", "variable.pc"))
 SWELL = f"(1 + math.clamp(({A} - 2.2) / 1.0, 0, 1) * 0.3)"                        # se hincha antes de explotar
 TT = f"({A} / {LIFE})"
 
@@ -92,13 +102,11 @@ EFFECTS = {
     "pieza": particle("supernova:pieza", "piezas", "particles_blend", {
         **single("variable.life"),
         "minecraft:particle_motion_parametric": {
-            "relative_position": [f"variable.ox * {K}", f"variable.oy * {K}", f"variable.oz * {K}"],
-            "rotation": f"variable.rot * {K}"},
-        "minecraft:particle_appearance_billboard": billboard(
-            "variable.sw", "variable.sh", "ATLAS_W", "ATLAS_H", ("variable.pu", "variable.pv"),
-            ("variable.pw", "variable.ph")),
+            "relative_position": [f"variable.ox * {K}", f"variable.oy * {K}", f"variable.oz * {K}"]},
+        "minecraft:particle_appearance_billboard": piece_billboard(
+            f"math.mod(math.floor({K} * variable.turns * FRAMES + 0.5), FRAMES)"),
         "minecraft:particle_appearance_tinting": {"color": [
-            f"0.5 + 0.5 * (1 - {K})", f"0.45 + 0.55 * (1 - {K})", f"0.4 + 0.6 * (1 - {K})",
+            f"0.55 + 0.45 * (1 - {K})", f"0.5 + 0.5 * (1 - {K})", f"0.45 + 0.55 * (1 - {K})",
             f"math.clamp({A} / 0.12, 0, 1) * (1 - math.clamp(({A} - variable.life + 0.15) / 0.15, 0, 1))"]},
     }),
 
@@ -174,11 +182,10 @@ EFFECTS = {
         "minecraft:particle_motion_parametric": {
             "relative_position": [f"variable.ox * {ease_out('variable.flight', 2)}",
                                   f"variable.oy * {ease_out('variable.flight', 2)}",
-                                  f"variable.oz * {ease_out('variable.flight', 2)}"],
-            "rotation": f"variable.rot * {A}"},
-        "minecraft:particle_appearance_billboard": billboard(
-            "variable.sw", "variable.sh", "ATLAS_W", "ATLAS_H", ("variable.pu", "variable.pv"),
-            ("variable.pw", "variable.ph")),
+                                  f"variable.oz * {ease_out('variable.flight', 2)}"]},
+        "minecraft:particle_appearance_billboard": piece_billboard(
+            f"math.mod(math.floor({A} * variable.spin + variable.particle_random_1 * FRAMES), FRAMES)",
+            scale=1.3),
         "minecraft:particle_appearance_tinting": {"color": [
             1, f"1 - 0.45 * math.clamp({A} / 1.2, 0, 1)", f"1 - 0.65 * math.clamp({A} / 1.2, 0, 1)",
             f"1 - math.clamp(({A} - 1.4) / 0.8, 0, 1)"]},
@@ -197,13 +204,21 @@ def atlas_size():
     return Image.open(ROOT / "SupernovaRP" / "textures" / "particle" / "supernova" / "piezas.png").size
 
 
+def piece_frames():
+    import re
+    js = (ROOT / "SupernovaBP" / "scripts" / "piezas.js").read_text()
+    return int(re.search(r"FRAMES = (\d+)", js).group(1)), int(re.search(r"COLS = (\d+)", js).group(1))
+
+
 if __name__ == "__main__":
     P.mkdir(parents=True, exist_ok=True)
     for old in P.glob("*.json"):
         old.unlink()
     aw, ah = atlas_size()
+    frames, cols = piece_frames()
     for name, data in EFFECTS.items():
         text = json.dumps(data, indent=2, ensure_ascii=False)
         text = text.replace('"ATLAS_W"', str(aw)).replace('"ATLAS_H"', str(ah))
+        text = text.replace("FRAMES", str(frames)).replace("COLS", str(cols))
         (P / f"{name}.json").write_text(text + "\n")
     print("ok:", sorted(p.name for p in P.iterdir()))

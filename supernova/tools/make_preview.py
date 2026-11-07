@@ -43,7 +43,11 @@ js = (ROOT / "SupernovaBP" / "scripts" / "piezas.js").read_text()
 PIEZAS = json.loads(re.search(r"PIEZAS = (\[.*\]);", js).group(1))
 STAR_TEX = int(re.search(r"STAR_TEXTURE = (\d+)", js).group(1))
 PX = 2 * STAR_R / STAR_TEX
-PIECE_IMG = [atlas.crop((p["u"], p["v"], p["u"] + p["w"], p["v"] + p["h"])) for p in PIEZAS]
+NFRAMES = int(re.search(r"FRAMES = (\d+)", js).group(1))
+COLS = int(re.search(r"COLS = (\d+)", js).group(1))
+PIECE_IMG = [[atlas.crop((p["u"] + (k % COLS) * p["c"], p["v"] + (k // COLS) * p["c"],
+                          p["u"] + (k % COLS + 1) * p["c"], p["v"] + (k // COLS + 1) * p["c"]))
+              for k in range(NFRAMES)] for p in PIEZAS]
 
 clamp = lambda v, a, b: max(a, min(b, v))
 ease = lambda a, t, p=3: 1 - (1 - clamp(a / t, 0, 1)) ** p
@@ -70,10 +74,10 @@ FLY, BLAST = [], []
 for i, p in enumerate(PIEZAS):
     tick = T_P0 + round(i / max(1, len(PIEZAS) - 1) * (T_P1 - T_P0))
     ox, oy, oz = radial_offsets(p, 0.9, 14, 24, -6, 8)
-    FLY.append({"tick": tick, "ox": ox, "oy": oy, "oz": oz, "rot": rng.choice([-1, 1]) * rng.uniform(120, 320),
+    FLY.append({"tick": tick, "ox": ox, "oy": oy, "oz": oz, "turns": 1 + rng.randrange(2),
                 "life": (T_STAR - tick) / 20 + 0.3})
     ox, oy, oz = radial_offsets(p, 0.5, 22, 44, -12, 8)
-    BLAST.append({"ox": ox, "oy": oy, "oz": oz, "rot": rng.choice([-1, 1]) * rng.uniform(80, 300)})
+    BLAST.append({"ox": ox, "oy": oy, "oz": oz, "spin": rng.uniform(14, 36), "r": rng.random()})
 
 # brasas y chispas: posiciones al azar fijas para que el video sea estable
 EMBERS = []
@@ -167,8 +171,9 @@ def render(tick):
             live.append((DIST + fl["oz"] * k, p, img, fl, a, k))
     for depth, p, img, fl, a, k in sorted(live, key=lambda e: -e[0]):
         alpha = clamp(a / 0.12, 0, 1) * (1 - clamp((a - fl["life"] + 0.15) / 0.15, 0, 1))
-        f.put(img, p["w"] / 2 * PX, p["h"] / 2 * PX, alpha, max(2, depth), p["x"] * PX + fl["ox"] * k,
-              -p["y"] * PX + fl["oy"] * k, fl["rot"] * k, (0.5 + 0.5 * (1 - k), 0.45 + 0.55 * (1 - k), 0.4 + 0.6 * (1 - k)))
+        fr = int(math.floor(k * fl["turns"] * NFRAMES + 0.5)) % NFRAMES
+        f.put(img[fr], p["s"] / 2 * PX, p["s"] / 2 * PX, alpha, max(2, depth), p["x"] * PX + fl["ox"] * k,
+              -p["y"] * PX + fl["oy"] * k, 0, (0.55 + 0.45 * (1 - k), 0.5 + 0.5 * (1 - k), 0.45 + 0.55 * (1 - k)))
     # ---- la estrella completa: halo, bola en 3D girando y brasas
     a = (tick - T_STAR) / FPS
     if 0 <= a <= STAR_LIFE:
@@ -220,9 +225,10 @@ def render(tick):
             for p, img, b in zip(PIEZAS, PIECE_IMG, BLAST):
                 e = ease(a, 1.4, 2)
                 k = clamp(a / 1.2, 0, 1)
-                f.put(img, p["w"] / 2 * PX * 1.3, p["h"] / 2 * PX * 1.3, 1 - clamp((a - 1.4) / 0.8, 0, 1),
+                fr = int(math.floor(a * b["spin"] + b["r"] * NFRAMES)) % NFRAMES
+                f.put(img[fr], p["s"] / 2 * PX * 1.3, p["s"] / 2 * PX * 1.3, 1 - clamp((a - 1.4) / 0.8, 0, 1),
                       max(2, DIST + b["oz"] * e), p["x"] * PX * 1.3 + b["ox"] * e, -p["y"] * PX * 1.3 + b["oy"] * e,
-                      b["rot"] * a, (1, 1 - 0.45 * k, 1 - 0.65 * k))
+                      0, (1, 1 - 0.45 * k, 1 - 0.65 * k))
     # ---- destello
     a = (tick - T_FLASH) / FPS
     if 0 <= a <= 4.0:
@@ -243,7 +249,7 @@ def render(tick):
     return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
 
-KEYS = [(44, "1. Se forma pieza por pieza"), (84, "2. Encajan las ultimas"), (120, "3. La estrella en 3D girando"),
+KEYS = [(40, "1. Las piezas llegan girando en 3D"), (78, "2. Encajan las ultimas"), (120, "3. La estrella en 3D girando"),
         (163, "4. Explota"), (172, "5. La explosion y la onda"), (186, "6. El destello")]
 
 

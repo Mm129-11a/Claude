@@ -1,5 +1,5 @@
 import { world, system, MolangVariableMap, EntityDamageCause } from "@minecraft/server";
-import { PIEZAS, ATLAS, STAR_TEXTURE, STAR_HALF } from "./piezas.js";
+import { PIEZAS, STAR_TEXTURE, STAR_HALF } from "./piezas.js";
 
 // Se lanza con /function supernova (que ejecuta: scriptevent supernova:iniciar)
 const EVENT_ID = "supernova:iniciar";
@@ -102,10 +102,10 @@ function formStar(dimension, center, eye) {
       const life = (T.estrella - tick) / 20 + 0.3;
       spawn(dimension, "supernova:pieza", target, molang({
         ox: off.x, oy: off.y, oz: off.z,
-        rot: (Math.random() < 0.5 ? -1 : 1) * (120 + Math.random() * 200),
+        turns: 1 + Math.floor(Math.random() * 2),     // vueltas en 3D mientras llega (1 o 2)
         flight: FLIGHT, life,
-        sw: (p.w / 2) * px, sh: (p.h / 2) * px,
-        pu: p.u, pv: p.v, pw: p.w, ph: p.h,
+        sw: (p.s / 2) * px,
+        pu: p.u, pv: p.v, pc: p.c,
       }));
       // al encajar, un golpe de piedra
       if (i % 2 === 0) {
@@ -138,10 +138,10 @@ function blastPieces(dimension, center, frame) {
       d, -12 + Math.random() * 20);
     spawn(dimension, "supernova:pieza_estalla", start, molang({
       ox: off.x, oy: off.y, oz: off.z,
-      rot: (Math.random() < 0.5 ? -1 : 1) * (80 + Math.random() * 220),
+      spin: 14 + Math.random() * 22,                  // fotogramas por segundo de su vuelta en 3D
       flight: 1.4,
-      sw: (p.w / 2) * px * swell, sh: (p.h / 2) * px * swell,
-      pu: p.u, pv: p.v, pw: p.w, ph: p.h,
+      sw: (p.s / 2) * px,
+      pu: p.u, pv: p.v, pc: p.c,
     }));
   }
 }

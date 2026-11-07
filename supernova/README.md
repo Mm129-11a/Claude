@@ -11,7 +11,10 @@ tamaños, mezclas y tiempos).*
 Nada es una foto quieta:
 - **La estrella** es una bola de lava en 3D (roca oscura con grietas de lava, los colores de la bola
   de Blockbench) que **gira de verdad** (64 fotogramas por vuelta), con las grietas latiendo, un
-  resplandor de calor alrededor y brasas que se desprenden. Se forma con sus propias 51 piezas.
+  resplandor de calor alrededor y brasas que se desprenden. Se forma con sus propias 51 piezas,
+  que también son 3D: cada una es un trozo de la cáscara de la bola con grosor (roca por fuera,
+  lava al rojo vivo por dentro y los bordes brillando) y llega **dando vueltas en 3D** (24
+  fotogramas por vuelta, con la luz cambiando al girar) hasta quedar en su sitio.
 - **La explosión** (como la captura 2) va por capas que se mueven cada una a su ritmo: el cuerpo
   blanco con el centro lavanda y el borde rosa ondulando, **relámpagos morados que chisporrotean**,
   rayos de luz celestes y lavanda girando, un golpe de luz en el centro, dos **anillos rosas de onda
@@ -53,7 +56,7 @@ en ese caso sale hacia el norte del bloque).
 |---|---|
 | 0 s | La pantalla se funde a negro un instante y retumba un trueno. |
 | 0,5 s | Se hace de noche, entra una niebla rojo oscura y aparece un **núcleo** brillante. |
-| 0,7 – 4,8 s | **La estrella se forma pieza por pieza**: las 51 placas de roca llegan volando desde todas partes, una tras otra, girando y apagadas; al encajar se encienden y suena un golpe de piedra. |
+| 0,7 – 4,8 s | **La estrella se forma pieza por pieza**: las 51 placas de roca llegan volando desde todas partes, una tras otra, dando vueltas en 3D (se les ve el grosor y la lava de dentro); al encajar se encienden y suena un golpe de piedra. |
 | 4,8 s | La última pieza encaja: **la estrella está completa**, gira en 3D, late, brilla y suelta brasas. |
 | 6,8 s | La estrella se hincha y la pantalla tiembla. |
 | 8 s | **Explota**: estallido blanco con relámpagos morados y borde rosa, anillos de onda, chispas y las piezas saliendo volando; temblor fuerte (más cerca, más fuerte) y la onda expansiva quita vida. |
@@ -74,7 +77,7 @@ Mientras dura, no se puede lanzar otra.
   explosión (`exp_cuerpo`, `exp_nucleo`, `exp_rayos`, `exp_morados`, `exp_anillo`, `chispas`,
   `pieza_estalla`) y `destello`. `fogs/`: niebla oscura, de explosión y del destello.
 - `tools/make_vfx.py` hace la estrella en 3D y las capas de la explosión (colores medidos en las
-  referencias), `tools/make_pieces.py` corta la estrella en sus piezas,
+  referencias), `tools/make_pieces.py` corta la estrella en sus piezas y dibuja cada una girando en 3D,
   `tools/extract_from_photos.py` saca el destello de la captura 3, `tools/make_particles.py`
   escribe las partículas, `tools/make_preview.py` hace la simulación y `tools/build.sh` lo junta todo:
 
