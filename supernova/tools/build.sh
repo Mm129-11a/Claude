@@ -6,6 +6,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ $# -eq 3 ]; then python3 tools/extract_from_photos.py "$1" "$2" "$3"; fi
 python3 tools/make_particles.py
+python3 tools/make_pieces.py
+python3 tools/make_particles.py   # otra vez: la partícula de las piezas usa el tamaño de piezas.png
+rm -rf tools/__pycache__
 rm -f Supernova.mcaddon
 zip -qr Supernova.mcaddon SupernovaBP SupernovaRP
 echo "Creado Supernova.mcaddon"
