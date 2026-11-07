@@ -1,9 +1,14 @@
 # Huevo Eburia
 
 Fruto inventado que sale al romper un tronco. Modelo para Blockbench (Bedrock), copiado de
-la foto de referencia: está **acostado** en el suelo, con el cuerpo (16×16×16) y el cuello
-(11×11×11) uno al lado del otro, color crema tostado con manchas azules, y un rabito con
-ramitas rojizas en la punta.
+la foto de referencia: está **acostado** en el suelo, con el cuerpo y el cuello uno al lado del
+otro, color crema tostado con manchas azules, y un rabito con ramitas rojizas en la punta.
+
+**Tamaño:** un poco más pequeño que un bloque: mide 14 de largo, 6,4 de alto y 8 de ancho
+(un bloque son 16). Se cambia con `LONGEST` en `tools/make_model.py`; la forma y la textura
+(cuerpo 16×16 y cuello 11×11 píxeles) no cambian.
+
+![Tamaño](tamano.png)
 
 ![Comparación](preview.png)
 

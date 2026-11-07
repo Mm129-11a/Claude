@@ -48,9 +48,14 @@ TWIGS = [
     ("ramita_3_punta", (X_END + 3, 0, 8), (X_END + 6, 1, 9)),
 ]
 
+# Tamaño: lo más largo de la fruta mide LONGEST píxeles (un bloque son 16): un poco menos que un bloque
+LONGEST = 14
+
 # Del sistema de la foto al de Blockbench: centrado en X/Z y apoyado en el suelo (y=0)
 _xs = [p[0] for _, a, b in TWIGS for p in (a, b)] + [0, X_END]
-OFFSET = (-round((min(_xs) + max(_xs)) / 2), 0, -8)
+_zs = [p[2] for _, a, b in TWIGS for p in (a, b)] + [0, 16]
+OFFSET = (-(min(_xs) + max(_xs)) / 2, 0, -(min(_zs) + max(_zs)) / 2)
+SCALE = LONGEST / max(max(_xs) - min(_xs), 16, max(_zs) - min(_zs))
 
 PIECES = [("huevo_grande", (0, 0, 0), (16, 16, 16), UV_BIG),
           ("huevo_chico", (SX, SY, SZ), (SX + SS, SY + SS, SZ + SS), UV_SMALL)]
@@ -58,7 +63,7 @@ PIECES += [(n, a, b, UV_TWIG) for n, a, b in TWIGS]
 
 
 def to_bb(p):
-    return [p[i] + OFFSET[i] for i in range(3)]
+    return [round((p[i] + OFFSET[i]) * SCALE, 3) for i in range(3)]
 
 
 def build_texture():
