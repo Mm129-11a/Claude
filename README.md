@@ -21,7 +21,7 @@ En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de
 En [`prision-del-limbo/index.html`](prision-del-limbo/index.html) hay un visor 3D bloque a bloque de la Prisión del Limbo, en coordenadas de Minecraft (el centro del patio está en X 40 · Y 290 · Z 2420).
 
 - **Estructuras:** muralla con bloques de celdas escalonados, terraza norte con arcos rosados, casitas adosadas con tejado de purpur de una sola caída y ventanas de 2×3 cristales, la torre (tambor con pasillo en anillo dentro de la muralla rosada, cuerpo con su borde rosado, hélice y cono escalonado), dos puentes, las escaleras en zigzag y la sala del portón bajo el techo de roca.
-- **Vistas:** Exterior, Cenital, Portón, Hélice y Planta alta. Se puede colorear por material o por procedencia (qué fuente respalda cada parte) y cortar por altura.
+- **Vistas:** Exterior (encuadrada como la captura de referencia: murallas altas alrededor y la torre en medio), Cenital, Portón, Hélice y Planta alta. Se puede colorear por material o por procedencia (qué fuente respalda cada parte) y cortar por altura.
 - **Recorridos:** trae cinco recorridos de prueba simulados (no son datos de streams). Con «Importar posiciones del HUD» se cargan recorridos reales (una posición por línea: `x, y, z`, `t, x, y, z` o `XYZ: x / y / z`) y el panel mide qué porcentaje de las pisadas cae sobre suelo.
 - Del video (imagen y audio) salen: los arcos góticos ciegos de los muros exteriores, la rampa que sube en espiral por la torre desde el patio, la puerta con barrotes, el cono puntiagudo y la plaza de abajo con borde de ladrillos lilas desde la que se sube al portón.
 - Es una aproximación hecha a partir de capturas y de un video: las medidas exactas no se conocen.
