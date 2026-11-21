@@ -16,6 +16,15 @@ Todo vive en un solo archivo, **`index.html`**.
 
 En [`discord-bot/`](discord-bot/) está Netvi, el muñeco de la web, como bot de Discord: pasea por los canales, habla con los miembros (con Claude) y responde a comandos como `/llamar` o `/bailar`. Está desplegado en Render (`netvi-discord-bot`) y la web muestra debajo del muñeco en qué canal de Discord está Netvi ahora mismo. Las instrucciones están en su README.
 
+## Prisión del Limbo (DEDsafío 4)
+
+En [`prision-del-limbo/index.html`](prision-del-limbo/index.html) hay un visor 3D bloque a bloque de la Prisión del Limbo, en coordenadas de Minecraft (el centro del patio está en X 40 · Y 290 · Z 2420).
+
+- **Estructuras:** muralla con bloques de celdas escalonados, terraza norte con arcos rosados, cuatro pabellones con tejado de purpur, la torre con su tambor, la hélice, la terraza alta y la cúpula, dos puentes, las escaleras en zigzag y la sala del portón bajo el techo de roca.
+- **Vistas:** Exterior, Cenital, Portón, Hélice y Planta alta. Se puede colorear por material o por procedencia (qué fuente respalda cada parte) y cortar por altura.
+- **Recorridos:** trae cinco recorridos de prueba simulados (no son datos de streams). Con «Importar posiciones del HUD» se cargan recorridos reales (una posición por línea: `x, y, z`, `t, x, y, z` o `XYZ: x / y / z`) y el panel mide qué porcentaje de las pisadas cae sobre suelo.
+- Es una aproximación hecha a partir de capturas y de un video: las medidas exactas no se conocen.
+
 ## Dónde se guardan los cambios del admin
 
 Los proyectos y contactos van **dentro de la propia página** (bloque `<script id="site-data">`).
