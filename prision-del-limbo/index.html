@@ -105,7 +105,7 @@
     <div class="panel-head">
       <div>
         <h1>Prisión del Limbo</h1>
-        <p class="sub">Reconstrucción Netvy v2 · DEDsafío 4 · coordenadas de Minecraft</p>
+        <p class="sub">Reconstrucción Netvy v3 · DEDsafío 4 · coordenadas de Minecraft</p>
       </div>
       <button class="icon-btn" id="collapse" aria-expanded="true" aria-controls="panel-body">Ocultar</button>
     </div>
@@ -191,7 +191,7 @@
     ['Pizarra cincelada', 0x5a5862, .06],             // 19 gate walkway
     ['Valla de piedra negra', 0x25222a, .04],         // 20 torch posts
     ['Espeleotema puntiagudo', 0x5e544c, .10],        // 21 spikes
-    ['Pizarra pulida clara', 0x8b8991, .05],          // 22 pavilion walls
+    ['Pizarra pulida clara', 0x8b8991, .05],          // 22 (unused, kept so ids stay stable)
     ['Barrotes de hierro', 0xaaa9a4, .10],            // 23 tower gate
     ['Ladrillos lilas', 0x8b7a8f, .06],               // 24 lower plaza border
     ['Ladrillos de pizarra agrietados', 0x55545a, .08], // 25 blind arches
@@ -279,15 +279,16 @@
     }
   }
   function lantern(axis, c, s, u, y) { faceApi(axis, c, s).put(u, y, 1, 14); }
-  function paneWindow(axis, c, s, uc, y0) {
+  // Pink pointed arch drawn as an outline on a wall: 5 wide (two rows of point) or 3 wide (a lancet).
+  function archOutline(axis, c, s, uc, y0, legs = 3) {
     const f = faceApi(axis, c, s);
-    for (let dy = 0; dy < 5; dy++) for (let du = -1; du <= 1; du++) f.put(uc + du, y0 + dy, 0, (du === 0 || dy === 2) ? 6 : 7);
-    for (let du = -1; du <= 1; du++) f.put(uc + du, y0 - 1, 1, 5);
+    for (let y = y0; y < y0 + legs; y++) { f.put(uc - 2, y, 1, 10); f.put(uc + 2, y, 1, 10); }
+    f.put(uc - 1, y0 + legs, 1, 10); f.put(uc + 1, y0 + legs, 1, 10); f.put(uc, y0 + legs + 1, 1, 10);
   }
-  function archOutline(axis, c, s, uc, y0) { // pink pointed arch, as on the north terrace
+  function lancet(axis, c, s, uc, y0, legs) {
     const f = faceApi(axis, c, s);
-    for (let y = y0; y < y0 + 3; y++) { f.put(uc - 2, y, 1, 10); f.put(uc + 2, y, 1, 10); }
-    f.put(uc - 1, y0 + 3, 1, 10); f.put(uc + 1, y0 + 3, 1, 10); f.put(uc, y0 + 4, 1, 10);
+    for (let y = y0; y < y0 + legs; y++) { f.put(uc - 1, y, 1, 10); f.put(uc + 1, y, 1, 10); }
+    f.put(uc, y0 + legs, 1, 10);
   }
   // Stairs running along Z: step i sits at z0 + dz*i with its top block at ybase + i.
   function stairZ(x0, x1, z0, dz, ybase, n) {
@@ -302,34 +303,37 @@
   function merlonsX(x, z0, z1, y, skip) { for (let z = z0; z <= z1; z++) if (mod(z, 4) < 2 && !(skip && skip(z))) set(x, y, z, 5); }
   function merlonsZ(z, x0, x1, y, skip) { for (let x = x0; x <= x1; x++) if (mod(x, 4) < 2 && !(skip && skip(x))) set(x, y, z, 5); }
 
-  function pavilion(x0, z0, x1, z1, top, ridge, gables) {
-    box(x0, 290, z0, x1, top, z1, 22);
-    if (ridge === 'z') {
-      for (const [a, b] of gables) for (let x = a - 1; x <= b + 1; x++) {
-        const d = Math.min(x - (a - 1), (b + 1) - x), ry = top + 1 + Math.floor(d * 0.8);
-        for (let z = z0 - 1; z <= z1 + 1; z++) {
-          if (z >= z0 && z <= z1 && x >= a && x <= b) for (let y = top + 1; y < ry; y++) set(x, y, z, 22);
-          set(x, ry, z, 9);
-        }
+  // Lean-to house as in the capture: one purpur roof falling toward the front (south),
+  // grey side walls standing a block proud of the roof, an eave trim and a 2x3-pane window.
+  function house(x0, x1, z0, z1, raiseBack) {
+    const eave = 296, back = 301;
+    const roofY = (z) => eave + 1 + Math.floor((z1 + 1 - z) / (z1 + 1 - z0) * (back - eave - 1) + 0.5);
+    box(x0, 290, z0, x1, eave, z1, 4);
+    for (let z = z0; z <= z1 + 1; z++) {
+      const ry = roofY(z);
+      for (let x = x0; x <= x1; x++) {
+        if (z <= z1) for (let y = eave + 1; y < ry; y++) set(x, y, z, 4);
+        set(x, ry, z, 9);
       }
-    } else {
-      for (let z = z0 - 1; z <= z1 + 1; z++) {
-        const d = Math.min(z - (z0 - 1), (z1 + 1) - z), ry = top + 1 + Math.floor(d * 0.8);
-        for (let x = x0 - 1; x <= x1 + 1; x++) {
-          if (z >= z0 && z <= z1 && x >= x0 && x <= x1) for (let y = top + 1; y < ry; y++) set(x, y, z, 22);
-          set(x, ry, z, 9);
-        }
-      }
+      for (const x of [x0, x1]) for (let y = z <= z1 ? 290 : eave; y <= ry + 1; y++) set(x, y, z, 5);
     }
-    // windows on all four sides, a door on the south
-    for (let x = x0 + 2; x <= x1 - 2; x += 5) { paneWindow('z', z1, 1, x, 292); paneWindow('z', z0, -1, x, 292); }
-    for (let z = z0 + 2; z <= z1 - 2; z += 5) { paneWindow('x', x1, 1, z, 292); paneWindow('x', x0, -1, z, 292); }
-    const fs = faceApi('z', z1, 1), mid = Math.floor((x0 + x1) / 2);
-    for (let y = 290; y <= 294; y++) for (let du = -1; du <= 1; du++) fs.put(mid + du, y, 0, 6);
-    if (ridge === 'z') for (const [a, b] of gables) {
-      const cx = Math.floor((a + b) / 2);
-      archOutline('z', z1, 1, cx, top + 1);
-      gothic('z', z1, 1, cx, top + 1, 3, 3);
+    for (let x = x0 + 1; x < x1; x++) set(x, eave, z1 + 1, 5);
+    if (raiseBack) for (let x = x0; x <= x1; x++) for (let y = 290; y <= back + 2; y++) set(x, y, z0, 4);
+    const cx = Math.floor((x0 + x1) / 2), f = faceApi('z', z1, 1);
+    for (let du = -1; du <= 2; du++) for (let y = 291; y <= 295; y++) {
+      const pane = du >= 0 && du <= 1 && y >= 292 && y <= 294;
+      f.put(cx + du, y, 0, pane ? 7 : 6);
+    }
+    f.put(cx, 290, 1, 5); f.put(cx + 1, 290, 1, 5);
+  }
+  // The taller block the front row of houses leans on, with pink arches above the roofs.
+  function backBlock(x0, x1, z0, z1, top, arches) {
+    box(x0, 290, z0, x1, top, z1, 4);
+    box(x0, top, z0, x1, top, z1, 5);
+    for (let x = x0; x <= x1; x++) set(x, top - 1, z1 + 1, 5);
+    for (const [kind, uc, legs] of arches) {
+      if (kind === 'arch') archOutline('z', z1, 1, uc, 302, legs);
+      else lancet('z', z1, 1, uc, 302, legs);
     }
   }
 
@@ -497,21 +501,28 @@
     for (let x = -18; x <= 97; x++) if (x < 41 || x > 49) set(x, 322, 2371, 5);
     for (let x = -14; x <= 94; x += 12) if (x < 37 || x > 53) archOutline('z', 2370, 1, x, 323);
 
-    // Courtyard pavilions with purpur roofs
-    pavilion(-6, 2376, 17, 2389, 300, 'z', [[-6, 5], [6, 17]]);
-    pavilion(64, 2376, 83, 2388, 300, 'x');
-    pavilion(-6, 2404, 4, 2430, 298, 'z', [[-6, 4]]);
-    pavilion(72, 2398, 82, 2414, 299, 'z', [[72, 82]]);
+    // Lean-to houses with purpur roofs: three rows on the west, a pair on the north-east, two east of the tower
+    backBlock(-6, 13, 2375, 2379, 309, [['arch', -4, 3], ['arch', 1, 3], ['arch', 6, 3], ['arch', 11, 3]]);
+    house(-6, 3, 2380, 2388); house(4, 13, 2380, 2388);
+    house(-6, 3, 2393, 2401, true); house(4, 13, 2393, 2401, true);
+    house(-6, 3, 2406, 2414, true); house(4, 13, 2406, 2414, true);
+    backBlock(64, 83, 2375, 2379, 309, [['lancet', 66, 4], ['lancet', 69, 4], ['lancet', 72, 4], ['lancet', 76, 4], ['lancet', 79, 4], ['lancet', 82, 4]]);
+    house(64, 73, 2380, 2388); house(74, 83, 2380, 2388);
+    house(72, 83, 2400, 2408, true); house(72, 83, 2412, 2420, true);
 
-    // The tower: base drum, tower body, roof terrace, dome
-    for (let x = TCX - 24; x <= TCX + 24; x++) for (let z = TCZ - 24; z <= TCZ + 24; z++) {
+    // The tower, as in the capture: a drum whose top is a walkway ring inside a pink crenellated
+    // wall, the tower body rising from it with its own pink rim, and a cone stepped every two blocks.
+    const GATE = 3 * Math.PI / 4, BAND0 = GATE + 0.16;
+    for (let x = TCX - 25; x <= TCX + 25; x++) for (let z = TCZ - 25; z <= TCZ + 25; z++) {
       const dx = x - TCX, dz = z - TCZ, r = Math.hypot(dx, dz);
       const phi = Math.atan2(dz, dx), seg = Math.floor((phi + Math.PI) / (2 * Math.PI) * 64);
-      const GATE = 3 * Math.PI / 4, gateOff = Math.abs(Math.atan2(Math.sin(phi - GATE), Math.cos(phi - GATE)));
+      const off = (a) => Math.abs(Math.atan2(Math.sin(phi - a), Math.cos(phi - a)));
+      const north = Math.abs(dx) <= 2 && dz < 0, east = Math.abs(dz) <= 2 && dx > 0;
+      const crenel = (n) => mod(Math.floor((phi + Math.PI) / (2 * Math.PI) * n), 2) === 0;
       if (r > 22.3 && r <= 24.6) {
-        // band climbing the drum: two turns from the floor beside the gate up to the drum top
+        // band climbing the outside of the drum: two turns from the floor beside the gate (video)
         P = 2;
-        const f = mod(phi - GATE - 0.16, 2 * Math.PI) / (2 * Math.PI);
+        const f = mod(phi - BAND0, 2 * Math.PI) / (2 * Math.PI);
         for (let k = 0; k < 2; k++) {
           const top = 290 + Math.floor((k + f) / 2 * 32);
           set(x, top, z, 5); set(x, top - 1, z, 5);
@@ -524,42 +535,38 @@
         const slit = r > 21.3 && mod(y - 290, 8) >= 3 && mod(y - 290, 8) <= 5 && mod(seg, 4) === 0;
         set(x, y, z, slit ? 6 : 11);
       }
-      if (r > 19.3 && gateOff * r <= 2.6) {
+      if (r > 19.3 && off(GATE) * r <= 2.6) {
         P = 2;
         for (let y = 290; y <= 299; y++) set(x, y, z, r > 21.3 && mod(x + y + z, 2) === 0 ? 23 : 6);
         P = 0;
       }
-      const north = Math.abs(dx) <= 2 && dz < 0;
-      if (r > 21.3 && !north) {
-        set(x, 322, z, 10);
-        if (mod(Math.floor((phi + Math.PI) / (2 * Math.PI) * 72), 2) === 0) set(x, 323, z, 10);
-      }
-      if (r <= 15.3) {
+      if (r > 20.6) {
+        if (!north && off(BAND0) * r > 2.2) {
+          set(x, 322, z, 11); set(x, 323, z, 10); set(x, 324, z, 10);
+          if (crenel(72)) set(x, 325, z, 10);
+        } else set(x, 321, z, 5);
+      } else if (r > 16.3) set(x, 321, z, 5);
+      if (r <= 16.3) {
         for (let y = 322; y <= 345; y++) {
-          const slit = r > 14.3 && mod(y - 322, 8) >= 3 && mod(y - 322, 8) <= 5 && mod(seg, 4) === 2;
+          const slit = r > 15.3 && mod(y - 322, 8) >= 3 && mod(y - 322, 8) <= 5 && mod(seg, 4) === 2;
           set(x, y, z, slit ? 6 : 11);
         }
-        const east = Math.abs(dz) <= 2 && dx > 0;
-        if (r > 14.3 && !north && !east) {
-          set(x, 346, z, 10);
-          if (mod(Math.floor((phi + Math.PI) / (2 * Math.PI) * 52), 2) === 0) set(x, 347, z, 10);
-        }
+        if (r > 15.3) {
+          if (!north && !east) { set(x, 346, z, 10); if (crenel(56)) set(x, 347, z, 10); }
+        } else if (r > 13.6) set(x, 345, z, 5);
       }
-      if (r <= 12.3) {
-        for (let y = 346; y <= 350; y++) set(x, y, z, (y >= 347 && y <= 349 && mod(seg, 6) === 0 && r > 11.3) ? 7 : 11);
-        // pointed cone, slightly bellied, as in the video's view of the prison
-        for (let y = 351; y <= 392; y++) {
-          const t = (y - 350) / 42, R = 12.3 * Math.pow(Math.max(0, 1 - t), 0.8);
+      if (r <= 13.6) {
+        for (let y = 346; y <= 392; y++) {
+          const yy = y - mod(y - 346, 2), t = (yy - 345) / 47, R = 13.6 * Math.pow(Math.max(0, 1 - t), 0.8);
           if (r <= R) set(x, y, z, 12);
         }
       }
-      // Helix: one full turn around the tower body, from the drum terrace (322) to the roof (346)
-      if (r > 15.3 && r <= 19.6) {
+      // Helix: two blocks wide, hugging the tower body from the walkway ring (322) to the rim (346)
+      if (r > 16.3 && r <= 18.6) {
         P = 3;
         const p = mod(phi + Math.PI / 2, 2 * Math.PI) / (2 * Math.PI);
         const top = 322 + Math.floor(p * 24);
-        for (let y = top - 2; y <= top; y++) set(x, y, z, 13);
-        if (r > 18.7 && p > 0.05) set(x, top + 1, z, 5);
+        for (let y = top - 1; y <= top; y++) set(x, y, z, 13);
       }
     }
     P = 0; for (let y = 393; y <= 397; y++) set(TCX, y, TCZ, 11);
@@ -778,6 +785,9 @@
         float edge = min(min(e.x, 1.0 - e.x), min(e.y, 1.0 - e.y));
         float seam = mix(0.9, 1.0, smoothstep(0.0, 0.06, edge));
         seam = mix(seam, 1.0, smoothstep(70.0, 190.0, vDepth));
+        // glass reads as separate panes with dark muntins, like the windows in the capture
+        float muntin = mix(0.42, 1.0, smoothstep(0.05, 0.13, edge));
+        seam = mix(seam, mix(muntin, 1.0, smoothstep(160.0, 420.0, vDepth)), emissive);
         vec3 c = vColor.rgb * shade * (1.0 + n * amp * 2.0) * seam;
         float fog = smoothstep(420.0, 1500.0, vDepth) * 0.7;
         gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
@@ -859,7 +869,7 @@
     const phi = -Math.PI / 2 + a * D2R;
     helix.push([45.5 + 17.5 * Math.cos(phi), 323 + 23 * a / 360, 2428.5 + 17.5 * Math.sin(phi), 1]);
   }
-  const roof = [-80, -55, -30, -8].map((a) => [45.5 + 13.8 * Math.cos(a * D2R), 346, 2428.5 + 13.8 * Math.sin(a * D2R), 0.8]);
+  const roof = [-80, -55, -30, -8].map((a) => [45.5 + 14.5 * Math.cos(a * D2R), 346, 2428.5 + 14.5 * Math.sin(a * D2R), 0.6]);
   const ROUTE_PTS = {
     A: [...OUT,
       [62, 290, 2463, 2.5], [30, 290, 2461, 3], [4, 290, 2463, 2.5], [-6, 290, 2467.5, 0.8],
@@ -875,7 +885,7 @@
       [88.5, 306, 2466.5, 0.5], [86, 306, 2466.5, 1], [86, 291, 2451.5, 1], [86, 290, 2449.5, 1],
       [78, 290, 2455, 2], [71, 290, 2464, 2], ...BACK],
     B: [...OUT,
-      [60, 290, 2463, 2.5], [30, 290, 2460, 3], [14, 290, 2448, 3], [13, 290, 2420, 3], [16, 290, 2398, 2.5],
+      [60, 290, 2463, 2.5], [30, 290, 2460, 3], [17, 290, 2448, 2.5], [17.5, 290, 2420, 2.2], [18, 290, 2398, 2.2],
       [45, 290, 2397, 2], [62, 290, 2396, 2], [69, 290, 2405, 1.4], [69.5, 290, 2428, 1.4], [70, 290, 2447, 2],
       [71, 290, 2462, 2], ...BACK],
   };
