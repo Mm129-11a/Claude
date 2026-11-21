@@ -105,7 +105,7 @@
     <div class="panel-head">
       <div>
         <h1>Prisión del Limbo</h1>
-        <p class="sub">Reconstrucción Netvy v1 · DEDsafío 4 · coordenadas de Minecraft</p>
+        <p class="sub">Reconstrucción Netvy v2 · DEDsafío 4 · coordenadas de Minecraft</p>
       </div>
       <button class="icon-btn" id="collapse" aria-expanded="true" aria-controls="panel-body">Ocultar</button>
     </div>
@@ -192,16 +192,19 @@
     ['Valla de piedra negra', 0x25222a, .04],         // 20 torch posts
     ['Espeleotema puntiagudo', 0x5e544c, .10],        // 21 spikes
     ['Pizarra pulida clara', 0x8b8991, .05],          // 22 pavilion walls
+    ['Barrotes de hierro', 0xaaa9a4, .10],            // 23 tower gate
+    ['Ladrillos lilas', 0x8b7a8f, .06],               // 24 lower plaza border
+    ['Ladrillos de pizarra agrietados', 0x55545a, .08], // 25 blind arches
   ];
   const PROV = [
     ['Captura del visor', 0x8b7cf6, 'Forma vista en la captura cenital.'],
     ['Captura del juego', 0xf2a65a, 'El portón y su sala, como en la captura dentro de Minecraft.'],
-    ['Video', 0x4fd1b0, 'Suelos y caras exteriores que salen en el video.'],
+    ['Video', 0x4fd1b0, 'Suelos, arcos de los muros exteriores, rampa y puerta de la torre y la plaza de abajo, como salen en el video.'],
     ['Deducido de los recorridos', 0xf472b6, 'La captura muestra gente pasando por ahí; la forma exacta no se ve.'],
     ['Supuesto', 0x6b6577, 'No sale en ninguna fuente: relleno para que el modelo cierre.'],
   ];
 
-  const OX = -50, OY = 224, OZ = 2336, NX = 180, NY = 178, NZ = 246;
+  const OX = -50, OY = 224, OZ = 2336, NX = 180, NY = 178, NZ = 312;
   const SXZ = NX * NZ;
   const G = new Uint8Array(NX * NY * NZ);
   let P = 0; // current source, written into the high bits
@@ -343,8 +346,8 @@
       if (dx === 0 && dz === 0) return -Math.min(x - x0, x1 - x, z - z0, z1 - z);
       return Math.hypot(dx, dz);
     };
-    for (let x = -50; x <= 129; x++) for (let z = 2336; z <= 2581; z++) {
-      const d = Math.min(rect(x, z, -44, 2344, 123, 2481), rect(x, z, 50, 2482, 90, 2572));
+    for (let x = -50; x <= 129; x++) for (let z = 2336; z <= 2647; z++) {
+      const d = Math.min(rect(x, z, -44, 2344, 123, 2481), rect(x, z, 50, 2482, 90, 2572), rect(x, z, 46, 2601, 94, 2640));
       const edge = -d + (vnoise(x / 10, z / 10, 11) - 0.5) * 9 + 4;
       if (edge <= 0) continue;
       const depth = Math.min(19, 3 + edge * 0.8) + vnoise(x / 5, z / 5, 12) * 3;
@@ -438,12 +441,14 @@
       if ((k === 3 || k === 5) && y >= 294 && y <= 325) recess(f, u, y);
     });
 
-    // Outside faces of walls and plinth: horizontal ribs over rows of slits
+    // Outside faces of walls and plinth: rows of pointed blind arches between pilasters (video)
     P = 2;
     const ribsOut = (u, y, f) => {
-      const k = mod(y - 240, 5);
-      if (mod(u, 16) === 0 || k === 0) { f.put(u, y, 1, 5); return; }
-      if (mod(u, 3) === 1 && (k === 2 || k === 3)) recess(f, u, y);
+      const h = mod(y - 240, 16), a = mod(u, 7);
+      if (h === 0) { f.put(u, y, 1, 5); return; }
+      if (a === 0) { f.put(u, y, 1, 4); return; }
+      const arch = (h >= 2 && h <= 11 && a >= 1 && a <= 5) || (h === 12 && a >= 2 && a <= 4) || (h === 13 && a === 3);
+      if (arch) { f.put(u, y, 0, 0); f.put(u, y, -1, 25); }
     };
     face('x', -44, -1, 2344, 2481, 240, 370, ribsOut);
     face('x', 123, 1, 2344, 2481, 240, 370, ribsOut);
@@ -502,11 +507,27 @@
     for (let x = TCX - 24; x <= TCX + 24; x++) for (let z = TCZ - 24; z <= TCZ + 24; z++) {
       const dx = x - TCX, dz = z - TCZ, r = Math.hypot(dx, dz);
       const phi = Math.atan2(dz, dx), seg = Math.floor((phi + Math.PI) / (2 * Math.PI) * 64);
+      const GATE = 3 * Math.PI / 4, gateOff = Math.abs(Math.atan2(Math.sin(phi - GATE), Math.cos(phi - GATE)));
+      if (r > 22.3 && r <= 24.6) {
+        // band climbing the drum: two turns from the floor beside the gate up to the drum top
+        P = 2;
+        const f = mod(phi - GATE - 0.16, 2 * Math.PI) / (2 * Math.PI);
+        for (let k = 0; k < 2; k++) {
+          const top = 290 + Math.floor((k + f) / 2 * 32);
+          set(x, top, z, 5); set(x, top - 1, z, 5);
+        }
+        continue;
+      }
       if (r > 22.3) continue;
       P = 0;
       for (let y = 286; y <= 321; y++) {
         const slit = r > 21.3 && mod(y - 290, 8) >= 3 && mod(y - 290, 8) <= 5 && mod(seg, 4) === 0;
         set(x, y, z, slit ? 6 : 11);
+      }
+      if (r > 19.3 && gateOff * r <= 2.6) {
+        P = 2;
+        for (let y = 290; y <= 299; y++) set(x, y, z, r > 21.3 && mod(x + y + z, 2) === 0 ? 23 : 6);
+        P = 0;
       }
       const north = Math.abs(dx) <= 2 && dz < 0;
       if (r > 21.3 && !north) {
@@ -525,9 +546,10 @@
         }
       }
       if (r <= 12.3) {
-        for (let y = 346; y <= 351; y++) set(x, y, z, (y >= 348 && y <= 350 && mod(seg, 6) === 0 && r > 11.3) ? 7 : 11);
-        for (let y = 352; y <= 381; y++) {
-          const t = (y - 351) / 30, R = 12.3 * Math.pow(Math.max(0, 1 - Math.pow(t, 1.5)), 0.6);
+        for (let y = 346; y <= 350; y++) set(x, y, z, (y >= 347 && y <= 349 && mod(seg, 6) === 0 && r > 11.3) ? 7 : 11);
+        // pointed cone, slightly bellied, as in the video's view of the prison
+        for (let y = 351; y <= 392; y++) {
+          const t = (y - 350) / 42, R = 12.3 * Math.pow(Math.max(0, 1 - t), 0.8);
           if (r <= R) set(x, y, z, 12);
         }
       }
@@ -537,10 +559,10 @@
         const p = mod(phi + Math.PI / 2, 2 * Math.PI) / (2 * Math.PI);
         const top = 322 + Math.floor(p * 24);
         for (let y = top - 2; y <= top; y++) set(x, y, z, 13);
-        if (r > 18.7 && p > 0.05) set(x, top + 1, z, 10);
+        if (r > 18.7 && p > 0.05) set(x, top + 1, z, 5);
       }
     }
-    P = 0; for (let y = 382; y <= 386; y++) set(TCX, y, TCZ, 11);
+    P = 0; for (let y = 393; y <= 397; y++) set(TCX, y, TCZ, 11);
 
     // North bridge from the terrace to the drum, on two piers
     P = 3;
@@ -625,6 +647,26 @@
     }
     for (let x = 66; x <= 74; x++) for (let z = 2468; z <= 2481; z++) set(x, 289, z, 19);
     for (let x = 58; x <= 82; x++) for (let z = 2560; z <= 2572; z++) set(x, 289, z, (mod(x + z, 4) === 0 || mod(x - z, 4) === 0) ? 18 : 19);
+
+    // Lower plaza (in-game frames of the video) and the stair climbing to the gate landing
+    P = 2;
+    box(46, 246, 2601, 94, 260, 2640, 4);
+    for (let x = 46; x <= 94; x++) for (let z = 2601; z <= 2640; z++) {
+      const rim = x <= 47 || x >= 93 || z <= 2602 || z >= 2639;
+      set(x, 261, z, rim ? 24 : ((mod(x + z, 4) === 0 || mod(x - z, 4) === 0) ? 18 : 19));
+      const gap = x >= 65 && x <= 76;
+      if (rim && !gap) set(x, 262, z, 24);
+    }
+    face('x', 46, -1, 2601, 2640, 248, 260, ribsOut); face('x', 94, 1, 2601, 2640, 248, 260, ribsOut);
+    face('z', 2640, 1, 46, 94, 248, 260, ribsOut);
+    P = 3;
+    for (let i = 0; i < 28; i++) {
+      const z = 2573 + i, top = 288 - i;
+      for (let x = 66; x <= 75; x++) {
+        for (let y = 250; y <= top; y++) set(x, y, z, y === top ? 13 : 4);
+        for (let y = top + 1; y <= top + 4; y++) set(x, y, z, 0);
+      }
+    }
   }
 
   /* ------------------------------------------------------------------
@@ -810,8 +852,8 @@
      ------------------------------------------------------------------ */
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   const D2R = Math.PI / 180;
-  const OUT = [[70.5, 290, 2569.5, 2], [70.5, 290, 2557, 0.8], [70.5, 290, 2530, 3], [70.5, 290, 2492, 3], [70.5, 290, 2480, 1.2], [70.5, 290, 2470, 1.5]];
-  const BACK = [[70.5, 290, 2472, 1.2], [70.5, 290, 2484, 1.2], [70.5, 290, 2520, 3], [70.5, 290, 2557, 0.8], [70.5, 290, 2569.5, 2]];
+  const OUT = [[70.5, 262, 2632, 3], [70.5, 262, 2603, 2.5], [70.5, 262, 2600.5, 2], [70.5, 289, 2573.5, 2], [70.5, 290, 2569.5, 2], [70.5, 290, 2557, 0.8], [70.5, 290, 2530, 3], [70.5, 290, 2492, 3], [70.5, 290, 2480, 1.2], [70.5, 290, 2470, 1.5]];
+  const BACK = [[70.5, 290, 2472, 1.2], [70.5, 290, 2484, 1.2], [70.5, 290, 2520, 3], [70.5, 290, 2557, 0.8], [70.5, 290, 2569.5, 2], [70.5, 289, 2573.5, 2], [70.5, 262, 2600.5, 2], [70.5, 262, 2603, 2.5], [70.5, 262, 2632, 3]];
   const helix = [];
   for (let a = 0; a <= 354; a += 12) {
     const phi = -Math.PI / 2 + a * D2R;

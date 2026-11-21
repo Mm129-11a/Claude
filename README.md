@@ -23,6 +23,7 @@ En [`prision-del-limbo/index.html`](prision-del-limbo/index.html) hay un visor 3
 - **Estructuras:** muralla con bloques de celdas escalonados, terraza norte con arcos rosados, cuatro pabellones con tejado de purpur, la torre con su tambor, la hélice, la terraza alta y la cúpula, dos puentes, las escaleras en zigzag y la sala del portón bajo el techo de roca.
 - **Vistas:** Exterior, Cenital, Portón, Hélice y Planta alta. Se puede colorear por material o por procedencia (qué fuente respalda cada parte) y cortar por altura.
 - **Recorridos:** trae cinco recorridos de prueba simulados (no son datos de streams). Con «Importar posiciones del HUD» se cargan recorridos reales (una posición por línea: `x, y, z`, `t, x, y, z` o `XYZ: x / y / z`) y el panel mide qué porcentaje de las pisadas cae sobre suelo.
+- Del video (imagen y audio) salen: los arcos góticos ciegos de los muros exteriores, la rampa que sube en espiral por la torre desde el patio, la puerta con barrotes, el cono puntiagudo y la plaza de abajo con borde de ladrillos lilas desde la que se sube al portón.
 - Es una aproximación hecha a partir de capturas y de un video: las medidas exactas no se conocen.
 
 ## Dónde se guardan los cambios del admin
